@@ -42,8 +42,13 @@ export default function DiagonalTransition({
   return (
     <div className="diagonal-transition">
       <div 
-        className={`diagonal-overlay ${
-          animationPhase === 'closing' ? 'diagonal-closing' : 'diagonal-opening'
+        className={`diagonal-overlay-left ${
+          animationPhase === 'closing' ? 'diagonal-closing-left' : 'diagonal-opening-left'
+        }`}
+      />
+      <div 
+        className={`diagonal-overlay-right ${
+          animationPhase === 'closing' ? 'diagonal-closing-right' : 'diagonal-opening-right'
         }`}
       />
     </div>
