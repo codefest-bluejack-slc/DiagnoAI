@@ -1,0 +1,131 @@
+.welcome-container {
+  scroll-snap-type: y mandatory;
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+.welcome-section {
+  min-height: 300vh;
+  scroll-snap-align: start;
+  position: relative;
+  background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+}
+
+.logo-title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.logo-title-container.moved {
+  top: 2rem;
+  left: 2rem;
+  transform: translate(0, 0) scale(0.6);
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.title {
+  font-size: 4rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  margin: 0;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-title-container.moved .title {
+  font-size: 2rem;
+}
+
+.scroll-content {
+  padding-top: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 100vh;
+}
+
+.content-area {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-area h2 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.content-area p {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.cta-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.1);
+}
+
+.cta-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2.5rem;
+  }
+  
+  .logo-title-container.moved .title {
+    font-size: 1.5rem;
+  }
+  
+  .logo {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .content-area h2 {
+    font-size: 2rem;
+  }
+  
+  .content-area p {
+    font-size: 1rem;
+  }
+}
