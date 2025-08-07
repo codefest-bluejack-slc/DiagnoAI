@@ -1,56 +1,64 @@
 import { useEffect, useState } from 'react';
 import '../../styles/diagonal-transition.css';
+import { ITransitionProviderProps } from '../../interfaces/ITransitionProviderProps';
+import { TransitionContext } from '../../hooks/useTransition';
 
-interface DiagonalTransitionProps {
-  isTransitioning: boolean;
-  onTransitionComplete: () => void;
-  onTransitionEnd?: () => void;
-}
-
-export default function DiagonalTransition({ 
-  isTransitioning, 
-  onTransitionComplete, 
-  onTransitionEnd 
-}: DiagonalTransitionProps) {
+export function TransitionProvider({ children, currentPage, onPageChange }: ITransitionProviderProps) {
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [nextPage, setNextPage] = useState(currentPage);
   const [animationPhase, setAnimationPhase] = useState<'closing' | 'opening' | 'idle'>('idle');
+  const [isReverse, setIsReverse] = useState(false);
+
+  const navigateTo = (page: string) => {
+    if (page !== currentPage && !isTransitioning) {
+      setNextPage(page);
+      setIsTransitioning(true);
+    }
+  };
 
   useEffect(() => {
-    if (isTransitioning) {
+    if (isTransitioning && animationPhase === 'idle') {
+      setIsReverse(Math.random() < 0.5);
       setAnimationPhase('closing');
-      
-      const closeTimer = setTimeout(() => {
-        onTransitionComplete();
-        setAnimationPhase('opening');
-      }, 400);
-
-      const openTimer = setTimeout(() => {
-        setAnimationPhase('idle');
-        if (onTransitionEnd) {
-          onTransitionEnd();
-        }
-      }, 800);
-
-      return () => {
-        clearTimeout(closeTimer);
-        clearTimeout(openTimer);
-      };
     }
-  }, [isTransitioning, onTransitionComplete, onTransitionEnd]);
+  }, [isTransitioning, nextPage, onPageChange]);
 
-  if (animationPhase === 'idle') return null;
+  const getLeftOverlayClass = () => {
+    if (animationPhase === 'closing') {
+      return isReverse ? 'diagonal-closing-left-reverse' : 'diagonal-closing-left';
+    }
+    return isReverse ? 'diagonal-opening-left-reverse' : 'diagonal-opening-left';
+  };
+
+  const getRightOverlayClass = () => {
+    if (animationPhase === 'closing') {
+      return isReverse ? 'diagonal-closing-right-reverse' : 'diagonal-closing-right';
+    }
+    return isReverse ? 'diagonal-opening-right-reverse' : 'diagonal-opening-right';
+  };
+
+  const handleAnimationEnd = () => {
+    if (animationPhase === 'closing') {
+      onPageChange(nextPage);
+      setAnimationPhase('opening');
+    } else if (animationPhase === 'opening') {
+      setAnimationPhase('idle');
+      setIsTransitioning(false);
+    }
+  };
 
   return (
-    <div className="diagonal-transition">
-      <div 
-        className={`diagonal-overlay-left ${
-          animationPhase === 'closing' ? 'diagonal-closing-left' : 'diagonal-opening-left'
-        }`}
-      />
-      <div 
-        className={`diagonal-overlay-right ${
-          animationPhase === 'closing' ? 'diagonal-closing-right' : 'diagonal-opening-right'
-        }`}
-      />
-    </div>
+    <TransitionContext.Provider value={{ navigateTo, isTransitioning }}>
+      {children}
+      {animationPhase !== 'idle' && (
+        <div className="diagonal-transition">
+          <div 
+            className={`diagonal-overlay-left ${getLeftOverlayClass()}`}
+            onAnimationEnd={handleAnimationEnd}
+          />
+          <div className={`diagonal-overlay-right ${getRightOverlayClass()}`} />
+        </div>
+      )}
+    </TransitionContext.Provider>
   );
 }

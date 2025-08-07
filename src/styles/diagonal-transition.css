@@ -10,19 +10,19 @@
 
 .diagonal-overlay-left {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
   background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%);
 }
 
 .diagonal-overlay-right {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
   background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%);
 }
 
@@ -44,6 +44,26 @@
 .diagonal-opening-right {
   clip-path: polygon(100% 0, 100% 100%, 0 100%);
   animation: diagonalOpenRight 0.4s ease-in-out forwards;
+}
+
+.diagonal-closing-left-reverse {
+  clip-path: polygon(100% 0, 100% 0, 100% 0);
+  animation: diagonalCloseLeftReverse 0.4s ease-in-out forwards;
+}
+
+.diagonal-closing-right-reverse {
+  clip-path: polygon(0 100%, 0 100%, 0 100%);
+  animation: diagonalCloseRightReverse 0.4s ease-in-out forwards;
+}
+
+.diagonal-opening-left-reverse {
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  animation: diagonalOpenLeftReverse 0.4s ease-in-out forwards;
+}
+
+.diagonal-opening-right-reverse {
+  clip-path: polygon(0 100%, 0 0, 100% 100%);
+  animation: diagonalOpenRightReverse 0.4s ease-in-out forwards;
 }
 
 @keyframes diagonalCloseLeft {
@@ -79,5 +99,41 @@
   }
   100% {
     clip-path: polygon(100% 100%, 100% 100%, 100% 100%);
+  }
+}
+
+@keyframes diagonalCloseLeftReverse {
+  0% {
+    clip-path: polygon(100% 0, 100% 0, 100% 0);
+  }
+  100% {
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+  }
+}
+
+@keyframes diagonalCloseRightReverse {
+  0% {
+    clip-path: polygon(0 100%, 0 100%, 0 100%);
+  }
+  100% {
+    clip-path: polygon(0 100%, 0 0, 100% 100%);
+  }
+}
+
+@keyframes diagonalOpenLeftReverse {
+  0% {
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+  }
+  100% {
+    clip-path: polygon(100% 0, 100% 0, 100% 0);
+  }
+}
+
+@keyframes diagonalOpenRightReverse {
+  0% {
+    clip-path: polygon(0 100%, 0 0, 100% 100%);
+  }
+  100% {
+    clip-path: polygon(0 100%, 0 100%, 0 100%);
   }
 }
