@@ -1,6 +1,8 @@
 import { useTransition } from '../hooks/useTransition';
 import WelcomeSections from '../components/sections/welcome-sections';
+import Navbar from '../components/common/navbar';
 import '../styles/welcome-sections.css';
+import '../styles/navbar.css';
 
 export default function LandingPage() {
   const { navigateTo, isTransitioning } = useTransition();
@@ -12,6 +14,9 @@ export default function LandingPage() {
   };
 
   return (
-    <WelcomeSections onNavigate={handleNavigateToHome} />
+    <>
+      <Navbar onNavigateHome={handleNavigateToHome} />
+      <WelcomeSections onNavigate={handleNavigateToHome} />
+    </>
   );
 }

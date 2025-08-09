@@ -7,6 +7,7 @@ interface WelcomeSectionsProps {
 
 export default function WelcomeSections({ onNavigate }: WelcomeSectionsProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [selectedLayer, setSelectedLayer] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,9 +25,14 @@ export default function WelcomeSections({ onNavigate }: WelcomeSectionsProps) {
     }
   }, []);
 
+  const handleLayerClick = (layerIndex: number) => {
+    setSelectedLayer(selectedLayer === layerIndex ? null : layerIndex);
+  };
+
   return (
     <div ref={containerRef} className="welcome-container">
       <section className="welcome-section section-1">
+        
         <div className={`logo-title-container ${isScrolled ? 'moved' : ''}`}>
           <img src={diagnoaiLogo} alt="DiagnoAI Logo" className="logo" />
           <h1 className="title">DiagnoAI</h1>
