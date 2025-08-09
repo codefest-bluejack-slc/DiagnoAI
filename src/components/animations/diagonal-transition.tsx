@@ -8,6 +8,7 @@ export function TransitionProvider({ children, currentPage, onPageChange }: ITra
   const [nextPage, setNextPage] = useState(currentPage);
   const [animationPhase, setAnimationPhase] = useState<'closing' | 'opening' | 'idle'>('idle');
   const [isReverse, setIsReverse] = useState(false);
+  const [displayedPage, setDisplayedPage] = useState(currentPage);
 
   const navigateTo = (page: string) => {
     if (page !== currentPage && !isTransitioning) {
@@ -17,11 +18,17 @@ export function TransitionProvider({ children, currentPage, onPageChange }: ITra
   };
 
   useEffect(() => {
+    if (currentPage !== displayedPage && !isTransitioning) {
+      setDisplayedPage(currentPage);
+    }
+  }, [currentPage, displayedPage, isTransitioning]);
+
+  useEffect(() => {
     if (isTransitioning && animationPhase === 'idle') {
       setIsReverse(Math.random() < 0.5);
       setAnimationPhase('closing');
     }
-  }, [isTransitioning, nextPage, onPageChange]);
+  }, [isTransitioning, animationPhase]);
 
   const getLeftOverlayClass = () => {
     if (animationPhase === 'closing') {
@@ -39,6 +46,7 @@ export function TransitionProvider({ children, currentPage, onPageChange }: ITra
 
   const handleAnimationEnd = () => {
     if (animationPhase === 'closing') {
+      setDisplayedPage(nextPage);
       onPageChange(nextPage);
       setAnimationPhase('opening');
     } else if (animationPhase === 'opening') {
@@ -47,9 +55,11 @@ export function TransitionProvider({ children, currentPage, onPageChange }: ITra
     }
   };
 
+  const shouldShowChildren = displayedPage === currentPage || isTransitioning;
+
   return (
     <TransitionContext.Provider value={{ navigateTo, isTransitioning }}>
-      {children}
+      {shouldShowChildren && children}
       {animationPhase !== 'idle' && (
         <div className="diagonal-transition">
           <div 
