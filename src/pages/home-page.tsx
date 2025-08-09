@@ -1,5 +1,4 @@
 import { useTransition } from '../hooks/useTransition';
-import Tooltip from '../components/common/tooltip';
 import Navbar from '../components/common/navbar';
 import '../styles/navbar.css';
 

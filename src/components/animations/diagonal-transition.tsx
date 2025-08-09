@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import '../../styles/diagonal-transition.css';
-import { ITransitionProviderProps } from '../../interfaces/ITransitionProviderProps';
+import { ITransitionProvider } from '../../interfaces/ITransitionProvider';
 import { TransitionContext } from '../../hooks/useTransition';
 
-export function TransitionProvider({ children, currentPage, onPageChange }: ITransitionProviderProps) {
+export function TransitionProvider({ children, currentPage, onPageChange }: ITransitionProvider) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [nextPage, setNextPage] = useState(currentPage);
   const [animationPhase, setAnimationPhase] = useState<'closing' | 'opening' | 'idle'>('idle');

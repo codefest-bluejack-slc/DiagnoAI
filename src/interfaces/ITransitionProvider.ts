@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-export interface ITransitionProviderProps {
+export interface ITransitionProvider {
   children: ReactNode;
   currentPage: string;
   onPageChange: (page: string) => void;

@@ -1,6 +1,6 @@
 import { ReactNode, ReactElement } from 'react';
 
-export interface ITooltipProps {
+export interface ITooltip {
   content: ReactNode;
   children: ReactElement;
   position?: 'top' | 'bottom' | 'left' | 'right' | 'auto';

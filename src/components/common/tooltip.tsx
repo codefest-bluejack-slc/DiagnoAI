@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, ReactNode, ReactElement, cloneElement } from 'react';
-import { ITooltipProps } from '../../interfaces/ITooltipProps';
+import { ITooltip } from '../../interfaces/ITooltip';
 
 export default function Tooltip({
   content,
@@ -12,7 +12,7 @@ export default function Tooltip({
   disabled = false,
   offset = 8,
   maxWidth = 250
-}: ITooltipProps) {
+}: ITooltip) {
   const [isVisible, setIsVisible] = useState(false);
   const [actualPosition, setActualPosition] = useState<'top' | 'bottom' | 'left' | 'right'>('top');
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
