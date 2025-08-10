@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Search, Command } from 'lucide-react';
 import { useSearch } from '../../hooks/use-search';
 import { useKeyboardNavigation } from '../../hooks/use-keyboard-navigation';
+import { useTransition } from '../../hooks/use-transition';
 import { ISearchModalProps, ISearchResult } from '../../interfaces/ISearch';
 
 interface SearchModalComponentProps extends ISearchModalProps {
@@ -17,6 +18,7 @@ export default function SearchModal({
 }: SearchModalComponentProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const { isTransitioning } = useTransition();
 
   const {
     filteredResults,
@@ -31,6 +33,12 @@ export default function SearchModal({
   } = useSearch({ onClose });
 
   const { handleKeyDown } = useKeyboardNavigation();
+
+  useEffect(() => {
+    if (isTransitioning && isOpen) {
+      onClose();
+    }
+  }, [isTransitioning, isOpen, onClose]);
 
   useEffect(() => {
     if (isOpen && searchInputRef.current) {

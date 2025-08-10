@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Home, Search, Activity, Store, Settings, LogIn } from 'lucide-react';
 import diagnoaiLogo from '../../assets/diagnoai_logo.png';
 import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
 import { useModal } from '../../hooks/use-modal';
+import { useTransition } from '../../hooks/use-transition';
 
 interface NavbarProps {}
 
 export default function Navbar({}: NavbarProps) {
-  const navigate = useNavigate();
+  const { navigateTo } = useTransition();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,15 +52,15 @@ export default function Navbar({}: NavbarProps) {
   };
 
   const handleHomeClick = () => {
-    navigate('/');
+    navigateTo('/');
   };
 
   const handleDiagnosticsClick = () => {
-    navigate('/diagnostic');
+    navigateTo('/diagnostic');
   };
 
   const handleMarketplaceClick = () => {
-    navigate('/marketplace');
+    navigateTo('/marketplace');
   };
 
   const handleSettingsClick = () => {

@@ -8,62 +8,243 @@
   pointer-events: none;
 }
 
+.diagonal-transition::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20% 15%, rgba(168, 85, 247, 0.8) 50%, transparent 51%),
+    radial-gradient(1px 1px at 85% 25%, rgba(236, 72, 153, 0.7) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 35% 75%, rgba(99, 102, 241, 0.6) 50%, transparent 51%),
+    radial-gradient(2px 2px at 70% 90%, rgba(139, 92, 246, 0.8) 50%, transparent 51%),
+    radial-gradient(1px 1px at 15% 60%, rgba(168, 85, 247, 0.7) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90% 45%, rgba(236, 72, 153, 0.6) 50%, transparent 51%),
+    radial-gradient(2px 2px at 45% 30%, rgba(99, 102, 241, 0.8) 50%, transparent 51%),
+    radial-gradient(1px 1px at 25% 85%, rgba(139, 92, 246, 0.7) 50%, transparent 51%);
+  animation: particleFloat 6s ease-in-out infinite;
+}
+
 .diagonal-overlay-left {
   position: absolute;
-  top: -1px;
-  left: -1px;
-  width: calc(100% + 2px);
-  height: calc(100% + 2px);
-  background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(2, 6, 23, 0.98) 0%, 
+    rgba(30, 27, 75, 0.96) 15%,
+    rgba(88, 28, 135, 0.95) 30%, 
+    rgba(168, 85, 247, 0.97) 50%, 
+    rgba(236, 72, 153, 0.94) 70%,
+    rgba(49, 46, 129, 0.96) 85%,
+    rgba(15, 23, 42, 0.98) 100%
+  );
+  backdrop-filter: blur(32px) saturate(180%);
+  overflow: hidden;
+}
+
+.diagonal-overlay-left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.4) 0%, transparent 60%),
+    radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.3) 0%, transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.35) 0%, transparent 60%),
+    radial-gradient(circle at 10% 80%, rgba(139, 92, 246, 0.25) 0%, transparent 50%);
+  animation: pulseOrbs 4s ease-in-out infinite alternate;
+}
+
+.diagonal-overlay-left::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(45deg, rgba(168, 85, 247, 0.1) 0%, transparent 30%),
+    linear-gradient(-45deg, rgba(236, 72, 153, 0.08) 0%, transparent 25%),
+    radial-gradient(ellipse at 25% 25%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+    radial-gradient(ellipse at 75% 75%, rgba(168, 85, 247, 0.12) 0%, transparent 35%),
+    conic-gradient(from 0deg at 50% 50%, rgba(236, 72, 153, 0.1) 0deg, transparent 60deg, rgba(99, 102, 241, 0.08) 120deg, transparent 180deg, rgba(168, 85, 247, 0.1) 240deg, transparent 300deg, rgba(236, 72, 153, 0.08) 360deg);
+  mask: 
+    radial-gradient(circle at 15% 20%, black 20px, transparent 21px),
+    radial-gradient(circle at 85% 80%, black 25px, transparent 26px),
+    radial-gradient(circle at 60% 30%, black 15px, transparent 16px),
+    radial-gradient(circle at 30% 70%, black 18px, transparent 19px),
+    radial-gradient(circle at 75% 40%, black 22px, transparent 23px);
+  mask-composite: subtract;
+  animation: geometricFloat 8s ease-in-out infinite;
 }
 
 .diagonal-overlay-right {
   position: absolute;
-  top: -1px;
-  left: -1px;
-  width: calc(100% + 2px);
-  height: calc(100% + 2px);
-  background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(2, 6, 23, 0.98) 0%, 
+    rgba(30, 27, 75, 0.96) 15%,
+    rgba(88, 28, 135, 0.95) 30%, 
+    rgba(168, 85, 247, 0.97) 50%, 
+    rgba(236, 72, 153, 0.94) 70%,
+    rgba(49, 46, 129, 0.96) 85%,
+    rgba(15, 23, 42, 0.98) 100%
+  );
+  backdrop-filter: blur(32px) saturate(180%);
+  overflow: hidden;
+}
+
+.diagonal-overlay-right::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.4) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 60%),
+    radial-gradient(circle at 60% 40%, rgba(99, 102, 241, 0.35) 0%, transparent 60%),
+    radial-gradient(circle at 90% 60%, rgba(139, 92, 246, 0.25) 0%, transparent 50%);
+  animation: pulseOrbs 4s ease-in-out infinite alternate;
+}
+
+.diagonal-overlay-right::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, transparent 35%),
+    linear-gradient(-135deg, rgba(99, 102, 241, 0.08) 0%, transparent 30%),
+    radial-gradient(ellipse at 75% 25%, rgba(168, 85, 247, 0.15) 0%, transparent 45%),
+    radial-gradient(ellipse at 25% 75%, rgba(236, 72, 153, 0.12) 0%, transparent 40%),
+    conic-gradient(from 180deg at 50% 50%, rgba(99, 102, 241, 0.1) 0deg, transparent 60deg, rgba(168, 85, 247, 0.08) 120deg, transparent 180deg, rgba(236, 72, 153, 0.1) 240deg, transparent 300deg, rgba(99, 102, 241, 0.08) 360deg);
+  mask: 
+    radial-gradient(circle at 85% 15%, black 18px, transparent 19px),
+    radial-gradient(circle at 15% 85%, black 24px, transparent 25px),
+    radial-gradient(circle at 40% 25%, black 16px, transparent 17px),
+    radial-gradient(circle at 70% 75%, black 20px, transparent 21px),
+    radial-gradient(circle at 25% 45%, black 14px, transparent 15px);
+  mask-composite: subtract;
+  animation: geometricFloat 8s ease-in-out infinite reverse;
+}
+
+@keyframes pulseOrbs {
+  0% {
+    opacity: 0.4;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05) rotate(180deg);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1.1) rotate(360deg);
+  }
+}
+
+@keyframes geometricFloat {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(5px, -8px) scale(1.01);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-3px, -5px) scale(0.99);
+    opacity: 0.7;
+  }
+  75% {
+    transform: translate(-7px, 3px) scale(1.02);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes rotate360 {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 1;
+  }
+  66% {
+    transform: translateY(-10px) translateX(-15px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.8;
+  }
 }
 
 .diagonal-closing-left {
   clip-path: polygon(0 0, 0 0, 0 0);
-  animation: diagonalCloseLeft 0.4s ease-in-out forwards;
+  animation: diagonalCloseLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .diagonal-closing-right {
   clip-path: polygon(100% 100%, 100% 100%, 100% 100%);
-  animation: diagonalCloseRight 0.4s ease-in-out forwards;
+  animation: diagonalCloseRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .diagonal-opening-left {
   clip-path: polygon(0 0, 100% 0, 0 100%);
-  animation: diagonalOpenLeft 0.4s ease-in-out forwards;
+  animation: diagonalOpenLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .diagonal-opening-right {
   clip-path: polygon(100% 0, 100% 100%, 0 100%);
-  animation: diagonalOpenRight 0.4s ease-in-out forwards;
+  animation: diagonalOpenRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .diagonal-closing-left-reverse {
   clip-path: polygon(100% 0, 100% 0, 100% 0);
-  animation: diagonalCloseLeftReverse 0.4s ease-in-out forwards;
+  animation: diagonalCloseLeftReverse 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .diagonal-closing-right-reverse {
   clip-path: polygon(0 100%, 0 100%, 0 100%);
-  animation: diagonalCloseRightReverse 0.4s ease-in-out forwards;
+  animation: diagonalCloseRightReverse 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .diagonal-opening-left-reverse {
   clip-path: polygon(100% 0, 0 0, 100% 100%);
-  animation: diagonalOpenLeftReverse 0.4s ease-in-out forwards;
+  animation: diagonalOpenLeftReverse 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .diagonal-opening-right-reverse {
   clip-path: polygon(0 100%, 0 0, 100% 100%);
-  animation: diagonalOpenRightReverse 0.4s ease-in-out forwards;
+  animation: diagonalOpenRightReverse 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes diagonalCloseLeft {

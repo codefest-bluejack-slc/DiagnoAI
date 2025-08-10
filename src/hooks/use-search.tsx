@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Home, Activity, Store, Search } from 'lucide-react';
+import { Home, Activity, Store, Search, Settings, LogIn } from 'lucide-react';
 import { ISearchResult, IUseSearchReturn } from '../interfaces/ISearch';
+import { useTransition } from './use-transition';
 
 interface UseSearchProps {
   onClose?: () => void;
@@ -10,7 +10,7 @@ interface UseSearchProps {
 export const useSearch = ({
   onClose,
 }: UseSearchProps = {}): IUseSearchReturn => {
-  const navigate = useNavigate();
+  const { navigateTo } = useTransition();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -23,7 +23,7 @@ export const useSearch = ({
         description: 'Navigate to the main dashboard',
         icon: <Home size={16} />,
         action: () => {
-          navigate('/');
+          navigateTo('/');
           onClose?.();
           console.log('Navigate to Home');
         },
@@ -34,7 +34,7 @@ export const useSearch = ({
         description: 'View diagnostic tools and reports',
         icon: <Activity size={16} />,
         action: () => {
-          navigate('/diagnostic');
+          navigateTo('/diagnostic');
           onClose?.();
           console.log('Diagnostics clicked');
         },
@@ -45,23 +45,34 @@ export const useSearch = ({
         description: 'Browse available diagnostic tools',
         icon: <Store size={16} />,
         action: () => {
-          navigate('/marketplace');
+          navigateTo('/marketplace');
           onClose?.();
           console.log('Marketplace clicked');
         },
       },
+
       {
-        id: '4',
-        title: 'Search',
-        description: 'Search for anything in DiagnoAI',
-        icon: <Search size={16} />,
+        id: '5',
+        title: 'Settings',
+        description: 'Configure application settings',
+        icon: <Settings size={16} />,
         action: () => {
           onClose?.();
-          console.log('Search functionality');
+          console.log('Settings clicked');
+        },
+      },
+      {
+        id: '6',
+        title: 'Login',
+        description: 'Sign in to your account',
+        icon: <LogIn size={16} />,
+        action: () => {
+          onClose?.();
+          console.log('Login clicked');
         },
       },
     ],
-    [navigate, onClose],
+    [navigateTo, onClose],
   );
 
   const filteredResults = useMemo(
