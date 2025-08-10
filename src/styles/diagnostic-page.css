@@ -1,0 +1,195 @@
+/* Diagnostic Page Styles */
+.diagnostic-container {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(to bottom right, rgb(2 6 23), rgb(88 28 135), rgb(49 46 129));
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+}
+
+/* Component Classes */
+.progress-card {
+  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.step-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.step-item-active {
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.step-item-inactive {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.add-symptom-card {
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(24px);
+  border: 2px dashed rgba(168, 85, 247, 0.3);
+  border-radius: 1.5rem;
+  padding: 3rem;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-symptom-card:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: scale(1.02);
+}
+
+.symptom-form-card {
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.symptoms-list-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.warning-card {
+  background: linear-gradient(to bottom right, rgba(245, 158, 11, 0.2), rgba(249, 115, 22, 0.2), rgba(239, 68, 68, 0.2));
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.tips-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.background-orbs {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+}
+
+.background-orb-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24rem;
+  height: 24rem;
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.background-orb-2 {
+  position: absolute;
+  top: 33.333333%;
+  right: 0;
+  width: 20rem;
+  height: 20rem;
+  background: rgba(236, 72, 153, 0.2);
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-delay: 1s;
+}
+
+.background-orb-3 {
+  position: absolute;
+  bottom: 0;
+  left: 33.333333%;
+  width: 18rem;
+  height: 18rem;
+  background: rgba(99, 102, 241, 0.25);
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-delay: 2s;
+}
+
+.mouse-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.floating-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 0.25rem;
+  height: 0.25rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.main-content {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.5) rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.5);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.7);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
