@@ -60,3 +60,7 @@
 .search-modal-content.closing {
   animation: modal-out 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+.search-modal-input::placeholder {
+  color: #94a3b8;
+}
