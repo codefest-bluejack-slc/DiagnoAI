@@ -12,12 +12,12 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dark-bg">
       <Navbar onNavigateHome={handleNavigateToLanding} />
 
       <div className="container mx-auto px-6 py-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Welcome to DiagnoAI</h1>
+          <h1 className="text-4xl font-bold text-dark-text-primary mb-8 text-center">Welcome to DiagnoAI</h1>
         </div>
       </div>
     </div>

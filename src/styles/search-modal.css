@@ -27,15 +27,15 @@
     backdrop-filter: blur(0px);
   }
   to {
-    background-color: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
   }
 }
 
 @keyframes backdrop-out {
   from {
-    background-color: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
   }
   to {
     background-color: rgba(0, 0, 0, 0);
@@ -44,8 +44,8 @@
 }
 
 .search-modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
   animation: backdrop-in 0.2s ease-out forwards;
 }
 

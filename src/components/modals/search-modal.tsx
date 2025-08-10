@@ -91,23 +91,23 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
     >
       <div
         ref={modalRef}
-        className={`search-modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100/50 ${
+        className={`search-modal-content bg-dark-surface rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-dark-border ${
           isClosing ? 'closing' : ''
         }`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-          <Search className="text-gray-400 mr-3 flex-shrink-0" size={20} />
+        <div className="flex items-center px-6 py-4 border-b border-dark-border bg-dark-elevated">
+          <Search className="text-dark-text-muted mr-3 flex-shrink-0" size={20} />
           <input
             ref={searchInputRef}
             type="text"
             placeholder="Search for anything..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 text-base text-gray-800 placeholder-gray-400 bg-transparent border-none outline-none font-medium"
+            className="flex-1 text-base text-dark-text-primary placeholder-dark-text-muted bg-transparent border-none outline-none font-medium"
           />
-          <div className="flex items-center gap-2 text-xs text-gray-400 ml-4">
-            <kbd className="px-2 py-1 bg-white border border-gray-200 rounded-md text-xs font-mono shadow-sm">ESC</kbd>
+          <div className="flex items-center gap-2 text-xs text-dark-text-muted ml-4">
+            <kbd className="px-2 py-1 bg-dark-elevated border border-dark-border rounded-md text-xs font-mono shadow-sm">ESC</kbd>
             <span className="hidden sm:inline">to close</span>
           </div>
         </div>
@@ -122,26 +122,26 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
                     key={result.id}
                     className={`mx-3 px-4 py-3 cursor-pointer flex items-center space-x-4 rounded-xl border transition-colors duration-150 ${
                       isActive
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'hover:bg-gray-50 border-transparent hover:border-gray-200'
+                        ? 'bg-blue-900/30 border-blue-700/50'
+                        : 'hover:bg-dark-elevated border-transparent hover:border-dark-border'
                     }`}
                     onClick={() => handleSelectResult(result)}
                     onMouseEnter={() => setHoveredIndex(index)}
                     onMouseLeave={() => setHoveredIndex(null)}
                   >
                     <div className={`flex-shrink-0 p-2.5 rounded-xl transition-colors duration-150 ${
-                      isActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                      isActive ? 'bg-blue-800/50 text-blue-400' : 'bg-dark-elevated text-dark-text-muted'
                     }`}>
                       {result.icon}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-semibold truncate mb-1 ${
-                        isActive ? 'text-blue-900' : 'text-gray-900'
+                        isActive ? 'text-blue-300' : 'text-dark-text-primary'
                       }`}>
                         {result.title}
                       </p>
                       <p className={`text-sm truncate ${
-                        isActive ? 'text-blue-700' : 'text-gray-500'
+                        isActive ? 'text-blue-400' : 'text-dark-text-secondary'
                       }`}>
                         {result.description}
                       </p>
@@ -152,11 +152,11 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
-              <Search className="mx-auto text-gray-300 mb-4" size={64} />
-              <p className="text-gray-600 text-base font-semibold mb-2">
+              <Search className="mx-auto text-dark-text-muted mb-4" size={64} />
+              <p className="text-dark-text-secondary text-base font-semibold mb-2">
                 {searchQuery ? 'No results found' : 'Start typing to search...'}
               </p>
-              <p className="text-gray-400 text-sm">
+              <p className="text-dark-text-muted text-sm">
                 {searchQuery ? 'Try a different search term' : 'Find anything quickly with our smart search'}
               </p>
             </div>
@@ -164,18 +164,18 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
         </div>
 
         {filteredResults.length > 0 && (
-          <div className="px-6 py-3 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <div className="px-6 py-3 bg-dark-elevated border-t border-dark-border flex items-center justify-between text-xs text-dark-text-muted">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-white border border-gray-200 rounded-md text-xs font-mono shadow-sm">↑↓</kbd>
+                <kbd className="px-2 py-1 bg-dark-surface border border-dark-border rounded-md text-xs font-mono shadow-sm">↑↓</kbd>
                 <span className="font-medium">navigate</span>
               </div>
               <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-white border border-gray-200 rounded-md text-xs font-mono shadow-sm">↵</kbd>
+                <kbd className="px-2 py-1 bg-dark-surface border border-dark-border rounded-md text-xs font-mono shadow-sm">↵</kbd>
                 <span className="font-medium">select</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-dark-text-muted">
               <Command size={14} />
               <span className="font-medium">DiagnoAI Search</span>
             </div>
