@@ -183,8 +183,8 @@ export default function Tooltip({
 
   const getTooltipClasses = () => {
     const baseClasses = `
-      absolute z-50 px-3 py-2 text-sm font-medium text-dark-text-primary
-      bg-dark-surface rounded-lg shadow-lg border border-dark-border
+      absolute z-50 px-3 py-2 text-sm font-medium text-white
+      bg-slate-800 rounded-lg shadow-lg border border-slate-600
       transition-all duration-200 ease-in-out
       ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
     `;
@@ -203,10 +203,10 @@ export default function Tooltip({
     if (!arrow) return '';
 
     const arrowClasses = {
-      top: 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-dark-surface',
-      bottom: 'bottom-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-dark-surface',
-      left: 'left-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-dark-surface',
-      right: 'right-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-dark-surface'
+      top: 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-slate-800',
+      bottom: 'bottom-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-slate-800',
+      left: 'left-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-slate-800',
+      right: 'right-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-slate-800'
     };
 
     return `absolute w-0 h-0 border-4 ${arrowClasses[actualPosition]}`;

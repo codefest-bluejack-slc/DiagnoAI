@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Search, Activity, Store } from 'lucide-react';
+import { Home, Search, Activity, Store, Settings, LogIn } from 'lucide-react';
 import diagnoaiLogo from '../../assets/diagnoai_logo.png';
 import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
@@ -54,6 +54,14 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
     console.log('Marketplace clicked');
   };
 
+  const handleSettingsClick = () => {
+    console.log('Settings clicked');
+  };
+
+  const handleLoginClick = () => {
+    console.log('Login clicked');
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -97,6 +105,18 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
           <Tooltip content="Marketplace" position="bottom">
             <button onClick={handleMarketplaceClick} className="nav-icon-button">
               <Store size={20} />
+            </button>
+          </Tooltip>
+
+          <Tooltip content="Settings" position="bottom">
+            <button onClick={handleSettingsClick} className="nav-icon-button">
+              <Settings size={20} />
+            </button>
+          </Tooltip>
+
+          <Tooltip content="Login" position="bottom">
+            <button onClick={handleLoginClick} className="nav-icon-button">
+              <LogIn size={20} />
             </button>
           </Tooltip>
         </div>

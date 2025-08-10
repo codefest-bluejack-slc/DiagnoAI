@@ -1,19 +1,14 @@
-import { useTransition } from '../hooks/use-transition';
 import Navbar from '../components/common/navbar';
 import '../styles/navbar.css';
 
 export default function HomePage() {
-  const { navigateTo, isTransitioning } = useTransition();
-
-  const handleNavigateToLanding = () => {
-    if (!isTransitioning) {
-      navigateTo('landing');
-    }
+  const handleNavigateHome = () => {
+    console.log('Already on home page');
   };
 
   return (
     <div className="min-h-screen bg-dark-bg">
-      <Navbar onNavigateHome={handleNavigateToLanding} />
+      <Navbar onNavigateHome={handleNavigateHome} />
 
       <div className="container mx-auto px-6 py-12">
         <div className="max-w-4xl mx-auto">
