@@ -1,4 +1,4 @@
-import { useTransition } from '../hooks/useTransition';
+import { useTransition } from '../hooks/use-transition';
 import Navbar from '../components/common/navbar';
 import '../styles/navbar.css';
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import '../../styles/diagonal-transition.css';
 import { ITransitionProvider } from '../../interfaces/ITransitionProvider';
-import { TransitionContext } from '../../hooks/useTransition';
+import { TransitionContext } from '../../hooks/use-transition';
 
 export function TransitionProvider({ children, currentPage, onPageChange }: ITransitionProvider) {
   const [isTransitioning, setIsTransitioning] = useState(false);

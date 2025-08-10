@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Home, Search, Activity, Store } from 'lucide-react';
 import diagnoaiLogo from '../../assets/diagnoai_logo.png';
 import Tooltip from './tooltip';
+import SearchModal from '../modals/search-modal';
+import { useModal } from '../../hooks/use-modal';
 
 interface NavbarProps {
   onNavigateHome: () => void;
@@ -10,12 +12,14 @@ interface NavbarProps {
 export default function Navbar({ onNavigateHome }: NavbarProps) {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  const { isOpen: isSearchModalOpen, isClosing, openModal: openSearchModal, handleClose: closeSearchModal } = useModal();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === 'k') {
         event.preventDefault();
-        searchInputRef.current?.focus();
+        openSearchModal();
       }
     };
 
@@ -23,13 +27,22 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [openSearchModal]);
 
   const handleSearchFocus = () => {
     setIsSearchFocused(true);
   };
 
   const handleSearchBlur = () => {
+    setIsSearchFocused(false);
+  };
+
+  const handleSearchClick = () => {
+    openSearchModal();
+  };
+
+  const handleCloseSearchModal = () => {
+    closeSearchModal();
     setIsSearchFocused(false);
   };
 
@@ -53,7 +66,7 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
         </div>
 
         <div className="navbar-center">
-          <div className={`search-container ${isSearchFocused ? 'focused' : ''}`}>
+          <div className={`search-container ${isSearchFocused ? 'focused' : ''}`} onClick={handleSearchClick}>
             <Search className="search-icon" size={16} />
             <input
               ref={searchInputRef}
@@ -62,6 +75,8 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
               className="search-input"
               onFocus={handleSearchFocus}
               onBlur={handleSearchBlur}
+              onClick={handleSearchClick}
+              readOnly
             />
           </div>
         </div>
@@ -86,6 +101,13 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
           </Tooltip>
         </div>
       </div>
+
+      <SearchModal 
+        isOpen={isSearchModalOpen} 
+        onClose={handleCloseSearchModal}
+        onNavigateHome={onNavigateHome}
+        isClosing={isClosing}
+      />
     </nav>
   );
 }
