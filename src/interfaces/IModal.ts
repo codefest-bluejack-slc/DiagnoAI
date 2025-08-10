@@ -7,5 +7,12 @@ export interface IUseModalReturn {
 }
 
 export interface IUseKeyboardNavigationReturn {
-  handleKeyDown: (event: KeyboardEvent, filteredResults: any[], selectedIndex: number, setSelectedIndex: (index: number) => void, onSelectResult: () => void, onClose: () => void) => void;
+  handleKeyDown: (
+    event: KeyboardEvent,
+    filteredResults: any[],
+    selectedIndex: number,
+    setSelectedIndex: (index: number) => void,
+    onSelectResult: () => void,
+    onClose: () => void,
+  ) => void;
 }

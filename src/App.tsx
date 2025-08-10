@@ -14,8 +14,11 @@ function AppContent() {
   };
 
   return (
-    <TransitionProvider currentPage={currentPage} onPageChange={handlePageChange}>
-      <div className="App">
+    <TransitionProvider
+      currentPage={currentPage}
+      onPageChange={handlePageChange}
+    >
+      <div className="App bg-dark-bg text-dark-text-primary">
         <HomePage />
       </div>
     </TransitionProvider>

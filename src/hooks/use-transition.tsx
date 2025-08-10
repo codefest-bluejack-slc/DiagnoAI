@@ -2,7 +2,9 @@ import { useContext } from 'react';
 import { ITransitionContextType } from '../interfaces/ITransitionContextType';
 import { createContext } from 'react';
 
-export const TransitionContext = createContext<ITransitionContextType | null>(null);
+export const TransitionContext = createContext<ITransitionContextType | null>(
+  null,
+);
 
 export const useTransition = () => {
   const context = useContext(TransitionContext);

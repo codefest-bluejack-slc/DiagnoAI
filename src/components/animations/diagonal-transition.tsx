@@ -3,10 +3,16 @@ import '../../styles/diagonal-transition.css';
 import { ITransitionProvider } from '../../interfaces/ITransitionProvider';
 import { TransitionContext } from '../../hooks/use-transition';
 
-export function TransitionProvider({ children, currentPage, onPageChange }: ITransitionProvider) {
+export function TransitionProvider({
+  children,
+  currentPage,
+  onPageChange,
+}: ITransitionProvider) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [nextPage, setNextPage] = useState(currentPage);
-  const [animationPhase, setAnimationPhase] = useState<'closing' | 'opening' | 'idle'>('idle');
+  const [animationPhase, setAnimationPhase] = useState<
+    'closing' | 'opening' | 'idle'
+  >('idle');
   const [isReverse, setIsReverse] = useState(false);
   const [displayedPage, setDisplayedPage] = useState(currentPage);
 
@@ -32,16 +38,24 @@ export function TransitionProvider({ children, currentPage, onPageChange }: ITra
 
   const getLeftOverlayClass = () => {
     if (animationPhase === 'closing') {
-      return isReverse ? 'diagonal-closing-left-reverse' : 'diagonal-closing-left';
+      return isReverse
+        ? 'diagonal-closing-left-reverse'
+        : 'diagonal-closing-left';
     }
-    return isReverse ? 'diagonal-opening-left-reverse' : 'diagonal-opening-left';
+    return isReverse
+      ? 'diagonal-opening-left-reverse'
+      : 'diagonal-opening-left';
   };
 
   const getRightOverlayClass = () => {
     if (animationPhase === 'closing') {
-      return isReverse ? 'diagonal-closing-right-reverse' : 'diagonal-closing-right';
+      return isReverse
+        ? 'diagonal-closing-right-reverse'
+        : 'diagonal-closing-right';
     }
-    return isReverse ? 'diagonal-opening-right-reverse' : 'diagonal-opening-right';
+    return isReverse
+      ? 'diagonal-opening-right-reverse'
+      : 'diagonal-opening-right';
   };
 
   const handleAnimationEnd = () => {
@@ -62,7 +76,7 @@ export function TransitionProvider({ children, currentPage, onPageChange }: ITra
       {shouldShowChildren && children}
       {animationPhase !== 'idle' && (
         <div className="diagonal-transition">
-          <div 
+          <div
             className={`diagonal-overlay-left ${getLeftOverlayClass()}`}
             onAnimationEnd={handleAnimationEnd}
           />

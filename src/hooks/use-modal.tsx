@@ -17,9 +17,7 @@ export const useModal = (): IUseModalReturn => {
 
   const handleClose = useCallback(() => {
     setIsClosing(true);
-    setTimeout(() => {
-      closeModal();
-    }, 200);
+    closeModal();
   }, [closeModal]);
 
   return {
@@ -27,6 +25,6 @@ export const useModal = (): IUseModalReturn => {
     isClosing,
     openModal,
     closeModal,
-    handleClose
+    handleClose,
   };
 };

@@ -1,83 +1,31 @@
-import React, { useState, useRef, useEffect, ReactNode, ReactElement, cloneElement } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  ReactNode,
+  ReactElement,
+  cloneElement,
+} from 'react';
 import { ITooltip } from '../../interfaces/ITooltip';
 
 export default function Tooltip({
   content,
   children,
-  position = 'auto',
+  position = 'bottom',
   trigger = 'hover',
-  delay = 200,
   className = '',
-  arrow = true,
   disabled = false,
-  offset = 8,
-  maxWidth = 250
 }: ITooltip) {
   const [isVisible, setIsVisible] = useState(false);
-  const [actualPosition, setActualPosition] = useState<'top' | 'bottom' | 'left' | 'right'>('top');
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  
+
   const triggerRef = useRef<HTMLElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-
-  const calculatePosition = () => {
-    if (!triggerRef.current || !tooltipRef.current) return;
-
-    const triggerRect = triggerRef.current.getBoundingClientRect();
-    const tooltipRect = tooltipRef.current.getBoundingClientRect();
-    const viewport = {
-      width: window.innerWidth,
-      height: window.innerHeight
-    };
-
-    if (position !== 'auto') {
-      setActualPosition(position);
-      return;
-    }
-
-    const spaceTop = triggerRect.top;
-    const spaceBottom = viewport.height - triggerRect.bottom;
-    const spaceLeft = triggerRect.left;
-    const spaceRight = viewport.width - triggerRect.right;
-
-    const tooltipHeight = tooltipRect.height || 40;
-    const tooltipWidth = tooltipRect.width || 200;
-
-    let bestPosition: 'top' | 'bottom' | 'left' | 'right' = 'top';
-
-    if (spaceTop >= tooltipHeight + offset) {
-      bestPosition = 'top';
-    } else if (spaceBottom >= tooltipHeight + offset) {
-      bestPosition = 'bottom';
-    } else if (spaceRight >= tooltipWidth + offset) {
-      bestPosition = 'right';
-    } else if (spaceLeft >= tooltipWidth + offset) {
-      bestPosition = 'left';
-    } else {
-      bestPosition = spaceBottom > spaceTop ? 'bottom' : 'top';
-    }
-
-    setActualPosition(bestPosition);
-  };
 
   const showTooltip = () => {
     if (disabled) return;
-    
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    const timeout = setTimeout(() => {
-      setIsVisible(true);
-    }, delay);
-    setTimeoutId(timeout);
+    setIsVisible(true);
   };
 
   const hideTooltip = () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      setTimeoutId(null);
-    }
     setIsVisible(false);
   };
 
@@ -132,18 +80,13 @@ export default function Tooltip({
   };
 
   useEffect(() => {
-    if (isVisible) {
-      calculatePosition();
-    }
-  }, [isVisible, position]);
-
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (trigger === 'click' && isVisible && 
-          tooltipRef.current && 
-          !tooltipRef.current.contains(event.target as Node) &&
-          triggerRef.current &&
-          !triggerRef.current.contains(event.target as Node)) {
+      if (
+        trigger === 'click' &&
+        isVisible &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
         hideTooltip();
       }
     };
@@ -154,86 +97,31 @@ export default function Tooltip({
       }
     };
 
-    const handleResize = () => {
-      if (isVisible) {
-        calculatePosition();
-      }
-    };
-
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscape);
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleResize);
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize);
     };
   }, [isVisible, trigger]);
 
-  useEffect(() => {
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [timeoutId]);
-
   const getTooltipClasses = () => {
     const baseClasses = `
-      absolute z-50 px-3 py-2 text-sm font-medium text-white
-      bg-slate-800 rounded-lg shadow-lg border border-slate-600
-      transition-all duration-200 ease-in-out
+      absolute z-50 px-3 py-2 text-sm font-medium text-slate-800
+      bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-white/20
+      transition-all duration-200 ease-in-out max-w-xs
       ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
     `;
 
     const positionClasses = {
-      top: 'bottom-full left-1/2 transform -translate-x-1/2',
-      bottom: 'top-full left-1/2 transform -translate-x-1/2',
-      left: 'right-full top-1/2 transform -translate-y-1/2',
-      right: 'left-full top-1/2 transform -translate-y-1/2'
+      top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
+      bottom: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
+      left: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
+      right: 'left-full top-1/2 transform -translate-y-1/2 ml-2',
     };
 
-    return `${baseClasses} ${positionClasses[actualPosition]} ${className}`;
-  };
-
-  const getArrowClasses = () => {
-    if (!arrow) return '';
-
-    const arrowClasses = {
-      top: 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-slate-800',
-      bottom: 'bottom-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-slate-800',
-      left: 'left-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-slate-800',
-      right: 'right-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-slate-800'
-    };
-
-    return `absolute w-0 h-0 border-4 ${arrowClasses[actualPosition]}`;
-  };
-
-  const getTooltipStyle = () => {
-    const style: React.CSSProperties = {
-      maxWidth: `${maxWidth}px`,
-      zIndex: 9999
-    };
-
-    switch (actualPosition) {
-      case 'top':
-        style.marginBottom = `${offset}px`;
-        break;
-      case 'bottom':
-        style.marginTop = `${offset}px`;
-        break;
-      case 'left':
-        style.marginRight = `${offset}px`;
-        break;
-      case 'right':
-        style.marginLeft = `${offset}px`;
-        break;
-    }
-
-    return style;
+    return `${baseClasses} ${positionClasses[position]} ${className}`;
   };
 
   const triggerElement = cloneElement(children, {
@@ -250,15 +138,12 @@ export default function Tooltip({
     <div className="relative inline-block">
       {triggerElement}
       <div
-        ref={tooltipRef}
         id="tooltip"
         role="tooltip"
         className={getTooltipClasses()}
-        style={getTooltipStyle()}
         aria-hidden={!isVisible}
       >
         {content}
-        {arrow && <div className={getArrowClasses()} />}
       </div>
     </div>
   );

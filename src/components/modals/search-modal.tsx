@@ -1,16 +1,21 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Command } from 'lucide-react';
 import { useSearch } from '../../hooks/use-search';
 import { useKeyboardNavigation } from '../../hooks/use-keyboard-navigation';
 import { ISearchModalProps, ISearchResult } from '../../interfaces/ISearch';
-import '../../styles/search-modal.css';
 
 interface SearchModalComponentProps extends ISearchModalProps {
   isClosing: boolean;
   onClose: () => void;
 }
 
-export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing }: SearchModalComponentProps) {
+export default function SearchModal({
+  isOpen,
+  onClose,
+  onNavigateHome,
+  isClosing,
+}: SearchModalComponentProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -23,7 +28,7 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
     hoveredIndex,
     setHoveredIndex,
     handleSelectResult: selectResult,
-    resetSearch
+    resetSearch,
   } = useSearch({ onNavigateHome, onClose });
 
   const { handleKeyDown } = useKeyboardNavigation();
@@ -40,7 +45,7 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
   useEffect(() => {
     const handleKeyDownEvent = (event: KeyboardEvent) => {
       if (!isOpen) return;
-      
+
       handleKeyDown(
         event,
         filteredResults,
@@ -51,13 +56,20 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
             selectResult(filteredResults[selectedIndex]);
           }
         },
-        onClose
+        onClose,
       );
     };
 
     document.addEventListener('keydown', handleKeyDownEvent);
     return () => document.removeEventListener('keydown', handleKeyDownEvent);
-  }, [isOpen, selectedIndex, filteredResults, handleKeyDown, selectResult, onClose]);
+  }, [
+    isOpen,
+    selectedIndex,
+    filteredResults,
+    handleKeyDown,
+    selectResult,
+    onClose,
+  ]);
 
   useEffect(() => {
     setSelectedIndex(0);
@@ -82,55 +94,39 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div
-      className={`search-modal-backdrop fixed inset-0 flex items-center justify-center p-4 z-50 ${
-        isClosing ? 'closing' : ''
+      className={`fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm transition-all duration-200 ${
+        isClosing ? 'opacity-0' : 'opacity-100'
       }`}
       onClick={handleOverlayClick}
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
     >
-      <div
-        ref={modalRef}
-        className={`search-modal-content w-full max-w-2xl overflow-hidden ${
-          isClosing ? 'closing' : ''
-        }`}
-        onClick={e => e.stopPropagation()}
-        style={{
-          backgroundColor: '#1e293b',
-          borderRadius: '0.5rem',
-          border: '1px solid #475569',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-        }}
-      >
-        <div 
-          className="flex items-center px-6 py-4"
-          style={{
-            borderBottom: '1px solid #475569',
-            backgroundColor: '#334155'
-          }}
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div
+          ref={modalRef}
+          className={`w-full max-w-2xl overflow-hidden bg-white/95 backdrop-blur-lg rounded-lg border border-white/20 shadow-2xl transform transition-all duration-300 ${
+            isClosing
+              ? 'scale-95 opacity-0 translate-y-2'
+              : 'scale-100 opacity-100 translate-y-0'
+          }`}
+          onClick={(e) => e.stopPropagation()}
         >
-          <Search className="mr-3 flex-shrink-0" size={20} style={{ color: '#94a3b8' }} />
+        <div className="flex items-center px-6 py-4 border-b border-white/20 bg-white/80 backdrop-blur-sm">
+          <Search
+            className="mr-3 flex-shrink-0 text-purple-400"
+            size={20}
+          />
           <input
             ref={searchInputRef}
             type="text"
             placeholder="Search for anything..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent border-none outline-none font-medium search-modal-input"
-            style={{
-              fontSize: '0.875rem',
-              color: '#f8fafc'
-            }}
+            className="flex-1 bg-transparent border-none outline-none font-medium text-sm text-slate-800 placeholder:text-purple-300"
           />
-          <div className="flex items-center gap-2 ml-4" style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-            <kbd 
-              className="px-2 py-1 rounded text-xs font-mono shadow-sm"
-              style={{
-                backgroundColor: '#1e293b',
-                border: '1px solid #475569',
-                color: '#cbd5e1'
-              }}
-            >
+          <div className="flex items-center gap-2 ml-4 text-xs text-purple-400">
+            <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-white/80 border border-purple-200 text-slate-600">
               ESC
             </kbd>
             <span className="hidden sm:inline">to close</span>
@@ -141,57 +137,43 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
           {filteredResults.length > 0 ? (
             <div className="py-3">
               {filteredResults.map((result, index) => {
-                const isActive = index === selectedIndex || hoveredIndex === index;
+                const isActive =
+                  index === selectedIndex || hoveredIndex === index;
                 return (
                   <div
                     key={result.id}
-                    className="mx-3 px-4 py-3 cursor-pointer flex items-center space-x-4 transition-colors duration-150"
+                    className={`mx-3 px-4 py-3 cursor-pointer flex items-center space-x-4 transition-all duration-150 rounded-lg border ${
+                      isActive
+                        ? 'bg-purple-500/20 border-purple-400/40 shadow-sm'
+                        : 'border-transparent hover:bg-white/60 hover:border-purple-200/50'
+                    }`}
                     onClick={() => handleSelectResult(result)}
                     onMouseEnter={() => setHoveredIndex(index)}
                     onMouseLeave={() => setHoveredIndex(null)}
-                    style={{
-                      borderRadius: '0.5rem',
-                      border: '1px solid transparent',
-                      backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                      borderColor: isActive ? 'rgba(59, 130, 246, 0.3)' : 'transparent'
-                    }}
-                    onMouseOver={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = '#334155';
-                        e.currentTarget.style.borderColor = '#475569';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.borderColor = 'transparent';
-                      }
-                    }}
                   >
-                    <div 
-                      className="flex-shrink-0 p-2.5 transition-colors duration-150"
-                      style={{
-                        borderRadius: '0.5rem',
-                        backgroundColor: isActive ? 'rgba(59, 130, 246, 0.2)' : '#334155',
-                        color: isActive ? '#3b82f6' : '#94a3b8'
-                      }}
+                    <div
+                      className={`flex-shrink-0 p-2.5 rounded-lg transition-colors duration-150 ${
+                        isActive
+                          ? 'bg-purple-500/30 text-purple-600'
+                          : 'bg-white/70 text-purple-400'
+                      }`}
                     >
                       {result.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p 
-                        className="text-sm font-semibold truncate mb-1"
-                        style={{
-                          color: isActive ? '#3b82f6' : '#f8fafc'
-                        }}
+                      <p
+                        className={`text-sm font-semibold truncate mb-1 ${
+                          isActive ? 'text-purple-700' : 'text-slate-800'
+                        }`}
                       >
                         {result.title}
                       </p>
-                      <p 
-                        className="text-sm truncate"
-                        style={{
-                          color: isActive ? '#60a5fa' : '#cbd5e1'
-                        }}
+                      <p
+                        className={`text-sm truncate ${
+                          isActive
+                            ? 'text-purple-600'
+                            : 'text-slate-600'
+                        }`}
                       >
                         {result.description}
                       </p>
@@ -202,61 +184,45 @@ export default function SearchModal({ isOpen, onClose, onNavigateHome, isClosing
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
-              <Search className="mx-auto mb-4" size={64} style={{ color: '#94a3b8' }} />
-              <p className="text-base font-semibold mb-2" style={{ color: '#cbd5e1' }}>
+              <Search className="mx-auto mb-4 text-purple-300" size={64} />
+              <p className="text-base font-semibold mb-2 text-slate-700">
                 {searchQuery ? 'No results found' : 'Start typing to search...'}
               </p>
-              <p className="text-sm" style={{ color: '#94a3b8' }}>
-                {searchQuery ? 'Try a different search term' : 'Find anything quickly with our smart search'}
+              <p className="text-sm text-purple-400">
+                {searchQuery
+                  ? 'Try a different search term'
+                  : 'Find anything quickly with our smart search'}
               </p>
             </div>
           )}
         </div>
 
         {filteredResults.length > 0 && (
-          <div 
-            className="px-6 py-3 flex items-center justify-between text-xs"
-            style={{
-              backgroundColor: '#334155',
-              borderTop: '1px solid #475569',
-              color: '#94a3b8'
-            }}
-          >
+          <div className="px-6 py-3 flex items-center justify-between text-xs bg-white/80 backdrop-blur-sm border-t border-white/20 text-purple-400">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <kbd 
-                  className="px-2 py-1 rounded text-xs font-mono shadow-sm"
-                  style={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
-                    color: '#cbd5e1'
-                  }}
-                >
+                <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-white/80 border border-purple-200 text-slate-600">
                   ↑↓
                 </kbd>
                 <span className="font-medium">navigate</span>
               </div>
               <div className="flex items-center gap-2">
-                <kbd 
-                  className="px-2 py-1 rounded text-xs font-mono shadow-sm"
-                  style={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
-                    color: '#cbd5e1'
-                  }}
-                >
+                <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-white/80 border border-purple-200 text-slate-600">
                   ↵
                 </kbd>
                 <span className="font-medium">select</span>
               </div>
             </div>
-            <div className="flex items-center gap-2" style={{ color: '#94a3b8' }}>
+            <div className="flex items-center gap-2 text-purple-400">
               <Command size={14} />
               <span className="font-medium">DiagnoAI Search</span>
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -32,7 +32,6 @@ export default function WelcomeSections({ onNavigate }: WelcomeSectionsProps) {
   return (
     <div ref={containerRef} className="welcome-container">
       <section className="welcome-section section-1">
-        
         <div className={`logo-title-container ${isScrolled ? 'moved' : ''}`}>
           <img src={diagnoaiLogo} alt="DiagnoAI Logo" className="logo" />
           <h1 className="title">DiagnoAI</h1>
@@ -40,7 +39,10 @@ export default function WelcomeSections({ onNavigate }: WelcomeSectionsProps) {
         <div className="scroll-content">
           <div className="content-area">
             <h2>Advanced AI Diagnostics</h2>
-            <p>Revolutionizing healthcare with cutting-edge artificial intelligence</p>
+            <p>
+              Revolutionizing healthcare with cutting-edge artificial
+              intelligence
+            </p>
           </div>
           <div className="content-area">
             <h2>Accurate Results</h2>
