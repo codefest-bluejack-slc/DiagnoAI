@@ -1,16 +1,16 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Home, Activity, Store, Search } from 'lucide-react';
 import { ISearchResult, IUseSearchReturn } from '../interfaces/ISearch';
 
 interface UseSearchProps {
-  onNavigateHome?: () => void;
   onClose?: () => void;
 }
 
 export const useSearch = ({
-  onNavigateHome,
   onClose,
 }: UseSearchProps = {}): IUseSearchReturn => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -23,7 +23,7 @@ export const useSearch = ({
         description: 'Navigate to the main dashboard',
         icon: <Home size={16} />,
         action: () => {
-          onNavigateHome?.();
+          navigate('/');
           onClose?.();
           console.log('Navigate to Home');
         },
@@ -34,6 +34,7 @@ export const useSearch = ({
         description: 'View diagnostic tools and reports',
         icon: <Activity size={16} />,
         action: () => {
+          navigate('/diagnostic');
           onClose?.();
           console.log('Diagnostics clicked');
         },
@@ -44,6 +45,7 @@ export const useSearch = ({
         description: 'Browse available diagnostic tools',
         icon: <Store size={16} />,
         action: () => {
+          navigate('/marketplace');
           onClose?.();
           console.log('Marketplace clicked');
         },
@@ -59,7 +61,7 @@ export const useSearch = ({
         },
       },
     ],
-    [onNavigateHome, onClose],
+    [navigate, onClose],
   );
 
   const filteredResults = useMemo(

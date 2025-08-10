@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Home, Search, Activity, Store, Settings, LogIn } from 'lucide-react';
 import diagnoaiLogo from '../../assets/diagnoai_logo.png';
 import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
 import { useModal } from '../../hooks/use-modal';
 
-interface NavbarProps {
-  onNavigateHome: () => void;
-}
+interface NavbarProps {}
 
-export default function Navbar({ onNavigateHome }: NavbarProps) {
+export default function Navbar({}: NavbarProps) {
+  const navigate = useNavigate();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,12 +51,16 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
     setIsSearchFocused(false);
   };
 
+  const handleHomeClick = () => {
+    navigate('/');
+  };
+
   const handleDiagnosticsClick = () => {
-    console.log('Diagnostics clicked');
+    navigate('/diagnostic');
   };
 
   const handleMarketplaceClick = () => {
-    console.log('Marketplace clicked');
+    navigate('/marketplace');
   };
 
   const handleSettingsClick = () => {
@@ -111,7 +115,7 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
         <div className="flex items-center gap-2">
           <Tooltip content="Home" position="bottom">
             <button
-              onClick={onNavigateHome}
+              onClick={handleHomeClick}
               className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
             >
               <Home size={20} />
@@ -159,7 +163,6 @@ export default function Navbar({ onNavigateHome }: NavbarProps) {
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={handleCloseSearchModal}
-        onNavigateHome={onNavigateHome}
         isClosing={isClosing}
       />
     </nav>

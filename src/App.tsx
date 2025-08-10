@@ -1,34 +1,19 @@
-import { useState } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import HomePage from './pages/home-page';
-import { TransitionProvider } from './components/animations/diagonal-transition';
-
-function AppContent() {
-  const [currentPage, setCurrentPage] = useState<'home'>('home');
-
-  const handlePageChange = (page: string) => {
-    if (page === 'home') {
-      setCurrentPage('home');
-    }
-  };
-
-  return (
-    <TransitionProvider
-      currentPage={currentPage}
-      onPageChange={handlePageChange}
-    >
-      <div className="App bg-dark-bg text-dark-text-primary">
-        <HomePage />
-      </div>
-    </TransitionProvider>
-  );
-}
+import DiagnosticPage from './pages/diagnostic-page';
+import MarketPage from './pages/market-page';
 
 function App() {
   return (
     <Router>
-      <AppContent />
+      <div className="App bg-dark-bg text-dark-text-primary">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/diagnostic" element={<DiagnosticPage />} />
+          <Route path="/marketplace" element={<MarketPage />} />
+        </Routes>
+      </div>
     </Router>
   );
 }

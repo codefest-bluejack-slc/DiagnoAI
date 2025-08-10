@@ -9,7 +9,6 @@ export interface ISearchResult {
 export interface ISearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigateHome?: () => void;
 }
 
 export interface IUseSearchReturn {
