@@ -1,21 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Star, ExternalLink, ShoppingCart, Filter, Grid, List, Sparkles } from 'lucide-react';
+import { Search, Star, ExternalLink, ShoppingCart, Filter, Grid, List, Sparkles, SlidersHorizontal, ArrowUpDown, ChevronDown, X } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import { searchProducts } from '../services/medicineSearchService';
 import { IProduct, ISearchState } from '../interfaces/IProduct';
+import { useSearchFilters, useSortOptions } from '../hooks/use-search-filters';
+import { useInfiniteScroll } from '../hooks/use-infinite-scroll';
+import { useScrollDetection } from '../hooks/use-scroll-detection';
 
 export default function MarketPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState('relevance');
   const SERPAPI_KEY = '5d42de4074ad433519fe932f6629ec454c6cff5f41a44f08aef4741c83e86741';
+  
+  const sortOptions = useSortOptions();
+  const {
+    filters,
+    updateFilter,
+    resetFilters,
+    getFilteredAndSortedProducts,
+    getAvailableSources,
+    getPriceRange,
+  } = useSearchFilters();
   
   const [searchState, setSearchState] = useState<ISearchState>({
     query: '',
     apiKey: SERPAPI_KEY,
     isLoading: false,
     products: [],
+    filteredProducts: [],
+    displayedProducts: [],
     error: null,
+    filters: {
+      minPrice: 0,
+      maxPrice: 10000000,
+      minRating: 0,
+      sources: [],
+      freeShipping: false,
+    },
+    sortBy: 'relevance',
+    currentPage: 1,
+    itemsPerPage: 20,
+    hasMore: false,
   });
+
+  const {
+    displayedProducts,
+    hasMore,
+    isLoadingMore,
+    loadMore,
+    resetPagination,
+  } = useInfiniteScroll(searchState.filteredProducts, 20);
+
+  useScrollDetection(loadMore);
+
+  useEffect(() => {
+    if (searchState.products.length > 0) {
+      const filtered = getFilteredAndSortedProducts(searchState.products, sortBy);
+      setSearchState(prev => ({ ...prev, filteredProducts: filtered }));
+    }
+  }, [searchState.products, filters, sortBy, getFilteredAndSortedProducts]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -25,6 +70,14 @@ export default function MarketPage() {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  useEffect(() => {
+    if (searchState.products.length > 0) {
+      const priceRange = getPriceRange(searchState.products);
+      updateFilter('minPrice', Math.floor(priceRange.min));
+      updateFilter('maxPrice', Math.ceil(priceRange.max));
+    }
+  }, [searchState.products, getPriceRange, updateFilter]);
 
   const handleSearch = async () => {
     if (!searchState.query.trim()) {
@@ -37,7 +90,10 @@ export default function MarketPage() {
       isLoading: true,
       error: null,
       products: [],
+      filteredProducts: [],
     }));
+
+    resetPagination();
 
     try {
       const results = await searchProducts(searchState.query, searchState.apiKey);
@@ -47,9 +103,14 @@ export default function MarketPage() {
       }
 
       if (results.shopping_results && results.shopping_results.length > 0) {
+        const processedProducts = results.shopping_results.map(product => ({
+          ...product,
+          extracted_price: product.extracted_price || parseFloat(product.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0,
+        }));
+
         setSearchState(prev => ({
           ...prev,
-          products: results.shopping_results || [],
+          products: processedProducts,
           isLoading: false,
         }));
       } else {
@@ -229,13 +290,120 @@ export default function MarketPage() {
                 </div>
               </div>
 
-              {searchState.products.length > 0 && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
-                  <div className="flex items-center justify-between mb-4">
+              {searchState.filteredProducts.length > 0 && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Filter className="text-purple-300" size={18} />
-                      <span className="text-white font-medium text-sm">View Mode</span>
+                      <SlidersHorizontal className="text-purple-300" size={18} />
+                      <span className="text-white font-medium text-sm">Controls</span>
                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-200 text-purple-200 text-sm"
+                      >
+                        <Filter size={14} />
+                        Filters
+                        <ChevronDown className={`transform transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} size={14} />
+                      </button>
+
+                      <div className="relative">
+                        <select
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value)}
+                          className="appearance-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 pr-8"
+                        >
+                          {sortOptions.map(option => (
+                            <option key={option.value} value={option.value} className="bg-slate-800">
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ArrowUpDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-purple-300 pointer-events-none" size={14} />
+                      </div>
+                    </div>
+
+                    {showFilters && (
+                      <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                        <div className="flex items-center justify-between">
+                          <span className="text-purple-200 text-sm font-medium">Price Range</span>
+                          <button
+                            onClick={resetFilters}
+                            className="text-purple-300 hover:text-purple-200 text-xs flex items-center gap-1"
+                          >
+                            <X size={12} />
+                            Reset
+                          </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            placeholder="Min"
+                            value={filters.minPrice || ''}
+                            onChange={(e) => updateFilter('minPrice', Number(e.target.value) || 0)}
+                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Max"
+                            value={filters.maxPrice || ''}
+                            onChange={(e) => updateFilter('maxPrice', Number(e.target.value) || 10000000)}
+                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                          />
+                        </div>
+
+                        <div>
+                          <span className="text-purple-200 text-sm font-medium mb-2 block">Minimum Rating</span>
+                          <select
+                            value={filters.minRating}
+                            onChange={(e) => updateFilter('minRating', Number(e.target.value))}
+                            className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                          >
+                            <option value={0}>Any Rating</option>
+                            <option value={3}>3+ Stars</option>
+                            <option value={4}>4+ Stars</option>
+                            <option value={4.5}>4.5+ Stars</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <span className="text-purple-200 text-sm font-medium mb-2 block">Sources</span>
+                          <div className="max-h-24 overflow-y-auto space-y-1">
+                            {getAvailableSources(searchState.products).map(source => (
+                              <label key={source} className="flex items-center gap-2 text-xs">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.sources.includes(source)}
+                                  onChange={(e) => {
+                                    const newSources = e.target.checked
+                                      ? [...filters.sources, source]
+                                      : filters.sources.filter(s => s !== source);
+                                    updateFilter('sources', newSources);
+                                  }}
+                                  className="rounded border-white/20 bg-white/5 text-purple-500"
+                                />
+                                <span className="text-purple-200">{source}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <label className="flex items-center gap-2 text-xs">
+                          <input
+                            type="checkbox"
+                            checked={filters.freeShipping}
+                            onChange={(e) => updateFilter('freeShipping', e.target.checked)}
+                            className="rounded border-white/20 bg-white/5 text-purple-500"
+                          />
+                          <span className="text-purple-200">Free Shipping Only</span>
+                        </label>
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
                       <button
                         onClick={() => setViewMode('grid')}
@@ -258,9 +426,10 @@ export default function MarketPage() {
                         <List size={16} />
                       </button>
                     </div>
-                  </div>
-                  <div className="text-purple-200 text-sm">
-                    Found <span className="font-semibold text-purple-300">{searchState.products.length}</span> products
+
+                    <div className="text-purple-200 text-sm">
+                      Showing <span className="font-semibold text-purple-300">{displayedProducts.length}</span> of <span className="font-semibold text-purple-300">{searchState.filteredProducts.length}</span> products
+                    </div>
                   </div>
                 </div>
               )}
@@ -297,16 +466,52 @@ export default function MarketPage() {
                 </div>
               )}
 
-              {searchState.products.length > 0 && (
+              {searchState.filteredProducts.length > 0 && (
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
                   <div className={`${
                     viewMode === 'grid' 
                       ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' 
                       : 'space-y-4'
                   }`}>
-                    {searchState.products.map((product, index) => (
+                    {displayedProducts.map((product, index) => (
                       <ProductCard key={`${product.product_id}-${index}`} product={product} index={index} />
                     ))}
+                  </div>
+
+                  {isLoadingMore && (
+                    <div className="flex justify-center mt-6 py-4">
+                      <div className="flex items-center gap-2 text-purple-300">
+                        <div className="w-4 h-4 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+                        <span className="text-sm">Loading more products...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {!hasMore && displayedProducts.length > 0 && (
+                    <div className="text-center mt-6 py-4">
+                      <p className="text-purple-300/70 text-sm">You've reached the end of the results</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!searchState.isLoading && !searchState.error && searchState.filteredProducts.length === 0 && searchState.products.length > 0 && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12 shadow-2xl">
+                  <div className="text-center">
+                    <div className="relative w-20 h-20 mx-auto mb-6">
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20"></div>
+                      <div className="absolute inset-4 rounded-full bg-white/5 flex items-center justify-center">
+                        <Filter className="text-orange-300" size={24} />
+                      </div>
+                    </div>
+                    <h3 className="text-orange-200 font-medium mb-2">No Results Found</h3>
+                    <p className="text-orange-300/70 text-sm max-w-md mx-auto mb-4">No products match your current filters. Try adjusting your search criteria.</p>
+                    <button
+                      onClick={resetFilters}
+                      className="px-4 py-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-lg text-orange-200 hover:bg-orange-500/30 transition-all duration-200 text-sm"
+                    >
+                      Reset Filters
+                    </button>
                   </div>
                 </div>
               )}

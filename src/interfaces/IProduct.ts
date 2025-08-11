@@ -21,10 +21,30 @@ export interface ISerpAPIResponse {
   };
 }
 
+export interface ISearchFilters {
+  minPrice: number;
+  maxPrice: number;
+  minRating: number;
+  sources: string[];
+  freeShipping: boolean;
+}
+
+export interface ISortOption {
+  value: string;
+  label: string;
+}
+
 export interface ISearchState {
   query: string;
   apiKey: string;
   isLoading: boolean;
   products: IProduct[];
+  filteredProducts: IProduct[];
+  displayedProducts: IProduct[];
   error: string | null;
+  filters: ISearchFilters;
+  sortBy: string;
+  currentPage: number;
+  itemsPerPage: number;
+  hasMore: boolean;
 }
