@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, X, Activity, Brain, Edit3, Clock, Search, Lightbulb, Target, Stethoscope, TrendingUp, AlertCircle } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
@@ -9,6 +9,16 @@ import '../styles/diagnostic-page.css';
 
 export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const mousePosition = useMouseTracking();
+  const [particles] = useState(() => 
+    Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 3,
+      duration: 3 + Math.random() * 4,
+      size: 0.2 + Math.random() * 0.3
+    }))
+  );
   const {
     symptoms,
     newSymptomDescription,
@@ -39,15 +49,17 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       ></div>
       
       <div className="floating-particles">
-        {Array.from({ length: 50 }, (_, i) => (
+        {particles.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="particle"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              animationDelay: `${particle.delay}s`,
+              animationDuration: `${particle.duration}s`,
+              width: `${particle.size}rem`,
+              height: `${particle.size}rem`
             }}
           />
         ))}

@@ -145,11 +145,9 @@
 
 .particle {
   position: absolute;
-  width: 0.25rem;
-  height: 0.25rem;
   background: var(--text-secondary);
   border-radius: 50%;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: particleFloat infinite ease-in-out;
 }
 
 .main-content {
@@ -191,5 +189,24 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 1;
+  }
+  66% {
+    transform: translateY(-10px) translateX(-15px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.8;
   }
 }

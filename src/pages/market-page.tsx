@@ -6,9 +6,20 @@ import { IProduct, ISearchState } from '../interfaces/IProduct';
 import { useSearchFilters, useSortOptions } from '../hooks/use-search-filters';
 import { useInfiniteScroll } from '../hooks/use-infinite-scroll';
 import { useScrollDetection } from '../hooks/use-scroll-detection';
+import { useMouseTracking } from '../hooks/use-mouse-tracking';
 
 export default function MarketPage() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const mousePosition = useMouseTracking();
+  const [particles] = useState(() => 
+    Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 3,
+      duration: 3 + Math.random() * 4,
+      size: 0.15 + Math.random() * 0.25
+    }))
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
@@ -61,15 +72,6 @@ export default function MarketPage() {
       setSearchState(prev => ({ ...prev, filteredProducts: filtered }));
     }
   }, [searchState.products, filters, sortBy, getFilteredAndSortedProducts]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   useEffect(() => {
     if (searchState.products.length > 0) {
@@ -234,15 +236,17 @@ export default function MarketPage() {
       ></div>
       
       <div className="absolute inset-0 pointer-events-none">
-        {Array.from({ length: 20 }, (_, i) => (
+        {particles.map((particle) => (
           <div
-            key={i}
-            className="absolute w-1 h-1 rounded-full animate-pulse"
+            key={particle.id}
+            className="absolute rounded-full"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`,
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              width: `${particle.size}rem`,
+              height: `${particle.size}rem`,
+              animation: `particleFloat ${particle.duration}s ease-in-out infinite`,
+              animationDelay: `${particle.delay}s`,
               background: 'var(--text-secondary)'
             }}
           />
