@@ -10,6 +10,7 @@ import './App.css';
 import HomePage from './pages/home-page';
 import DiagnosticPage from './pages/diagnostic-page';
 import MarketPage from './pages/market-page';
+import ProductPage from './pages/product-page';
 import { TransitionProvider } from './components/animations/diagonal-transition';
 
 function AppContent() {
@@ -26,6 +27,10 @@ function AppContent() {
   };
 
   const renderCurrentPage = () => {
+    if (location.pathname.startsWith('/product/')) {
+      return <ProductPage />;
+    }
+    
     switch (currentPage) {
       case '/':
         return <HomePage />;
@@ -44,7 +49,12 @@ function AppContent() {
       onPageChange={handlePageChange}
     >
       <div className="App bg-dark-bg text-dark-text-primary">
-        {renderCurrentPage()}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/diagnostic" element={<DiagnosticPage />} />
+          <Route path="/marketplace" element={<MarketPage />} />
+          <Route path="/product/:productId" element={<ProductPage />} />
+        </Routes>
       </div>
     </TransitionProvider>
   );

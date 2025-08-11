@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Star,
@@ -12,16 +13,140 @@ import {
   ArrowUpDown,
   ChevronDown,
   X,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import { searchProducts } from '../services/medicineSearchService';
-import { IProduct, ISearchState } from '../interfaces/IProduct';
+import { IProduct } from '../interfaces/IProduct';
 import { useSearchFilters, useSortOptions } from '../hooks/use-search-filters';
-import { useInfiniteScroll } from '../hooks/use-infinite-scroll';
-import { useScrollDetection } from '../hooks/use-scroll-detection';
+import { usePagination } from '../hooks/use-pagination';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
 
+const ProductCard: React.FC<{ 
+  product: IProduct; 
+  index: number; 
+  viewMode: 'grid' | 'list';
+  onNavigate: (productId: string) => void;
+}> = React.memo(({ product, index, viewMode, onNavigate }) => (
+  <div
+    className={`group relative ${
+      viewMode === 'grid'
+        ? 'p-6 border rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl'
+        : 'flex p-4 border rounded-lg transition-all duration-200'
+    }`}
+    style={{
+      background: 'var(--background-glass)',
+      borderColor: 'var(--border-default)',
+    }}
+  >
+    <div
+      className={`${
+        viewMode === 'grid'
+          ? 'aspect-square mb-4 rounded-lg p-4 flex items-center justify-center overflow-hidden'
+          : 'w-20 h-20 rounded-lg p-2 flex items-center justify-center overflow-hidden flex-shrink-0 mr-4'
+      }`}
+      style={{ background: 'var(--background-glass)' }}
+    >
+      <img
+        src={product.thumbnail}
+        alt={product.title}
+        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = 'https://placehold.co/300x300/1e293b/94a3b8?text=No+Image';
+        }}
+      />
+    </div>
+
+    <div className="flex-1 flex flex-col">
+      <h3
+        className={`text-white font-medium mb-2 group-hover:text-purple-200 transition-colors duration-200 ${
+          viewMode === 'grid'
+            ? 'line-clamp-2 text-sm leading-relaxed'
+            : 'text-sm truncate'
+        }`}
+        title={product.title}
+      >
+        {product.title}
+      </h3>
+
+      <div
+        className={`flex items-center ${viewMode === 'grid' ? 'justify-between mb-3' : 'gap-4 mb-2'}`}
+      >
+        <span
+          className="text-purple-300/80 text-xs truncate px-2 py-1 rounded-full"
+          style={{
+            background: 'var(--primary-purple-100)',
+          }}
+        >
+          {product.source || 'Unknown'}
+        </span>
+        {product.rating && (
+          <div
+            className="flex items-center gap-1 px-2 py-1 rounded-full border"
+            style={{
+              background: 'var(--warning-yellow-100)',
+              borderColor: 'var(--border-warning)',
+            }}
+          >
+            <Star size={10} className="text-amber-400 fill-current" />
+            <span className="text-amber-300 text-xs font-medium">
+              {product.rating}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div
+        className={`mt-auto flex items-center ${viewMode === 'grid' ? 'justify-between gap-2' : 'gap-4'}`}
+      >
+        <p
+          className="text-lg font-bold text-purple-300"
+          style={{
+            background:
+              'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          {product.price}
+        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onNavigate(product.product_id)}
+            className="flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors duration-200 text-sm font-medium px-3 py-1 rounded-full border"
+            style={{
+              background: 'var(--primary-purple-100)',
+              borderColor: 'var(--border-primary)',
+            }}
+          >
+            <Eye size={12} />
+            <span>Details</span>
+          </button>
+          <a
+            href={product.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors duration-200 text-sm font-medium px-3 py-1 rounded-full border"
+            style={{
+              background: 'var(--tertiary-indigo-100)',
+              borderColor: 'var(--border-secondary)',
+            }}
+          >
+            <span>Visit</span>
+            <ExternalLink size={12} />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
 export default function MarketPage() {
+  const navigate = useNavigate();
   const mousePosition = useMouseTracking();
   const [particles] = useState(() =>
     Array.from({ length: 20 }, (_, i) => ({
@@ -36,8 +161,7 @@ export default function MarketPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
-  const SERPAPI_KEY =
-    '5d42de4074ad433519fe932f6629ec454c6cff5f41a44f08aef4741c83e86741';
+  const SERPAPI_KEY = '5d42de4074ad433519fe932f6629ec454c6cff5f41a44f08aef4741c83e86741';
 
   const sortOptions = useSortOptions();
   const {
@@ -49,54 +173,40 @@ export default function MarketPage() {
     getPriceRange,
   } = useSearchFilters();
 
-  const [searchState, setSearchState] = useState<ISearchState>({
+  const [searchState, setSearchState] = useState<{
+    query: string;
+    apiKey: string;
+    isLoading: boolean;
+    products: IProduct[];
+    error: string | null;
+  }>({
     query: '',
     apiKey: SERPAPI_KEY,
     isLoading: false,
     products: [],
-    filteredProducts: [],
-    displayedProducts: [],
     error: null,
-    filters: {
-      minPrice: 0,
-      maxPrice: 10000000,
-      minRating: 0,
-      sources: [],
-      freeShipping: false,
-    },
-    sortBy: 'relevance',
-    currentPage: 1,
-    itemsPerPage: 20,
-    hasMore: false,
   });
 
+  const filteredProducts = useMemo(() => {
+    return getFilteredAndSortedProducts(searchState.products, sortBy);
+  }, [searchState.products, getFilteredAndSortedProducts, sortBy]);
+
   const {
+    currentPage,
+    totalPages,
     displayedProducts,
-    hasMore,
-    isLoadingMore,
-    loadMore,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
     resetPagination,
-  } = useInfiniteScroll(searchState.filteredProducts, 20);
+    hasNextPage,
+    hasPreviousPage,
+    totalItems,
+  } = usePagination(filteredProducts, 20);
 
-  useScrollDetection(loadMore);
-
-  useEffect(() => {
-    if (searchState.products.length > 0) {
-      const filtered = getFilteredAndSortedProducts(
-        searchState.products,
-        sortBy,
-      );
-      setSearchState((prev) => ({ ...prev, filteredProducts: filtered }));
-    }
-  }, [searchState.products, filters, sortBy, getFilteredAndSortedProducts]);
-
-  useEffect(() => {
-    if (searchState.products.length > 0) {
-      const priceRange = getPriceRange(searchState.products);
-      updateFilter('minPrice', Math.floor(priceRange.min));
-      updateFilter('maxPrice', Math.ceil(priceRange.max));
-    }
-  }, [searchState.products, getPriceRange, updateFilter]);
+  const handleNavigateToProduct = useCallback((productId: string) => {
+    navigate(`/product/${encodeURIComponent(productId)}`);
+  }, [navigate]);
 
   const handleSearch = async () => {
     if (!searchState.query.trim()) {
@@ -112,7 +222,6 @@ export default function MarketPage() {
       isLoading: true,
       error: null,
       products: [],
-      filteredProducts: [],
     }));
 
     resetPagination();
@@ -151,9 +260,23 @@ export default function MarketPage() {
         }));
       }
     } catch (error) {
+      let errorMessage = 'Search failed: ';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('All CORS proxies failed')) {
+          errorMessage += 'Unable to connect to search service. Please try again later.';
+        } else if (error.message.includes('HTTP error')) {
+          errorMessage += 'Server temporarily unavailable. Please try again.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Unknown error occurred.';
+      }
+
       setSearchState((prev) => ({
         ...prev,
-        error: `Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error: errorMessage,
         isLoading: false,
       }));
     }
@@ -162,115 +285,6 @@ export default function MarketPage() {
   const handleInputChange = (value: string) => {
     setSearchState((prev) => ({ ...prev, query: value, error: null }));
   };
-
-  const ProductCard: React.FC<{ product: IProduct; index: number }> = ({
-    product,
-    index,
-  }) => (
-    <div
-      className={`group relative ${
-        viewMode === 'grid'
-          ? 'p-6 border rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl'
-          : 'flex p-4 border rounded-lg transition-all duration-200'
-      }`}
-      style={{
-        animationDelay: `${index * 100}ms`,
-        animation: 'fadeInUp 0.6s ease-out forwards',
-        background: 'var(--background-glass)',
-        borderColor: 'var(--border-default)',
-      }}
-    >
-      <div
-        className={`${
-          viewMode === 'grid'
-            ? 'aspect-square mb-4 rounded-lg p-4 flex items-center justify-center overflow-hidden'
-            : 'w-20 h-20 rounded-lg p-2 flex items-center justify-center overflow-hidden flex-shrink-0 mr-4'
-        }`}
-        style={{ background: 'var(--background-glass)' }}
-      >
-        <img
-          src={product.thumbnail}
-          alt={product.title}
-          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src =
-              'https://placehold.co/300x300/1e293b/94a3b8?text=No+Image';
-          }}
-        />
-      </div>
-
-      <div className="flex-1 flex flex-col">
-        <h3
-          className={`text-white font-medium mb-2 group-hover:text-purple-200 transition-colors duration-200 ${
-            viewMode === 'grid'
-              ? 'line-clamp-2 text-sm leading-relaxed'
-              : 'text-sm truncate'
-          }`}
-          title={product.title}
-        >
-          {product.title}
-        </h3>
-
-        <div
-          className={`flex items-center ${viewMode === 'grid' ? 'justify-between mb-3' : 'gap-4 mb-2'}`}
-        >
-          <span
-            className="text-purple-300/80 text-xs truncate px-2 py-1 rounded-full"
-            style={{
-              background: 'var(--primary-purple-100)',
-            }}
-          >
-            {product.source || 'Unknown'}
-          </span>
-          {product.rating && (
-            <div
-              className="flex items-center gap-1 px-2 py-1 rounded-full border"
-              style={{
-                background: 'var(--warning-yellow-100)',
-                borderColor: 'var(--border-warning)',
-              }}
-            >
-              <Star size={10} className="text-amber-400 fill-current" />
-              <span className="text-amber-300 text-xs font-medium">
-                {product.rating}
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div
-          className={`mt-auto flex items-center ${viewMode === 'grid' ? 'justify-between gap-3' : 'gap-6'}`}
-        >
-          <p
-            className="text-lg font-bold text-purple-300"
-            style={{
-              background:
-                'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
-            {product.price}
-          </p>
-          <a
-            href={product.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors duration-200 text-sm font-medium px-3 py-1 rounded-full border"
-            style={{
-              background: 'var(--tertiary-indigo-100)',
-              borderColor: 'var(--border-secondary)',
-            }}
-          >
-            <span>Visit</span>
-            <ExternalLink size={12} />
-          </a>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div
@@ -420,7 +434,7 @@ export default function MarketPage() {
                 </div>
               </div>
 
-              {searchState.filteredProducts.length > 0 && (
+              {filteredProducts.length > 0 && (
                 <div
                   className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl space-y-4"
                   style={{
@@ -642,15 +656,15 @@ export default function MarketPage() {
                     </div>
 
                     <div className="text-purple-200 text-sm">
-                      Showing{' '}
+                      Page{' '}
                       <span className="font-semibold text-purple-300">
-                        {displayedProducts.length}
+                        {currentPage}
                       </span>{' '}
                       of{' '}
                       <span className="font-semibold text-purple-300">
-                        {searchState.filteredProducts.length}
+                        {totalPages}
                       </span>{' '}
-                      products
+                      ({totalItems} total products)
                     </div>
                   </div>
                 </div>
@@ -717,7 +731,7 @@ export default function MarketPage() {
                 </div>
               )}
 
-              {searchState.filteredProducts.length > 0 && (
+              {filteredProducts.length > 0 && (
                 <div
                   className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl"
                   style={{
@@ -734,28 +748,86 @@ export default function MarketPage() {
                   >
                     {displayedProducts.map((product, index) => (
                       <ProductCard
-                        key={`${product.product_id}-${index}`}
+                        key={product.product_id}
                         product={product}
                         index={index}
+                        viewMode={viewMode}
+                        onNavigate={handleNavigateToProduct}
                       />
                     ))}
                   </div>
 
-                  {isLoadingMore && (
-                    <div className="flex justify-center mt-6 py-4">
-                      <div className="flex items-center gap-2 text-purple-300">
-                        <div className="w-4 h-4 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-                        <span className="text-sm">
-                          Loading more products...
-                        </span>
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center mt-8 gap-4">
+                      <button
+                        onClick={goToPreviousPage}
+                        disabled={!hasPreviousPage}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-purple-200"
+                        style={{
+                          background: 'var(--background-glass)',
+                          borderColor: 'var(--border-default)',
+                        }}
+                      >
+                        <ChevronLeft size={16} />
+                        Previous
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNumber;
+                          if (totalPages <= 5) {
+                            pageNumber = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNumber = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNumber = totalPages - 4 + i;
+                          } else {
+                            pageNumber = currentPage - 2 + i;
+                          }
+
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => goToPage(pageNumber)}
+                              className={`w-10 h-10 rounded-lg border transition-all duration-200 hover:scale-105 text-sm font-medium ${
+                                currentPage === pageNumber
+                                  ? 'text-white'
+                                  : 'text-purple-300'
+                              }`}
+                              style={{
+                                background: currentPage === pageNumber 
+                                  ? 'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))' 
+                                  : 'var(--background-glass)',
+                                borderColor: currentPage === pageNumber 
+                                  ? 'var(--border-primary)' 
+                                  : 'var(--border-default)',
+                              }}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        })}
                       </div>
+
+                      <button
+                        onClick={goToNextPage}
+                        disabled={!hasNextPage}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-purple-200"
+                        style={{
+                          background: 'var(--background-glass)',
+                          borderColor: 'var(--border-default)',
+                        }}
+                      >
+                        Next
+                        <ChevronRight size={16} />
+                      </button>
                     </div>
                   )}
 
-                  {!hasMore && displayedProducts.length > 0 && (
-                    <div className="text-center mt-6 py-4">
+                  {totalItems > 0 && (
+                    <div className="text-center mt-4">
                       <p className="text-purple-300/70 text-sm">
-                        You've reached the end of the results
+                        Showing {Math.min((currentPage - 1) * 20 + 1, totalItems)} - {Math.min(currentPage * 20, totalItems)} of {totalItems} products
                       </p>
                     </div>
                   )}
@@ -764,7 +836,7 @@ export default function MarketPage() {
 
               {!searchState.isLoading &&
                 !searchState.error &&
-                searchState.filteredProducts.length === 0 &&
+                filteredProducts.length === 0 &&
                 searchState.products.length > 0 && (
                   <div
                     className="backdrop-blur-xl border rounded-2xl p-12 shadow-2xl"

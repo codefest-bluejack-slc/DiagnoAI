@@ -18,3 +18,5 @@ export const useMouseTracking = () => {
 
   return mousePosition;
 };
+
+export default useMouseTracking;

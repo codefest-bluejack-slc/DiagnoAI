@@ -13,8 +13,54 @@ export interface IProduct {
   delivery?: string;
 }
 
+export interface IProductDetails extends IProduct {
+  description?: string;
+  specifications?: Record<string, string>;
+  images?: string[];
+  seller_info?: {
+    name: string;
+    rating?: number;
+    reviews_count?: number;
+  };
+  availability?: string;
+  shipping_info?: {
+    cost?: string;
+    time?: string;
+    free_shipping?: boolean;
+  };
+  variants?: {
+    size?: string[];
+    color?: string[];
+    other?: Record<string, string[]>;
+  };
+  reviews_data?: {
+    total_reviews: number;
+    rating_breakdown: Record<string, number>;
+    recent_reviews: Array<{
+      rating: number;
+      title?: string;
+      text: string;
+      date: string;
+      author: string;
+    }>;
+  };
+  product_highlights?: string[];
+  brand?: string;
+  category?: string;
+  model?: string;
+  sku?: string;
+}
+
 export interface ISerpAPIResponse {
   shopping_results?: IProduct[];
+  error?: string;
+  search_metadata?: {
+    status: string;
+  };
+}
+
+export interface ISerpAPIProductResponse {
+  product_results?: IProductDetails;
   error?: string;
   search_metadata?: {
     status: string;
