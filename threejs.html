@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Purple Syringe</title>
+    <style>
+        /* Basic reset and styles for the canvas */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark background */
+        }
+        canvas {
+            display: block;
+        }
+        /* Style for the info text */
+        #info {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            text-shadow: 0 0 5px #000;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="info">Drag to rotate, scroll to zoom</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        // Import necessary components from Three.js
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        let scene, camera, renderer, controls;
+        let plungerGroup, liquid; // Make these accessible for animation
+
+        // --- Initialization Function ---
+        function init() {
+            // 1. Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a); // Dark moody background
+            scene.fog = new THREE.Fog(0x1a1a1a, 20, 50);
+
+            // 2. Camera Setup
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(2, 8, 18); // Adjusted camera position
+
+            // 3. Renderer Setup
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping; // For better lighting effects
+            document.body.appendChild(renderer.domElement);
+
+            // 4. Lighting
+            // Soft ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+            scene.add(ambientLight);
+
+            // Main directional light
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight.position.set(10, 15, 10);
+            scene.add(directionalLight);
+
+            // Cool purple point light for effect
+            const purplePointLight = new THREE.PointLight(0x9f50ff, 3.5, 100);
+            purplePointLight.position.set(-5, 5, 5);
+            scene.add(purplePointLight);
+            
+            // White point light for fill
+            const whitePointLight = new THREE.PointLight(0xffffff, 0.5, 100);
+            whitePointLight.position.set(5, -10, 0);
+            scene.add(whitePointLight);
+
+
+            // 5. Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false;
+            controls.minDistance = 5;
+            controls.maxDistance = 40;
+            
+            // 6. Create the Syringe Model
+            const syringe = createSyringe();
+            scene.add(syringe);
+            
+            syringe.rotation.x = -Math.PI / 8;
+            syringe.rotation.z = Math.PI / 4;
+
+            // 7. Event Listeners
+            window.addEventListener('resize', onWindowResize, false);
+
+            // 8. Start Animation Loop
+            animate();
+        }
+
+        // --- Syringe Creation Function ---
+        function createSyringe() {
+            const syringeGroup = new THREE.Group();
+
+            // Define materials for the new purple theme
+            const glassMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.25,
+                roughness: 0,
+                metalness: 0.5,
+                envMapIntensity: 1
+            });
+
+            const plasticMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a4a4a, // Darker plastic
+                roughness: 0.5,
+                metalness: 0.1
+            });
+
+            const rubberMaterial = new THREE.MeshStandardMaterial({
+                color: 0x222222,
+                roughness: 0.8,
+                metalness: 0.0
+            });
+            
+            const liquidMaterial = new THREE.MeshStandardMaterial({
+                color: 0x9f50ff, // Vibrant purple
+                roughness: 0.1,
+                metalness: 0.2,
+                emissive: 0x9f50ff, // Makes the liquid glow
+                emissiveIntensity: 0.25
+            });
+
+            const metalMaterial = new THREE.MeshStandardMaterial({
+                color: 0xe0e0e0,
+                roughness: 0.1,
+                metalness: 1.0
+            });
+
+            // 1. Barrel
+            const barrelGeometry = new THREE.CylinderGeometry(1, 1, 10, 32);
+            const barrel = new THREE.Mesh(barrelGeometry, glassMaterial);
+            syringeGroup.add(barrel);
+            
+            // Barrel Flange
+            const flangeGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.3, 32);
+            const flange = new THREE.Mesh(flangeGeometry, plasticMaterial);
+            flange.position.y = 4.85;
+            syringeGroup.add(flange);
+
+            // 2. Plunger
+            plungerGroup = new THREE.Group();
+            
+            // Plunger Stem
+            const stemGeometry = new THREE.CylinderGeometry(0.2, 0.2, 10, 16);
+            const stem = new THREE.Mesh(stemGeometry, plasticMaterial);
+            plungerGroup.add(stem);
+
+            // Thumb Press
+            const thumbPressGeometry = new THREE.CylinderGeometry(0.8, 0.8, 0.3, 32);
+            const thumbPress = new THREE.Mesh(thumbPressGeometry, plasticMaterial);
+            thumbPress.position.y = 5;
+            plungerGroup.add(thumbPress);
+            
+            // Rubber Stopper
+            const stopperGeometry = new THREE.CylinderGeometry(0.95, 0.95, 0.8, 32);
+            const stopper = new THREE.Mesh(stopperGeometry, rubberMaterial);
+            stopper.position.y = -5;
+            plungerGroup.add(stopper);
+            
+            syringeGroup.add(plungerGroup);
+
+            // 3. Liquid inside the barrel
+            const liquidGeometry = new THREE.CylinderGeometry(0.9, 0.9, 6, 32); // Initial height is 6
+            liquid = new THREE.Mesh(liquidGeometry, liquidMaterial);
+            syringeGroup.add(liquid);
+
+            // 4. Needle Assembly
+            const needleGroup = new THREE.Group();
+            
+            // Needle Hub
+            const hubGeometry = new THREE.CylinderGeometry(0.4, 1, 1, 32);
+            const hub = new THREE.Mesh(hubGeometry, plasticMaterial);
+            needleGroup.add(hub);
+
+            // Needle
+            const needleGeometry = new THREE.CylinderGeometry(0.08, 0.08, 4, 16); // Thinner needle
+            const needle = new THREE.Mesh(needleGeometry, metalMaterial);
+            needle.position.y = -2.5;
+            needleGroup.add(needle);
+            
+            needleGroup.position.y = -5.5;
+            syringeGroup.add(needleGroup);
+
+            return syringeGroup;
+        }
+
+        // --- Handle Window Resize ---
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.0005; // Slower, smoother animation speed
+
+            // Animate the plunger and liquid
+            if (plungerGroup && liquid) {
+                // FIX: Create a smooth up-and-down motion with a corrected range
+                // to prevent the stopper from clipping through the barrel end.
+                // The new range for the plunger's y-position is [0.5, 2.0].
+                // Amplitude = (max - min) / 2 = (2.0 - 0.5) / 2 = 0.75
+                // Vertical Shift = (max + min) / 2 = (2.0 + 0.5) / 2 = 1.25
+                const plungerPosition = Math.sin(time) * 0.75 + 1.25; 
+                plungerGroup.position.y = plungerPosition;
+
+                // FIX: Adjust liquid to match the plunger's position accurately.
+                // The liquid fills the space between the barrel bottom and the stopper bottom.
+                const stopperInfo = plungerGroup.children[2]; // This is the rubber stopper mesh
+                const stopperBottomY = plungerPosition + stopperInfo.position.y - (stopperInfo.geometry.parameters.height / 2);
+                const barrelBottomY = -5; // Bottom of the main barrel cylinder
+                
+                const newLiquidHeight = Math.max(0, stopperBottomY - barrelBottomY);
+                
+                // The original liquid geometry has a height of 6. We scale it.
+                liquid.scale.y = newLiquidHeight / 6; 
+                
+                // We also move the liquid's center point so it always sits at the bottom of the barrel.
+                liquid.position.y = barrelBottomY + (newLiquidHeight / 2);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // --- Start the application ---
+        init();
+
+    </script>
+</body>
+</html>
