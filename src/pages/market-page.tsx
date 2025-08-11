@@ -137,19 +137,21 @@ export default function MarketPage() {
     <div 
       className={`group relative ${
         viewMode === 'grid' 
-          ? 'p-6 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 hover:shadow-xl' 
-          : 'flex p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200'
+          ? 'p-6 border rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl' 
+          : 'flex p-4 border rounded-lg transition-all duration-200'
       }`}
       style={{
         animationDelay: `${index * 100}ms`,
-        animation: 'fadeInUp 0.6s ease-out forwards'
+        animation: 'fadeInUp 0.6s ease-out forwards',
+        background: 'var(--background-glass)',
+        borderColor: 'var(--border-default)'
       }}
     >
       <div className={`${
         viewMode === 'grid' 
-          ? 'aspect-square mb-4 rounded-lg bg-white/5 p-4 flex items-center justify-center overflow-hidden' 
-          : 'w-20 h-20 rounded-lg bg-white/5 p-2 flex items-center justify-center overflow-hidden flex-shrink-0 mr-4'
-      }`}>
+          ? 'aspect-square mb-4 rounded-lg p-4 flex items-center justify-center overflow-hidden' 
+          : 'w-20 h-20 rounded-lg p-2 flex items-center justify-center overflow-hidden flex-shrink-0 mr-4'
+      }`} style={{ background: 'var(--background-glass)' }}>
         <img 
           src={product.thumbnail} 
           alt={product.title}
@@ -169,11 +171,16 @@ export default function MarketPage() {
         </h3>
         
         <div className={`flex items-center ${viewMode === 'grid' ? 'justify-between mb-3' : 'gap-4 mb-2'}`}>
-          <span className="text-purple-300/80 text-xs truncate bg-purple-500/10 px-2 py-1 rounded-full">
+          <span className="text-purple-300/80 text-xs truncate px-2 py-1 rounded-full" style={{
+            background: 'var(--primary-purple-100)'
+          }}>
             {product.source || 'Unknown'}
           </span>
           {product.rating && (
-            <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full border" style={{
+              background: 'var(--warning-yellow-100)',
+              borderColor: 'var(--border-warning)'
+            }}>
               <Star size={10} className="text-amber-400 fill-current" />
               <span className="text-amber-300 text-xs font-medium">{product.rating}</span>
             </div>
@@ -181,14 +188,23 @@ export default function MarketPage() {
         </div>
         
         <div className={`mt-auto flex items-center ${viewMode === 'grid' ? 'justify-between gap-3' : 'gap-6'}`}>
-          <p className="text-lg font-bold text-purple-300 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <p className="text-lg font-bold text-purple-300" style={{
+            background: 'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
             {product.price}
           </p>
           <a 
             href={product.link} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors duration-200 text-sm font-medium bg-indigo-500/10 px-3 py-1 rounded-full hover:bg-indigo-500/20 border border-indigo-500/20"
+            className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors duration-200 text-sm font-medium px-3 py-1 rounded-full border"
+            style={{
+              background: 'var(--tertiary-indigo-100)',
+              borderColor: 'var(--border-secondary)'
+            }}
           >
             <span>Visit</span>
             <ExternalLink size={12} />
@@ -199,18 +215,21 @@ export default function MarketPage() {
   );
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950" style={{ fontFamily: "'Inter', 'Segoe UI', -apple-system, sans-serif" }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ 
+      background: 'linear-gradient(to bottom right, var(--background-dark), var(--primary-purple-darker), var(--tertiary-indigo-darker))',
+      fontFamily: "'Inter', 'Segoe UI', -apple-system, sans-serif" 
+    }}>
       
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 right-0 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-pulse [animation-delay:1s]"></div>
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-indigo-500/25 rounded-full blur-3xl animate-pulse [animation-delay:2s]"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ background: 'var(--primary-purple-500)' }}></div>
+        <div className="absolute top-1/3 right-0 w-80 h-80 rounded-full blur-3xl animate-pulse [animation-delay:1s]" style={{ background: 'var(--secondary-pink-300)' }}></div>
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full blur-3xl animate-pulse [animation-delay:2s]" style={{ background: 'var(--tertiary-indigo-400)' }}></div>
       </div>
       
       <div 
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(168, 85, 247, 0.4) 0%, transparent 50%)`
+          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, var(--primary-purple-200) 0%, transparent 50%)`
         }}
       ></div>
       
@@ -218,12 +237,13 @@ export default function MarketPage() {
         {Array.from({ length: 20 }, (_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
+            className="absolute w-1 h-1 rounded-full animate-pulse"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`
+              animationDuration: `${2 + Math.random() * 2}s`,
+              background: 'var(--text-secondary)'
             }}
           />
         ))}
@@ -239,8 +259,11 @@ export default function MarketPage() {
             <div className="lg:w-1/3 space-y-6">
               
               <div className="text-center lg:text-left">
-                <div className="inline-flex items-center gap-3 mb-4 p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm">
-                  <div className="p-3 rounded-xl bg-purple-500/20 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-3 mb-4 p-4 rounded-2xl border backdrop-blur-sm" style={{
+                  background: 'linear-gradient(to right, var(--primary-purple-100), var(--secondary-pink-100))',
+                  borderColor: 'var(--border-primary)'
+                }}>
+                  <div className="p-3 rounded-xl backdrop-blur-sm" style={{ background: 'var(--primary-purple-200)' }}>
                     <ShoppingCart className="text-purple-300" size={28} />
                   </div>
                   <div>
@@ -250,7 +273,10 @@ export default function MarketPage() {
                 </div>
               </div>
 
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
+              <div className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl" style={{
+                background: 'var(--background-glass)',
+                borderColor: 'var(--border-default)'
+              }}>
                 <div className="flex items-center gap-2 mb-6">
                   <Sparkles className="text-purple-300" size={20} />
                   <h2 className="text-lg font-semibold text-white">Search Products</h2>
@@ -264,7 +290,11 @@ export default function MarketPage() {
                       value={searchState.query}
                       onChange={(e) => handleInputChange(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-purple-200/70 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-200"
+                      className="w-full pl-12 pr-4 py-3 border rounded-xl text-white placeholder:text-purple-200/70 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-200"
+                      style={{
+                        background: 'var(--background-glass)',
+                        borderColor: 'var(--border-default)'
+                      }}
                       placeholder="Search for products..."
                       disabled={searchState.isLoading}
                     />
@@ -273,7 +303,15 @@ export default function MarketPage() {
                   <button 
                     onClick={handleSearch}
                     disabled={searchState.isLoading || !searchState.query.trim()}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-xl"
+                    className="w-full py-3 px-4 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-xl"
+                    style={{
+                      background: searchState.isLoading || !searchState.query.trim() 
+                        ? 'linear-gradient(to right, var(--text-disabled), var(--text-disabled))'
+                        : 'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))',
+                      backgroundImage: !searchState.isLoading && searchState.query.trim() 
+                        ? 'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))'
+                        : undefined
+                    }}
                   >
                     {searchState.isLoading ? (
                       <>
@@ -291,7 +329,10 @@ export default function MarketPage() {
               </div>
 
               {searchState.filteredProducts.length > 0 && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4">
+                <div className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl space-y-4" style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)'
+                }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <SlidersHorizontal className="text-purple-300" size={18} />
@@ -303,7 +344,11 @@ export default function MarketPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-200 text-purple-200 text-sm"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-purple-200 text-sm"
+                        style={{
+                          background: 'var(--background-glass)',
+                          borderColor: 'var(--border-default)'
+                        }}
                       >
                         <Filter size={14} />
                         Filters
@@ -314,7 +359,11 @@ export default function MarketPage() {
                         <select
                           value={sortBy}
                           onChange={(e) => setSortBy(e.target.value)}
-                          className="appearance-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 pr-8"
+                          className="appearance-none border rounded-lg px-3 py-2 text-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 pr-8"
+                          style={{
+                            background: 'var(--background-glass)',
+                            borderColor: 'var(--border-default)'
+                          }}
                         >
                           {sortOptions.map(option => (
                             <option key={option.value} value={option.value} className="bg-slate-800">
@@ -327,7 +376,10 @@ export default function MarketPage() {
                     </div>
 
                     {showFilters && (
-                      <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                      <div className="space-y-4 p-4 rounded-lg border" style={{
+                        background: 'var(--background-glass)',
+                        borderColor: 'var(--border-default)'
+                      }}>
                         <div className="flex items-center justify-between">
                           <span className="text-purple-200 text-sm font-medium">Price Range</span>
                           <button
@@ -345,14 +397,22 @@ export default function MarketPage() {
                             placeholder="Min"
                             value={filters.minPrice || ''}
                             onChange={(e) => updateFilter('minPrice', Number(e.target.value) || 0)}
-                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                            className="border rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                            style={{
+                              background: 'var(--background-glass)',
+                              borderColor: 'var(--border-default)'
+                            }}
                           />
                           <input
                             type="number"
                             placeholder="Max"
                             value={filters.maxPrice || ''}
                             onChange={(e) => updateFilter('maxPrice', Number(e.target.value) || 10000000)}
-                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                            className="border rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                            style={{
+                              background: 'var(--background-glass)',
+                              borderColor: 'var(--border-default)'
+                            }}
                           />
                         </div>
 
@@ -361,7 +421,11 @@ export default function MarketPage() {
                           <select
                             value={filters.minRating}
                             onChange={(e) => updateFilter('minRating', Number(e.target.value))}
-                            className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                            className="w-full border rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                            style={{
+                              background: 'var(--background-glass)',
+                              borderColor: 'var(--border-default)'
+                            }}
                           >
                             <option value={0}>Any Rating</option>
                             <option value={3}>3+ Stars</option>
@@ -404,7 +468,10 @@ export default function MarketPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
+                    <div className="flex items-center gap-1 rounded-lg p-1 border" style={{
+                      background: 'var(--background-glass)',
+                      borderColor: 'var(--border-default)'
+                    }}>
                       <button
                         onClick={() => setViewMode('grid')}
                         className={`p-2 rounded-md transition-all duration-200 ${
@@ -437,9 +504,12 @@ export default function MarketPage() {
 
             <div className="lg:w-2/3">
               {searchState.error && (
-                <div className="bg-gradient-to-r from-red-500/10 to-pink-500/10 backdrop-blur-xl border border-red-500/20 rounded-2xl p-6 shadow-2xl mb-6">
+                <div className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl mb-6" style={{
+                  background: 'linear-gradient(to right, var(--error-red-100), var(--secondary-pink-100))',
+                  borderColor: 'var(--border-error)'
+                }}>
                   <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-red-400/20">
+                    <div className="p-3 rounded-xl" style={{ background: 'var(--error-red-200)' }}>
                       <Search className="text-red-400" size={20} />
                     </div>
                     <div>
@@ -451,12 +521,17 @@ export default function MarketPage() {
               )}
 
               {searchState.isLoading && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12 shadow-2xl">
+                <div className="backdrop-blur-xl border rounded-2xl p-12 shadow-2xl" style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)'
+                }}>
                   <div className="text-center">
                     <div className="relative w-16 h-16 mx-auto mb-6">
                       <div className="absolute inset-0 rounded-full border-4 border-purple-500/20"></div>
                       <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent animate-spin"></div>
-                      <div className="absolute inset-2 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <div className="absolute inset-2 rounded-full flex items-center justify-center" style={{
+                        background: 'var(--primary-purple-200)'
+                      }}>
                         <Search className="text-purple-400" size={20} />
                       </div>
                     </div>
@@ -467,7 +542,10 @@ export default function MarketPage() {
               )}
 
               {searchState.filteredProducts.length > 0 && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
+                <div className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl" style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)'
+                }}>
                   <div className={`${
                     viewMode === 'grid' 
                       ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' 
@@ -496,11 +574,18 @@ export default function MarketPage() {
               )}
 
               {!searchState.isLoading && !searchState.error && searchState.filteredProducts.length === 0 && searchState.products.length > 0 && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12 shadow-2xl">
+                <div className="backdrop-blur-xl border rounded-2xl p-12 shadow-2xl" style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)'
+                }}>
                   <div className="text-center">
                     <div className="relative w-20 h-20 mx-auto mb-6">
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20"></div>
-                      <div className="absolute inset-4 rounded-full bg-white/5 flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full" style={{
+                        background: 'linear-gradient(to right, var(--warning-yellow-200), var(--error-red-200))'
+                      }}></div>
+                      <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{
+                        background: 'var(--background-glass)'
+                      }}>
                         <Filter className="text-orange-300" size={24} />
                       </div>
                     </div>
@@ -508,7 +593,11 @@ export default function MarketPage() {
                     <p className="text-orange-300/70 text-sm max-w-md mx-auto mb-4">No products match your current filters. Try adjusting your search criteria.</p>
                     <button
                       onClick={resetFilters}
-                      className="px-4 py-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-lg text-orange-200 hover:bg-orange-500/30 transition-all duration-200 text-sm"
+                      className="px-4 py-2 border rounded-lg text-orange-200 transition-all duration-200 text-sm"
+                      style={{
+                        background: 'linear-gradient(to right, var(--warning-yellow-200), var(--error-red-200))',
+                        borderColor: 'var(--border-warning)'
+                      }}
                     >
                       Reset Filters
                     </button>
@@ -517,11 +606,18 @@ export default function MarketPage() {
               )}
 
               {!searchState.isLoading && !searchState.error && searchState.products.length === 0 && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12 shadow-2xl">
+                <div className="backdrop-blur-xl border rounded-2xl p-12 shadow-2xl" style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)'
+                }}>
                   <div className="text-center">
                     <div className="relative w-20 h-20 mx-auto mb-6">
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20"></div>
-                      <div className="absolute inset-4 rounded-full bg-white/5 flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full" style={{
+                        background: 'linear-gradient(to right, var(--primary-purple-200), var(--secondary-pink-200))'
+                      }}></div>
+                      <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{
+                        background: 'var(--background-glass)'
+                      }}>
                         <ShoppingCart className="text-purple-300" size={24} />
                       </div>
                     </div>

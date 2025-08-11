@@ -23,18 +23,21 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950" style={{ fontFamily: "'Inter', 'Segoe UI', -apple-system, sans-serif" }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ 
+      background: 'linear-gradient(to bottom right, var(--background-dark), var(--primary-purple-darker), var(--tertiary-indigo-darker))',
+      fontFamily: "'Inter', 'Segoe UI', -apple-system, sans-serif" 
+    }}>
       
       <div className="absolute inset-0 opacity-40">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 right-0 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-pulse [animation-delay:1s]"></div>
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-indigo-500/25 rounded-full blur-3xl animate-pulse [animation-delay:2s]"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ background: 'var(--primary-purple-500)' }}></div>
+        <div className="absolute top-1/3 right-0 w-80 h-80 rounded-full blur-3xl animate-pulse [animation-delay:1s]" style={{ background: 'var(--secondary-pink-300)' }}></div>
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full blur-3xl animate-pulse [animation-delay:2s]" style={{ background: 'var(--tertiary-indigo-400)' }}></div>
       </div>
       
       <div 
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(168, 85, 247, 0.4) 0%, transparent 50%)`
+          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, var(--primary-purple-200) 0%, transparent 50%)`
         }}
       ></div>
       
@@ -42,12 +45,13 @@ export default function HomePage() {
         {particles.map((particle) => (
           <div
             key={particle.id}
-            className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
+            className="absolute w-1 h-1 rounded-full animate-pulse"
             style={{
               left: `${particle.left}%`,
               top: `${particle.top}%`,
               animationDelay: `${particle.delay}s`,
-              animationDuration: `${particle.duration}s`
+              animationDuration: `${particle.duration}s`,
+              background: 'var(--text-secondary)'
             }}
           />
         ))}

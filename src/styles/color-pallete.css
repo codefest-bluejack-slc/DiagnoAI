@@ -1,0 +1,200 @@
+:root {
+  --primary-purple: #a855f7;
+  --primary-purple-light: #c084fc;
+  --primary-purple-dark: #9333ea;
+  --primary-purple-darker: #581c87;
+  --primary-purple-50: rgba(168, 85, 247, 0.05);
+  --primary-purple-100: rgba(168, 85, 247, 0.1);
+  --primary-purple-200: rgba(168, 85, 247, 0.2);
+  --primary-purple-300: rgba(168, 85, 247, 0.3);
+  --primary-purple-400: rgba(168, 85, 247, 0.4);
+  --primary-purple-500: rgba(168, 85, 247, 0.5);
+  --primary-purple-600: rgba(168, 85, 247, 0.6);
+  --primary-purple-700: rgba(168, 85, 247, 0.7);
+  --primary-purple-800: rgba(168, 85, 247, 0.8);
+  --primary-purple-900: rgba(168, 85, 247, 0.9);
+
+  --secondary-pink: #ec4899;
+  --secondary-pink-light: #f472b6;
+  --secondary-pink-dark: #db2777;
+  --secondary-pink-50: rgba(236, 72, 153, 0.05);
+  --secondary-pink-100: rgba(236, 72, 153, 0.1);
+  --secondary-pink-200: rgba(236, 72, 153, 0.2);
+  --secondary-pink-300: rgba(236, 72, 153, 0.3);
+  --secondary-pink-400: rgba(236, 72, 153, 0.4);
+  --secondary-pink-500: rgba(236, 72, 153, 0.5);
+  --secondary-pink-600: rgba(236, 72, 153, 0.6);
+  --secondary-pink-700: rgba(236, 72, 153, 0.7);
+  --secondary-pink-800: rgba(236, 72, 153, 0.8);
+  --secondary-pink-900: rgba(236, 72, 153, 0.9);
+
+  --tertiary-indigo: #6366f1;
+  --tertiary-indigo-light: #818cf8;
+  --tertiary-indigo-dark: #4f46e5;
+  --tertiary-indigo-darker: #312e81;
+  --tertiary-indigo-50: rgba(99, 102, 241, 0.05);
+  --tertiary-indigo-100: rgba(99, 102, 241, 0.1);
+  --tertiary-indigo-200: rgba(99, 102, 241, 0.2);
+  --tertiary-indigo-300: rgba(99, 102, 241, 0.3);
+  --tertiary-indigo-400: rgba(99, 102, 241, 0.4);
+  --tertiary-indigo-500: rgba(99, 102, 241, 0.5);
+  --tertiary-indigo-600: rgba(99, 102, 241, 0.6);
+  --tertiary-indigo-700: rgba(99, 102, 241, 0.7);
+  --tertiary-indigo-800: rgba(99, 102, 241, 0.8);
+  --tertiary-indigo-900: rgba(99, 102, 241, 0.9);
+
+  --background-dark: #020617;
+  --background-surface: #0f172a;
+  --background-elevated: #1e293b;
+  --background-elevated-hover: #334155;
+  --background-overlay: rgba(15, 23, 42, 0.95);
+  --background-glass: rgba(255, 255, 255, 0.05);
+  --background-glass-hover: rgba(255, 255, 255, 0.1);
+
+  --success-green: #10b981;
+  --success-green-light: #34d399;
+  --success-green-dark: #059669;
+  --success-green-50: rgba(16, 185, 129, 0.05);
+  --success-green-100: rgba(16, 185, 129, 0.1);
+  --success-green-200: rgba(16, 185, 129, 0.2);
+  --success-green-300: rgba(16, 185, 129, 0.3);
+
+  --warning-yellow: #f59e0b;
+  --warning-yellow-light: #fbbf24;
+  --warning-yellow-dark: #d97706;
+  --warning-yellow-50: rgba(245, 158, 11, 0.05);
+  --warning-yellow-100: rgba(245, 158, 11, 0.1);
+  --warning-yellow-200: rgba(245, 158, 11, 0.2);
+  --warning-yellow-300: rgba(245, 158, 11, 0.3);
+
+  --error-red: #ef4444;
+  --error-red-light: #f87171;
+  --error-red-dark: #dc2626;
+  --error-red-50: rgba(239, 68, 68, 0.05);
+  --error-red-100: rgba(239, 68, 68, 0.1);
+  --error-red-200: rgba(239, 68, 68, 0.2);
+  --error-red-300: rgba(239, 68, 68, 0.3);
+
+  --info-blue: #3b82f6;
+  --info-blue-light: #60a5fa;
+  --info-blue-dark: #2563eb;
+  --info-blue-50: rgba(59, 130, 246, 0.05);
+  --info-blue-100: rgba(59, 130, 246, 0.1);
+  --info-blue-200: rgba(59, 130, 246, 0.2);
+  --info-blue-300: rgba(59, 130, 246, 0.3);
+
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.2);
+  --border-focus: rgba(255, 255, 255, 0.3);
+  --border-primary: rgba(168, 85, 247, 0.3);
+  --border-secondary: rgba(236, 72, 153, 0.3);
+  --border-success: rgba(16, 185, 129, 0.3);
+  --border-warning: rgba(245, 158, 11, 0.3);
+  --border-error: rgba(239, 68, 68, 0.3);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 20px rgba(168, 85, 247, 0.5);
+  --shadow-glow-pink: 0 0 20px rgba(236, 72, 153, 0.5);
+  --shadow-glow-indigo: 0 0 20px rgba(99, 102, 241, 0.5);
+}
+
+.color-primary { color: var(--primary-purple); }
+.color-primary-light { color: var(--primary-purple-light); }
+.color-primary-dark { color: var(--primary-purple-dark); }
+.color-secondary { color: var(--secondary-pink); }
+.color-secondary-light { color: var(--secondary-pink-light); }
+.color-secondary-dark { color: var(--secondary-pink-dark); }
+.color-tertiary { color: var(--tertiary-indigo); }
+.color-tertiary-light { color: var(--tertiary-indigo-light); }
+.color-tertiary-dark { color: var(--tertiary-indigo-dark); }
+.color-success { color: var(--success-green); }
+.color-warning { color: var(--warning-yellow); }
+.color-error { color: var(--error-red); }
+.color-info { color: var(--info-blue); }
+.color-text-primary { color: var(--text-primary); }
+.color-text-secondary { color: var(--text-secondary); }
+.color-text-muted { color: var(--text-muted); }
+
+.bg-primary { background-color: var(--primary-purple); }
+.bg-primary-50 { background-color: var(--primary-purple-50); }
+.bg-primary-100 { background-color: var(--primary-purple-100); }
+.bg-primary-200 { background-color: var(--primary-purple-200); }
+.bg-primary-300 { background-color: var(--primary-purple-300); }
+.bg-primary-400 { background-color: var(--primary-purple-400); }
+.bg-primary-500 { background-color: var(--primary-purple-500); }
+
+.bg-secondary { background-color: var(--secondary-pink); }
+.bg-secondary-50 { background-color: var(--secondary-pink-50); }
+.bg-secondary-100 { background-color: var(--secondary-pink-100); }
+.bg-secondary-200 { background-color: var(--secondary-pink-200); }
+.bg-secondary-300 { background-color: var(--secondary-pink-300); }
+
+.bg-tertiary { background-color: var(--tertiary-indigo); }
+.bg-tertiary-50 { background-color: var(--tertiary-indigo-50); }
+.bg-tertiary-100 { background-color: var(--tertiary-indigo-100); }
+.bg-tertiary-200 { background-color: var(--tertiary-indigo-200); }
+.bg-tertiary-300 { background-color: var(--tertiary-indigo-300); }
+
+.bg-dark { background-color: var(--background-dark); }
+.bg-surface { background-color: var(--background-surface); }
+.bg-elevated { background-color: var(--background-elevated); }
+.bg-glass { background-color: var(--background-glass); }
+.bg-glass-hover { background-color: var(--background-glass-hover); }
+
+.bg-success { background-color: var(--success-green); }
+.bg-success-50 { background-color: var(--success-green-50); }
+.bg-success-100 { background-color: var(--success-green-100); }
+.bg-success-200 { background-color: var(--success-green-200); }
+
+.bg-warning { background-color: var(--warning-yellow); }
+.bg-warning-50 { background-color: var(--warning-yellow-50); }
+.bg-warning-100 { background-color: var(--warning-yellow-100); }
+.bg-warning-200 { background-color: var(--warning-yellow-200); }
+
+.bg-error { background-color: var(--error-red); }
+.bg-error-50 { background-color: var(--error-red-50); }
+.bg-error-100 { background-color: var(--error-red-100); }
+.bg-error-200 { background-color: var(--error-red-200); }
+
+.bg-info { background-color: var(--info-blue); }
+.bg-info-50 { background-color: var(--info-blue-50); }
+.bg-info-100 { background-color: var(--info-blue-100); }
+.bg-info-200 { background-color: var(--info-blue-200); }
+
+.border-default { border-color: var(--border-default); }
+.border-hover { border-color: var(--border-hover); }
+.border-focus { border-color: var(--border-focus); }
+.border-primary { border-color: var(--border-primary); }
+.border-secondary { border-color: var(--border-secondary); }
+.border-success { border-color: var(--border-success); }
+.border-warning { border-color: var(--border-warning); }
+.border-error { border-color: var(--border-error); }
+
+.shadow-glow { box-shadow: var(--shadow-glow); }
+.shadow-glow-pink { box-shadow: var(--shadow-glow-pink); }
+.shadow-glow-indigo { box-shadow: var(--shadow-glow-indigo); }
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--secondary-pink), var(--tertiary-indigo));
+}
+
+.gradient-dark {
+  background: linear-gradient(135deg, var(--background-dark), var(--background-surface));
+}
+
+.gradient-glass {
+  background: linear-gradient(135deg, var(--background-glass), rgba(255, 255, 255, 0.02));
+}

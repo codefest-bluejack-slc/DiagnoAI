@@ -1,8 +1,8 @@
 /* This file is now replaced with Tailwind classes in components */
 
 .nav-icon-button:hover {
-  color: #3b82f6;
-  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--info-blue);
+  background-color: var(--info-blue-100);
   transform: scale(1.05);
 }
 
@@ -12,7 +12,7 @@
 
 .nav-icon-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
+  box-shadow: 0 0 0 2px var(--info-blue);
 }
 
 @media (max-width: 768px) {

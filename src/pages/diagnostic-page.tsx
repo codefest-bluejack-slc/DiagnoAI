@@ -34,7 +34,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       <div 
         className="mouse-glow"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(168, 85, 247, 0.4) 0%, transparent 50%)`
+          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, var(--primary-purple-200) 0%, transparent 50%)`
         }}
       ></div>
       
@@ -85,7 +85,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           cx="50"
                           cy="50"
                           r="40"
-                          stroke="rgba(168, 85, 247, 0.2)"
+                          stroke="var(--primary-purple-300)"
                           strokeWidth="8"
                           fill="none"
                         />
@@ -102,8 +102,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         />
                         <defs>
                           <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#a855f7" />
-                            <stop offset="100%" stopColor="#3b82f6" />
+                            <stop offset="0%" stopColor="var(--primary-purple)" />
+                            <stop offset="100%" stopColor="var(--tertiary-indigo)" />
                           </linearGradient>
                         </defs>
                       </svg>

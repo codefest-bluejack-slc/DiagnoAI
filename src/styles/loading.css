@@ -1,9 +1,9 @@
 :root {
-  --color-blue: #0077b6;
+  --color-blue: var(--info-blue);
 }
 
 .loader-background {
-  background: linear-gradient(45deg, #111827, #1f2937);
+  background: linear-gradient(45deg, var(--background-dark), var(--background-surface));
   display: flex;
   align-items: center;
   justify-content: center;
