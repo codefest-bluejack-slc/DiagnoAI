@@ -1,270 +1,420 @@
-.welcome-container {
-  scroll-snap-type: y mandatory;
-  height: 100vh;
-  overflow-y: scroll;
-  padding-top: 80px;
-}
-
-.welcome-section {
-  min-height: 300vh;
-  scroll-snap-align: start;
-  position: relative;
-  background: linear-gradient(135deg, var(--background-surface) 0%, var(--background-elevated) 50%, var(--background-dark) 100%);
-  overflow: hidden;
-}
-
-.welcome-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-      ellipse 800px 600px at 20% 40%,
-      var(--tertiary-indigo-200) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse 600px 800px at 80% 20%,
-      var(--primary-purple-200) 0%,
-      transparent 50%
-    );
-  z-index: 1;
-}
-
-@keyframes layeredWaves {
-  0%,
+@keyframes spreadFromCenter {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(0.8) rotate(180deg);
+    opacity: 0.7;
+  }
   100% {
-    transform: translateX(0) translateY(0);
+    transform: translate(-50%, -50%) scale(1) rotate(360deg);
     opacity: 1;
   }
+}
 
-  25% {
-    transform: translateX(-2%) translateY(-1%);
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
     opacity: 0.8;
   }
-
+  25% {
+    transform: translateY(-25px) rotate(4deg);
+    opacity: 1;
+  }
   50% {
-    transform: translateX(1%) translateY(1%);
+    transform: translateY(-15px) rotate(-3deg);
     opacity: 0.9;
   }
-
   75% {
-    transform: translateX(-1%) translateY(-0.5%);
-    opacity: 0.85;
+    transform: translateY(-30px) rotate(3deg);
+    opacity: 1;
   }
 }
 
-@keyframes wave1 {
-  0%,
-  100% {
-    transform: translateX(0) translateY(0) scale(1);
-  }
-
-  33% {
-    transform: translateX(-3%) translateY(-2%) scale(1.02);
-  }
-
-  66% {
-    transform: translateX(2%) translateY(1%) scale(0.98);
-  }
-}
-
-@keyframes wave2 {
-  0%,
-  100% {
-    transform: translateX(0) translateY(0) scale(1);
-  }
-
-  50% {
-    transform: translateX(-2%) translateY(-1%) scale(1.01);
-  }
-}
-
-@keyframes wave3 {
-  0%,
-  100% {
-    transform: translateX(0) translateY(0) scale(1);
-  }
-
-  25% {
-    transform: translateX(1%) translateY(-1%) scale(0.99);
-  }
-
-  75% {
-    transform: translateX(-1%) translateY(0.5%) scale(1.01);
-  }
-}
-
-.logo-title-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-}
-
-.logo-title-container.moved {
-  top: 2rem;
-  left: 2rem;
-  flex-direction: row;
-  gap: 1rem;
-  transform: translate(0, 0) scale(0.8);
-  align-items: center;
-}
-
-.logo {
-  width: 120px;
-  height: 120px;
-  object-fit: contain;
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
-}
-
-.logo-title-container.moved .logo {
-  width: 60px;
-  height: 60px;
-}
-
-.title {
-  font-size: 4rem;
-  font-weight: 800;
-  color: white;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  margin: 0;
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 50%, #c7d2fe 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.logo-title-container.moved .title {
-  font-size: 1.8rem;
-}
-
-.scroll-content {
-  padding-top: 100vh;
-  display: flex;
-  flex-direction: column;
-  gap: 100vh;
-  position: relative;
-  z-index: 10;
-}
-
-.content-area {
-  text-align: center;
-  color: white;
-  padding: 2rem;
-  max-width: 600px;
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 10;
-}
-
-.content-area h2 {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 50%, #c7d2fe 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.content-area p {
-  font-size: 1.25rem;
-  opacity: 0.9;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.cta-button {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.cta-button::before {
-  content: '';
+.spread-animation {
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.5s;
+  left: 50%;
+  top: 50%;
+  animation: spreadFromCenter 2s ease-out forwards;
 }
 
-.cta-button:hover::before {
-  left: 100%;
+.welcome-sections {
+  position: relative;
+  min-height: 100vh;
+  overflow: visible; /* Allow particles to go beyond bounds */
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
 }
 
-.cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-  filter: brightness(1.1);
+.medical-particles-container {
+  position: absolute;
+  inset: -200px; /* Extend beyond viewport for infinite effect */
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
 }
 
-.cta-button:active {
-  transform: translateY(0);
+.medical-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  animation: infiniteExpand 6s ease-out forwards;
 }
+
+.welcome-content {
+  position: relative;
+  z-index: 10;
+}
+
+@keyframes infiniteExpand {
+  0% {
+    left: 50%;
+    top: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+    filter: blur(2px) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+  }
+  15% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.8);
+    filter: blur(1px) drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+  }
+  35% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.3);
+    top: calc(50% + (var(--final-y) - 50%) * 0.3);
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.2);
+    filter: blur(0px) drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+  }
+  60% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.7);
+    top: calc(50% + (var(--final-y) - 50%) * 0.7);
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(2);
+    filter: blur(0px) drop-shadow(0 0 6px rgba(255, 255, 255, 0.2));
+  }
+  85% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.95);
+    top: calc(50% + (var(--final-y) - 50%) * 0.95);
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(3.5);
+    filter: blur(1px) drop-shadow(0 0 4px rgba(255, 255, 255, 0.1));
+  }
+  100% {
+    left: var(--final-x);
+    top: var(--final-y);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(5);
+    filter: blur(2px) drop-shadow(0 0 2px rgba(255, 255, 255, 0.05));
+  }
+}
+
+@keyframes continuousFloat {
+  0% {
+    transform: translate(-50%, -50%) translateY(0px) translateX(0px) rotate(0deg);
+  }
+  25% {
+    transform: translate(-50%, -50%) translateY(-6px) translateX(3px) rotate(0.5deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(0px) translateX(5px) rotate(0deg);
+  }
+  75% {
+    transform: translate(-50%, -50%) translateY(6px) translateX(-2px) rotate(-0.5deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(0px) translateX(0px) rotate(0deg);
+  }
+}
+
+@keyframes subtleGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+  }
+}
+
+/* Modern minimalist icon effects */
+.medical-cross,
+.stethoscope-tube,
+.stethoscope-details,
+.dna-strand,
+.dna-rung,
+.ekg-line,
+.syringe-body,
+.syringe-liquid-action,
+.syringe-plunger-action,
+.virus-body,
+.virus-spike,
+.pill-bottle,
+.pill,
+.test-tube-body,
+.bubble {
+  transition: all 0.4s ease;
+}
+
+.ekg-line {
+  animation: minimalistPulse 4s ease-in-out infinite;
+}
+
+.bubble {
+  animation: gentleBubbleFloat 6s ease-in-out infinite;
+}
+
+@keyframes minimalistPulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes gentleBubbleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+/* Responsive and performance optimizations */
+@media (max-width: 768px) {
+  .medical-particle {
+    animation: ultraSmoothSpread 2.5s ease-out forwards, 
+               continuousFloat 5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medical-particle {
+    animation: fadeInOnly 2s ease-out forwards;
+  }
+  
+  @keyframes fadeInOnly {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      left: var(--final-x);
+      top: var(--final-y);
+      opacity: 0.7;
+    }
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pop-in {
+  0% { 
+    transform: scale(0); 
+    opacity: 0; 
+  }
+  80% { 
+    transform: scale(1.2); 
+  }
+  100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+}
+
+@keyframes grow {
+  from { 
+    transform: scale(0); 
+  }
+  to { 
+    transform: scale(1); 
+  }
+}
+
+@keyframes fill-and-push {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(40px);
+  }
+}
+
+@keyframes liquid-fill {
+   0%, 50% {
+    height: 55px;
+  }
+  100% {
+    height: 15px;
+  }
+}
+
+@keyframes bubble-up {
+  0% { transform: translateY(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor) drop-shadow(0 0 35px rgba(255, 255, 255, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px currentColor) drop-shadow(0 0 40px currentColor) drop-shadow(0 0 50px rgba(255, 255, 255, 0.5));
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px rgba(255, 255, 255, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px currentColor) drop-shadow(0 0 45px currentColor) drop-shadow(0 0 60px rgba(255, 255, 255, 0.6));
+  }
+}
+
+.animate-float {
+  animation: float 12s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor) drop-shadow(0 0 35px rgba(255, 255, 255, 0.2));
+}
+
+.animate-float:nth-child(even) {
+  animation-duration: 15s;
+  animation-direction: reverse;
+}
+
+.animate-float:nth-child(3n) {
+  animation-duration: 18s;
+}
+
+.medical-cross {
+  transform: scale(0);
+  transform-origin: center;
+  animation: pop-in 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards, glow 4s ease-in-out infinite;
+}
+
+.stethoscope-tube {
+  stroke-dasharray: 250;
+  stroke-dashoffset: 250;
+  animation: draw 2s ease-out forwards;
+}
+
+.stethoscope-details {
+  transform-origin: center;
+  transform: scale(0);
+  animation: pop-in 0.5s ease-out 1.8s forwards, pulse-glow 5s ease-in-out infinite;
+}
+
+.virus-body {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.virus-spike {
+  transform-origin: 50px 50px;
+  transform: scale(0);
+  animation: grow 1s ease-out 1s forwards;
+}
+
+.syringe-body {
+  stroke-dasharray: 250;
+  stroke-dashoffset: 250;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.syringe-plunger-action {
+  animation: fill-and-push 2s ease-in-out 1.5s forwards;
+}
+
+.syringe-liquid-action {
+  animation: liquid-fill 2s ease-in-out 1.5s forwards;
+}
+
+.dna-strand {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: draw 2.5s ease-out forwards;
+}
+
+.dna-rung {
+  transform: scaleX(0);
+  transform-origin: center;
+  animation: grow 1s ease-out 1.5s forwards;
+}
+
+.ekg-line {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: draw 2s ease-out 0.2s forwards;
+  filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor);
+}
+
+.pill-bottle {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.pill {
+  opacity: 0;
+  animation: pop-in 0.3s ease-out forwards;
+}
+
+.pill-1 { animation-delay: 1.5s; }
+.pill-2 { animation-delay: 1.7s; }
+.pill-3 { animation-delay: 1.9s; }
+
+.test-tube-body {
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.bubble {
+  opacity: 0;
+  animation: bubble-up 2s ease-in-out forwards;
+}
+
+.bubble-1 { animation-delay: 1.5s; }
+.bubble-2 { animation-delay: 1.8s; }
+.bubble-3 { animation-delay: 2.2s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feature-card {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.2s; }
+.feature-card:nth-child(2) { animation-delay: 0.4s; }
+.feature-card:nth-child(3) { animation-delay: 0.6s; }
 
 @media (max-width: 768px) {
-  .title {
-    font-size: 2.5rem;
+  .animate-float {
+    animation-duration: 16s;
   }
-
-  .logo-title-container.moved .title {
-    font-size: 1.2rem;
-  }
-
-  .logo {
-    width: 80px;
-    height: 80px;
-  }
-
-  .logo-title-container.moved .logo {
-    width: 40px;
-    height: 40px;
-  }
-
-  .content-area h2 {
-    font-size: 2rem;
-  }
-
-  .content-area p {
-    font-size: 1rem;
-  }
-
-  .logo-title-container.moved {
-    gap: 0.5rem;
+  
+  .medical-cross, .stethoscope-details {
+    animation-duration: 1.5s;
   }
 }

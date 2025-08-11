@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/common/navbar';
+import { WelcomeSections } from '../components/sections/welcome-sections';
 
 export default function HomePage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [particles] = useState(() => 
-    Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 3,
-      duration: 2 + Math.random() * 2
-    }))
-  );
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -41,25 +33,10 @@ export default function HomePage() {
         }}
       ></div>
       
-      <div className="absolute inset-0 pointer-events-none">
-        {particles.map((particle) => (
-          <div
-            key={particle.id}
-            className="absolute w-1 h-1 rounded-full animate-pulse"
-            style={{
-              left: `${particle.left}%`,
-              top: `${particle.top}%`,
-              animationDelay: `${particle.delay}s`,
-              animationDuration: `${particle.duration}s`,
-              background: 'var(--text-secondary)'
-            }}
-          />
-        ))}
-      </div>
-      
       <Navbar />
       
-      <main className="relative z-10 min-h-screen">
+      <main className="relative z-10 overflow-visible">
+        <WelcomeSections />
       </main>
     </div>
   );
