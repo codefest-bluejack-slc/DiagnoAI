@@ -53,7 +53,7 @@ export default function HeroSection() {
 
   return (
     <div className="flex flex-col justify-center items-center h-screen w-full px-6 sm:px-8 md:px-12 lg:px-16 text-center relative">
-      <div className="fixed inset-0 flex items-center justify-center overflow-hidden z-0">
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden z-0">
         {animatedIcons.map((iconData) => (
           <div
             key={iconData.id}

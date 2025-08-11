@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/common/navbar';
 import HeroSection from '../components/sections/hero-section';
+import ScrollMarquee from '../components/sections/scroll-marquee';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
 import '../styles/diagnostic-page.css';
 
@@ -51,10 +52,14 @@ export default function HomePage() {
 
       <Navbar />
       
-      <main className="h-screen flex items-center">
-        <div className="w-full">
-          <HeroSection />
-        </div>
+      <main>
+        <section className="h-screen flex items-center">
+          <div className="w-full">
+            <HeroSection />
+          </div>
+        </section>
+        
+        <ScrollMarquee />
       </main>
     </div>
   );

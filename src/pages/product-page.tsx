@@ -16,7 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { IProductDetails } from '../interfaces/IProduct';
-import { getProductDetails } from '../services/medicineSearchService';
+import { getProductDetails, getProductFromCache } from '../services/medicineSearchService';
 import useMouseTracking from '../hooks/use-mouse-tracking';
 import Navbar from '../components/common/navbar';
 
@@ -55,10 +55,22 @@ export default function ProductPage() {
 
       try {
         setIsLoading(true);
-        const productDetails = await getProductDetails(productId, SERPAPI_KEY);
-        setProduct(productDetails);
+        
+        const cachedProduct = getProductFromCache(productId);
+        
+        if (cachedProduct) {
+          console.log('Found cached product data, using as fallback');
+          const productDetails = await getProductDetails(productId, SERPAPI_KEY, cachedProduct);
+          setProduct(productDetails);
+        } else {
+          console.log('No cached data found, fetching from API');
+          const productDetails = await getProductDetails(productId, SERPAPI_KEY);
+          setProduct(productDetails);
+        }
+        
         setError(null);
       } catch (err) {
+        console.error('Error fetching product details:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch product details');
       } finally {
         setIsLoading(false);

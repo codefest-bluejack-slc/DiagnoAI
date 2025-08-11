@@ -161,7 +161,7 @@ export default function MarketPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
-  const SERPAPI_KEY = '5d42de4074ad433519fe932f6629ec454c6cff5f41a44f08aef4741c83e86741';
+  const SERPAPI_KEY = import.meta.env.VITE_SERPAPI_KEY;
 
   const sortOptions = useSortOptions();
   const {

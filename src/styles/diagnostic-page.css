@@ -33,57 +33,64 @@
   }
   25% {
     transform: translate(
-      calc(cos(var(--angle)) * 80px),
-      calc(sin(var(--angle)) * 80px)
+      calc(cos(var(--angle)) * 60px),
+      calc(sin(var(--angle)) * 60px)
     ) scale(0.8) rotate(40deg);
     opacity: 0.8;
   }
   35% {
     transform: translate(
-      calc(cos(var(--angle)) * 150px),
-      calc(sin(var(--angle)) * 150px)
+      calc(cos(var(--angle)) * 100px),
+      calc(sin(var(--angle)) * 100px)
     ) scale(1.0) rotate(60deg);
     opacity: 0.8;
   }
   50% {
     transform: translate(
-      calc(cos(var(--angle)) * 300px),
-      calc(sin(var(--angle)) * 300px)
+      calc(cos(var(--angle)) * 150px),
+      calc(sin(var(--angle)) * 150px)
     ) scale(1.2) rotate(90deg);
     opacity: 0.7;
   }
   65% {
     transform: translate(
-      calc(cos(var(--angle)) * 500px),
-      calc(sin(var(--angle)) * 500px)
-    ) scale(1.5) rotate(130deg);
-    opacity: 0.6;
+      calc(cos(var(--angle)) * 220px),
+      calc(sin(var(--angle)) * 220px)
+    ) scale(1.4) rotate(130deg);
+    opacity: 0.5;
   }
   80% {
     transform: translate(
-      calc(cos(var(--angle)) * 800px),
-      calc(sin(var(--angle)) * 800px)
-    ) scale(1.8) rotate(180deg);
-    opacity: 0.4;
+      calc(cos(var(--angle)) * 300px),
+      calc(sin(var(--angle)) * 300px)
+    ) scale(1.6) rotate(180deg);
+    opacity: 0.3;
   }
   90% {
     transform: translate(
-      calc(cos(var(--angle)) * 1200px),
-      calc(sin(var(--angle)) * 1200px)
-    ) scale(2.1) rotate(220deg);
-    opacity: 0.2;
+      calc(cos(var(--angle)) * 380px),
+      calc(sin(var(--angle)) * 380px)
+    ) scale(1.8) rotate(220deg);
+    opacity: 0.1;
+  }
+  95% {
+    transform: translate(
+      calc(cos(var(--angle)) * 420px),
+      calc(sin(var(--angle)) * 420px)
+    ) scale(1.9) rotate(245deg);
+    opacity: 0.05;
   }
   100% {
     transform: translate(
-      calc(cos(var(--angle)) * 1600px),
-      calc(sin(var(--angle)) * 1600px)
-    ) scale(2.4) rotate(270deg);
+      calc(cos(var(--angle)) * 450px),
+      calc(sin(var(--angle)) * 450px)
+    ) scale(2.0) rotate(270deg);
     opacity: 0;
   }
 }
 
 .animate-icon-expand {
-  animation: icon-expand var(--duration, 6s) linear forwards;
+  animation: icon-expand var(--duration, 6s) ease-out forwards;
   animation-delay: var(--delay, 0s);
   animation-fill-mode: both;
   pointer-events: none;
