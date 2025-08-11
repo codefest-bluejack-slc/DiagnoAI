@@ -14,7 +14,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
     opacity: 0.8;
   }
@@ -43,7 +44,11 @@
   position: relative;
   min-height: 100vh;
   overflow: visible; /* Allow particles to go beyond bounds */
-  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(139, 92, 246, 0.03) 0%,
+    transparent 70%
+  );
 }
 
 .medical-particles-container {
@@ -114,24 +119,30 @@
 
 @keyframes continuousFloat {
   0% {
-    transform: translate(-50%, -50%) translateY(0px) translateX(0px) rotate(0deg);
+    transform: translate(-50%, -50%) translateY(0px) translateX(0px)
+      rotate(0deg);
   }
   25% {
-    transform: translate(-50%, -50%) translateY(-6px) translateX(3px) rotate(0.5deg);
+    transform: translate(-50%, -50%) translateY(-6px) translateX(3px)
+      rotate(0.5deg);
   }
   50% {
-    transform: translate(-50%, -50%) translateY(0px) translateX(5px) rotate(0deg);
+    transform: translate(-50%, -50%) translateY(0px) translateX(5px)
+      rotate(0deg);
   }
   75% {
-    transform: translate(-50%, -50%) translateY(6px) translateX(-2px) rotate(-0.5deg);
+    transform: translate(-50%, -50%) translateY(6px) translateX(-2px)
+      rotate(-0.5deg);
   }
   100% {
-    transform: translate(-50%, -50%) translateY(0px) translateX(0px) rotate(0deg);
+    transform: translate(-50%, -50%) translateY(0px) translateX(0px)
+      rotate(0deg);
   }
 }
 
 @keyframes subtleGlow {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
   }
   50% {
@@ -167,7 +178,8 @@
 }
 
 @keyframes minimalistPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.8;
   }
   50% {
@@ -176,7 +188,8 @@
 }
 
 @keyframes gentleBubbleFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -187,8 +200,9 @@
 /* Responsive and performance optimizations */
 @media (max-width: 768px) {
   .medical-particle {
-    animation: ultraSmoothSpread 2.5s ease-out forwards, 
-               continuousFloat 5s ease-in-out infinite;
+    animation:
+      ultraSmoothSpread 2.5s ease-out forwards,
+      continuousFloat 5s ease-in-out infinite;
   }
 }
 
@@ -196,7 +210,7 @@
   .medical-particle {
     animation: fadeInOnly 2s ease-out forwards;
   }
-  
+
   @keyframes fadeInOnly {
     0% {
       opacity: 0;
@@ -216,25 +230,25 @@
 }
 
 @keyframes pop-in {
-  0% { 
-    transform: scale(0); 
-    opacity: 0; 
+  0% {
+    transform: scale(0);
+    opacity: 0;
   }
-  80% { 
-    transform: scale(1.2); 
+  80% {
+    transform: scale(1.2);
   }
-  100% { 
-    transform: scale(1); 
-    opacity: 1; 
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
 @keyframes grow {
-  from { 
-    transform: scale(0); 
+  from {
+    transform: scale(0);
   }
-  to { 
-    transform: scale(1); 
+  to {
+    transform: scale(1);
   }
 }
 
@@ -251,7 +265,8 @@
 }
 
 @keyframes liquid-fill {
-   0%, 50% {
+  0%,
+  50% {
     height: 55px;
   }
   100% {
@@ -260,32 +275,50 @@
 }
 
 @keyframes bubble-up {
-  0% { transform: translateY(0); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translateY(-40px); opacity: 0; }
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
 }
 
 @keyframes glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor) drop-shadow(0 0 35px rgba(255, 255, 255, 0.3));
+  0%,
+  100% {
+    filter: drop-shadow(0 0 15px currentColor)
+      drop-shadow(0 0 25px currentColor)
+      drop-shadow(0 0 35px rgba(255, 255, 255, 0.3));
   }
   50% {
-    filter: drop-shadow(0 0 25px currentColor) drop-shadow(0 0 40px currentColor) drop-shadow(0 0 50px rgba(255, 255, 255, 0.5));
+    filter: drop-shadow(0 0 25px currentColor)
+      drop-shadow(0 0 40px currentColor)
+      drop-shadow(0 0 50px rgba(255, 255, 255, 0.5));
   }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px rgba(255, 255, 255, 0.4));
+  0%,
+  100% {
+    filter: drop-shadow(0 0 15px currentColor)
+      drop-shadow(0 0 25px rgba(255, 255, 255, 0.4));
   }
   50% {
-    filter: drop-shadow(0 0 30px currentColor) drop-shadow(0 0 45px currentColor) drop-shadow(0 0 60px rgba(255, 255, 255, 0.6));
+    filter: drop-shadow(0 0 30px currentColor)
+      drop-shadow(0 0 45px currentColor)
+      drop-shadow(0 0 60px rgba(255, 255, 255, 0.6));
   }
 }
 
 .animate-float {
   animation: float 12s ease-in-out infinite;
-  filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor) drop-shadow(0 0 35px rgba(255, 255, 255, 0.2));
+  filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor)
+    drop-shadow(0 0 35px rgba(255, 255, 255, 0.2));
 }
 
 .animate-float:nth-child(even) {
@@ -300,7 +333,9 @@
 .medical-cross {
   transform: scale(0);
   transform-origin: center;
-  animation: pop-in 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards, glow 4s ease-in-out infinite;
+  animation:
+    pop-in 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards,
+    glow 4s ease-in-out infinite;
 }
 
 .stethoscope-tube {
@@ -312,7 +347,9 @@
 .stethoscope-details {
   transform-origin: center;
   transform: scale(0);
-  animation: pop-in 0.5s ease-out 1.8s forwards, pulse-glow 5s ease-in-out infinite;
+  animation:
+    pop-in 0.5s ease-out 1.8s forwards,
+    pulse-glow 5s ease-in-out infinite;
 }
 
 .virus-body {
@@ -371,9 +408,15 @@
   animation: pop-in 0.3s ease-out forwards;
 }
 
-.pill-1 { animation-delay: 1.5s; }
-.pill-2 { animation-delay: 1.7s; }
-.pill-3 { animation-delay: 1.9s; }
+.pill-1 {
+  animation-delay: 1.5s;
+}
+.pill-2 {
+  animation-delay: 1.7s;
+}
+.pill-3 {
+  animation-delay: 1.9s;
+}
 
 .test-tube-body {
   stroke-dasharray: 150;
@@ -386,9 +429,15 @@
   animation: bubble-up 2s ease-in-out forwards;
 }
 
-.bubble-1 { animation-delay: 1.5s; }
-.bubble-2 { animation-delay: 1.8s; }
-.bubble-3 { animation-delay: 2.2s; }
+.bubble-1 {
+  animation-delay: 1.5s;
+}
+.bubble-2 {
+  animation-delay: 1.8s;
+}
+.bubble-3 {
+  animation-delay: 2.2s;
+}
 
 @keyframes fadeInUp {
   from {
@@ -405,16 +454,23 @@
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-.feature-card:nth-child(1) { animation-delay: 0.2s; }
-.feature-card:nth-child(2) { animation-delay: 0.4s; }
-.feature-card:nth-child(3) { animation-delay: 0.6s; }
+.feature-card:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.feature-card:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.feature-card:nth-child(3) {
+  animation-delay: 0.6s;
+}
 
 @media (max-width: 768px) {
   .animate-float {
     animation-duration: 16s;
   }
-  
-  .medical-cross, .stethoscope-details {
+
+  .medical-cross,
+  .stethoscope-details {
     animation-duration: 1.5s;
   }
 }

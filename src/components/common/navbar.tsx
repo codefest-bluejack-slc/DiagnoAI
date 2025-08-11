@@ -76,7 +76,10 @@ export default function Navbar({}: NavbarProps) {
       <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto h-16">
         <div className="flex items-center">
           <Tooltip content="DiagnoAI" position="bottom">
-            <div className="flex items-center cursor-pointer group" onClick={handleHomeClick}>
+            <div
+              className="flex items-center cursor-pointer group"
+              onClick={handleHomeClick}
+            >
               <div className="logo-container relative p-2 transition-all duration-300 group-hover:scale-110">
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400/20 via-purple-400/20 to-pink-400/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/10 to-purple-200/10 opacity-50 group-hover:opacity-80 transition-opacity duration-300"></div>

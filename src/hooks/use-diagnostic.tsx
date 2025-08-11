@@ -5,23 +5,25 @@ export const useDiagnostic = () => {
   const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
   const [newSymptomDescription, setNewSymptomDescription] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [currentStep, setCurrentStep] = useState<'input' | 'review' | 'analysis'>('input');
+  const [currentStep, setCurrentStep] = useState<
+    'input' | 'review' | 'analysis'
+  >('input');
 
   const addSymptom = () => {
     if (newSymptomDescription.trim()) {
       const symptom: ISymptom = {
         id: Date.now().toString(),
-        description: newSymptomDescription.trim()
+        description: newSymptomDescription.trim(),
       };
-      
-      setSymptoms(prev => [...prev, symptom]);
+
+      setSymptoms((prev) => [...prev, symptom]);
       setNewSymptomDescription('');
       setShowAddForm(false);
     }
   };
 
   const removeSymptom = (id: string) => {
-    setSymptoms(prev => prev.filter(symptom => symptom.id !== id));
+    setSymptoms((prev) => prev.filter((symptom) => symptom.id !== id));
   };
 
   const getProgressPercentage = () => {
@@ -39,6 +41,6 @@ export const useDiagnostic = () => {
     setCurrentStep,
     addSymptom,
     removeSymptom,
-    getProgressPercentage
+    getProgressPercentage,
   };
 };

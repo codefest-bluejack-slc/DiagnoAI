@@ -110,13 +110,13 @@ export default function SearchModal({
       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-purple-950/80 to-indigo-950/80 backdrop-blur-md"></div>
-      
+
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500/20 rounded-full filter blur-3xl animate-pulse"></div>
         <div className="absolute top-3/4 right-1/4 w-48 h-48 bg-pink-500/15 rounded-full filter blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute bottom-1/4 left-3/4 w-56 h-56 bg-indigo-500/20 rounded-full filter blur-3xl animate-pulse delay-2000"></div>
       </div>
-      
+
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
         <div
           ref={modalRef}
@@ -127,113 +127,110 @@ export default function SearchModal({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-        <div className="flex items-center px-6 py-4 border-b border-purple-500/20 bg-slate-800/90 backdrop-blur-sm">
-          <Search
-            className="mr-3 flex-shrink-0 text-purple-400"
-            size={20}
-          />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search for anything..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent border-none outline-none font-medium text-sm text-purple-100 placeholder:text-purple-300"
-          />
-          <div className="flex items-center gap-2 ml-4 text-xs text-purple-300">
-            <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-slate-800/80 border border-purple-500/30 text-purple-200">
-              ESC
-            </kbd>
-            <span className="hidden sm:inline">to close</span>
-          </div>
-        </div>
-
-        <div className="max-h-80 overflow-y-auto">
-          {filteredResults.length > 0 ? (
-            <div className="py-3">
-              {filteredResults.map((result, index) => {
-                const isActive =
-                  index === selectedIndex || hoveredIndex === index;
-                return (
-                  <div
-                    key={result.id}
-                    className={`mx-3 px-4 py-3 cursor-pointer flex items-center space-x-4 transition-all duration-150 rounded-lg border ${
-                      isActive
-                        ? 'bg-purple-500/30 border-purple-400/50 shadow-sm'
-                        : 'border-transparent hover:bg-slate-800/60 hover:border-purple-500/30'
-                    }`}
-                    onClick={() => handleSelectResult(result)}
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  >
-                    <div
-                      className={`flex-shrink-0 p-2.5 rounded-lg transition-colors duration-150 ${
-                        isActive
-                          ? 'bg-purple-400/40 text-purple-200'
-                          : 'bg-slate-800/70 text-purple-300'
-                      }`}
-                    >
-                      {result.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-semibold truncate mb-1 ${
-                          isActive ? 'text-purple-200' : 'text-purple-100'
-                        }`}
-                      >
-                        {result.title}
-                      </p>
-                      <p
-                        className={`text-sm truncate ${
-                          isActive
-                            ? 'text-purple-300'
-                            : 'text-purple-300/80'
-                        }`}
-                      >
-                        {result.description}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="flex items-center px-6 py-4 border-b border-purple-500/20 bg-slate-800/90 backdrop-blur-sm">
+            <Search className="mr-3 flex-shrink-0 text-purple-400" size={20} />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search for anything..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-transparent border-none outline-none font-medium text-sm text-purple-100 placeholder:text-purple-300"
+            />
+            <div className="flex items-center gap-2 ml-4 text-xs text-purple-300">
+              <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-slate-800/80 border border-purple-500/30 text-purple-200">
+                ESC
+              </kbd>
+              <span className="hidden sm:inline">to close</span>
             </div>
-          ) : (
-            <div className="px-6 py-16 text-center">
-              <Search className="mx-auto mb-4 text-purple-400" size={64} />
-              <p className="text-base font-semibold mb-2 text-purple-200">
-                {searchQuery ? 'No results found' : 'Start typing to search...'}
-              </p>
-              <p className="text-sm text-purple-300">
-                {searchQuery
-                  ? 'Try a different search term'
-                  : 'Find anything quickly with our smart search'}
-              </p>
+          </div>
+
+          <div className="max-h-80 overflow-y-auto">
+            {filteredResults.length > 0 ? (
+              <div className="py-3">
+                {filteredResults.map((result, index) => {
+                  const isActive =
+                    index === selectedIndex || hoveredIndex === index;
+                  return (
+                    <div
+                      key={result.id}
+                      className={`mx-3 px-4 py-3 cursor-pointer flex items-center space-x-4 transition-all duration-150 rounded-lg border ${
+                        isActive
+                          ? 'bg-purple-500/30 border-purple-400/50 shadow-sm'
+                          : 'border-transparent hover:bg-slate-800/60 hover:border-purple-500/30'
+                      }`}
+                      onClick={() => handleSelectResult(result)}
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                    >
+                      <div
+                        className={`flex-shrink-0 p-2.5 rounded-lg transition-colors duration-150 ${
+                          isActive
+                            ? 'bg-purple-400/40 text-purple-200'
+                            : 'bg-slate-800/70 text-purple-300'
+                        }`}
+                      >
+                        {result.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-sm font-semibold truncate mb-1 ${
+                            isActive ? 'text-purple-200' : 'text-purple-100'
+                          }`}
+                        >
+                          {result.title}
+                        </p>
+                        <p
+                          className={`text-sm truncate ${
+                            isActive ? 'text-purple-300' : 'text-purple-300/80'
+                          }`}
+                        >
+                          {result.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-6 py-16 text-center">
+                <Search className="mx-auto mb-4 text-purple-400" size={64} />
+                <p className="text-base font-semibold mb-2 text-purple-200">
+                  {searchQuery
+                    ? 'No results found'
+                    : 'Start typing to search...'}
+                </p>
+                <p className="text-sm text-purple-300">
+                  {searchQuery
+                    ? 'Try a different search term'
+                    : 'Find anything quickly with our smart search'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {filteredResults.length > 0 && (
+            <div className="px-6 py-3 flex items-center justify-between text-xs bg-slate-800/90 backdrop-blur-sm border-t border-purple-500/20 text-purple-300">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-slate-800/80 border border-purple-500/30 text-purple-200">
+                    ↑↓
+                  </kbd>
+                  <span className="font-medium">navigate</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-slate-800/80 border border-purple-500/30 text-purple-200">
+                    ↵
+                  </kbd>
+                  <span className="font-medium">select</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-purple-300">
+                <Command size={14} />
+                <span className="font-medium">DiagnoAI Search</span>
+              </div>
             </div>
           )}
-        </div>
-
-        {filteredResults.length > 0 && (
-          <div className="px-6 py-3 flex items-center justify-between text-xs bg-slate-800/90 backdrop-blur-sm border-t border-purple-500/20 text-purple-300">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-slate-800/80 border border-purple-500/30 text-purple-200">
-                  ↑↓
-                </kbd>
-                <span className="font-medium">navigate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 rounded text-xs font-mono shadow-sm bg-slate-800/80 border border-purple-500/30 text-purple-200">
-                  ↵
-                </kbd>
-                <span className="font-medium">select</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-purple-300">
-              <Command size={14} />
-              <span className="font-medium">DiagnoAI Search</span>
-            </div>
-          </div>
-        )}
         </div>
       </div>
     </div>

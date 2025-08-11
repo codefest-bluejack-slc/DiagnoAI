@@ -3,7 +3,11 @@
 }
 
 .loader-background {
-  background: linear-gradient(45deg, var(--background-dark), var(--background-surface));
+  background: linear-gradient(
+    45deg,
+    var(--background-dark),
+    var(--background-surface)
+  );
   display: flex;
   align-items: center;
   justify-content: center;

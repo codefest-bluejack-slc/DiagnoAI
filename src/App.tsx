@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './App.css';
 import HomePage from './pages/home-page';

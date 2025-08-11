@@ -1,12 +1,16 @@
 import { useEffect } from 'react';
 
-export const useScrollDetection = (callback: () => void, threshold: number = 100) => {
+export const useScrollDetection = (
+  callback: () => void,
+  threshold: number = 100,
+) => {
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = window.innerHeight;
-      
+
       if (scrollTop + clientHeight >= scrollHeight - threshold) {
         callback();
       }

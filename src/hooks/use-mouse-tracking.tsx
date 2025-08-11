@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { IMousePosition } from '../interfaces/IDiagnostic';
 
 export const useMouseTracking = () => {
-  const [mousePosition, setMousePosition] = useState<IMousePosition>({ x: 0, y: 0 });
+  const [mousePosition, setMousePosition] = useState<IMousePosition>({
+    x: 0,
+    y: 0,
+  });
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     setMousePosition({ x: e.clientX, y: e.clientY });

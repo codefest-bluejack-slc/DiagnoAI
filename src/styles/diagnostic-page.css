@@ -2,12 +2,26 @@
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(to bottom right, var(--background-dark), var(--primary-purple-darker), var(--tertiary-indigo-darker));
-  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  background: linear-gradient(
+    to bottom right,
+    var(--background-dark),
+    var(--primary-purple-darker),
+    var(--tertiary-indigo-darker)
+  );
+  font-family:
+    'Inter',
+    'Segoe UI',
+    -apple-system,
+    sans-serif;
 }
 
 .progress-card {
-  background: linear-gradient(to bottom right, var(--primary-purple-200), var(--tertiary-indigo-200), var(--secondary-pink-200));
+  background: linear-gradient(
+    to bottom right,
+    var(--primary-purple-200),
+    var(--tertiary-indigo-200),
+    var(--secondary-pink-200)
+  );
   backdrop-filter: blur(24px);
   border: 1px solid var(--border-default);
   border-radius: 1.5rem;
@@ -34,7 +48,12 @@
 }
 
 .add-symptom-card {
-  background: linear-gradient(to bottom right, var(--background-glass-hover), var(--background-glass), var(--background-glass-hover));
+  background: linear-gradient(
+    to bottom right,
+    var(--background-glass-hover),
+    var(--background-glass),
+    var(--background-glass-hover)
+  );
   backdrop-filter: blur(24px);
   border: 2px dashed var(--border-primary);
   border-radius: 1.5rem;
@@ -49,7 +68,12 @@
 }
 
 .symptom-form-card {
-  background: linear-gradient(to bottom right, var(--primary-purple-100), var(--background-glass), var(--tertiary-indigo-100));
+  background: linear-gradient(
+    to bottom right,
+    var(--primary-purple-100),
+    var(--background-glass),
+    var(--tertiary-indigo-100)
+  );
   backdrop-filter: blur(24px);
   border: 1px solid var(--border-focus);
   border-radius: 1.5rem;
@@ -67,7 +91,12 @@
 }
 
 .warning-card {
-  background: linear-gradient(to bottom right, var(--warning-yellow-200), var(--error-red-100), var(--error-red-100));
+  background: linear-gradient(
+    to bottom right,
+    var(--warning-yellow-200),
+    var(--error-red-100),
+    var(--error-red-100)
+  );
   backdrop-filter: blur(24px);
   border: 1px solid var(--border-warning);
   border-radius: 1rem;

@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { IProduct } from '../interfaces/IProduct';
 
-export const useInfiniteScroll = (products: IProduct[], itemsPerPage: number = 20) => {
+export const useInfiniteScroll = (
+  products: IProduct[],
+  itemsPerPage: number = 20,
+) => {
   const [displayedProducts, setDisplayedProducts] = useState<IProduct[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -18,14 +21,14 @@ export const useInfiniteScroll = (products: IProduct[], itemsPerPage: number = 2
     if (isLoadingMore || !hasMore) return;
 
     setIsLoadingMore(true);
-    
+
     setTimeout(() => {
       const nextPage = currentPage + 1;
       const startIndex = currentPage * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const nextProducts = products.slice(startIndex, endIndex);
-      
-      setDisplayedProducts(prev => [...prev, ...nextProducts]);
+
+      setDisplayedProducts((prev) => [...prev, ...nextProducts]);
       setCurrentPage(nextPage);
       setHasMore(endIndex < products.length);
       setIsLoadingMore(false);

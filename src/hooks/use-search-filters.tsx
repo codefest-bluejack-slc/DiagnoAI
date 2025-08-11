@@ -21,7 +21,7 @@ export const useSearchFilters = () => {
   });
 
   const updateFilter = (key: keyof ISearchFilters, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
     }));
@@ -38,27 +38,39 @@ export const useSearchFilters = () => {
   };
 
   const applyFilters = (products: IProduct[]): IProduct[] => {
-    return products.filter(product => {
+    return products.filter((product) => {
       const price = product.extracted_price || 0;
       const rating = product.rating || 0;
-      
+
       if (price < filters.minPrice || price > filters.maxPrice) return false;
       if (rating < filters.minRating) return false;
-      if (filters.sources.length > 0 && !filters.sources.includes(product.source)) return false;
-      if (filters.freeShipping && !product.delivery?.toLowerCase().includes('free')) return false;
-      
+      if (
+        filters.sources.length > 0 &&
+        !filters.sources.includes(product.source)
+      )
+        return false;
+      if (
+        filters.freeShipping &&
+        !product.delivery?.toLowerCase().includes('free')
+      )
+        return false;
+
       return true;
     });
   };
 
   const sortProducts = (products: IProduct[], sortBy: string): IProduct[] => {
     const sorted = [...products];
-    
+
     switch (sortBy) {
       case 'price_asc':
-        return sorted.sort((a, b) => (a.extracted_price || 0) - (b.extracted_price || 0));
+        return sorted.sort(
+          (a, b) => (a.extracted_price || 0) - (b.extracted_price || 0),
+        );
       case 'price_desc':
-        return sorted.sort((a, b) => (b.extracted_price || 0) - (a.extracted_price || 0));
+        return sorted.sort(
+          (a, b) => (b.extracted_price || 0) - (a.extracted_price || 0),
+        );
       case 'rating_desc':
         return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       case 'reviews_desc':
@@ -68,21 +80,26 @@ export const useSearchFilters = () => {
     }
   };
 
-  const getFilteredAndSortedProducts = (products: IProduct[], sortBy: string): IProduct[] => {
+  const getFilteredAndSortedProducts = (
+    products: IProduct[],
+    sortBy: string,
+  ): IProduct[] => {
     const filtered = applyFilters(products);
     return sortProducts(filtered, sortBy);
   };
 
   const getAvailableSources = (products: IProduct[]): string[] => {
-    const sources = products.map(product => product.source).filter(Boolean);
+    const sources = products.map((product) => product.source).filter(Boolean);
     return [...new Set(sources)];
   };
 
-  const getPriceRange = (products: IProduct[]): { min: number; max: number } => {
+  const getPriceRange = (
+    products: IProduct[],
+  ): { min: number; max: number } => {
     const prices = products
-      .map(product => product.extracted_price)
+      .map((product) => product.extracted_price)
       .filter((price): price is number => price !== undefined && price > 0);
-    
+
     return {
       min: prices.length > 0 ? Math.min(...prices) : 0,
       max: prices.length > 0 ? Math.max(...prices) : 10000000,
