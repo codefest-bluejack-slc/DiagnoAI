@@ -4,7 +4,7 @@ import { AnimatedIconProps } from '../../interfaces/IAnimatedIcon';
 export const Stethoscope: React.FC<AnimatedIconProps> = ({
   delay = 0,
   finalPosition,
-  size = 36,
+  size = 54,
 }) => (
   <div
     className="medical-particle"
