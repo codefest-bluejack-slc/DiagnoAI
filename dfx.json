@@ -11,6 +11,13 @@
       "dependencies": ["backend"],
       "type": "assets",
       "source": ["dist/"]
+    },
+    "user": {
+      "type": "motoko",
+      "main": "backend/user/main.mo",
+      "declarations": {
+        "node_compatibility": true
+      }
     }
   },
   "defaults": {
