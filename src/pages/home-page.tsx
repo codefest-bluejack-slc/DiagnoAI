@@ -52,7 +52,7 @@ export default function HomePage() {
       </div>
 
       <Navbar />
-      <main>
+      <main className="pt-16">
         <section className="h-screen flex items-center">
           <div className="w-full">
             <HeroSection />

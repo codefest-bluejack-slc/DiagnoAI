@@ -337,7 +337,7 @@ export default function MarketPage() {
 
       <Navbar />
 
-      <main className="relative z-10 min-h-screen pt-6 pb-16">
+      <main className="relative z-10 min-h-screen pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:w-1/3 space-y-6">

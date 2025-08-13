@@ -237,7 +237,7 @@ export default function ProductPage() {
 
       <Navbar />
 
-      <main className="relative z-10 min-h-screen pt-6 pb-16">
+      <main className="relative z-10 min-h-screen pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-6">
           <button
             onClick={handleBack}

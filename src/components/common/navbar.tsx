@@ -80,7 +80,7 @@ export default function Navbar({}: NavbarProps) {
 
 
   return (
-    <nav className="bg-white/10 backdrop-blur-lg border-b border-white/20 shadow-lg sticky top-0 z-40 w-full">
+    <nav className="bg-white/10 backdrop-blur-lg border-b border-white/20 shadow-lg fixed top-0 left-0 right-0 z-50 w-full">
       <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto h-16">
         <div className="flex items-center">
           <Tooltip content="DiagnoAI" position="bottom">
