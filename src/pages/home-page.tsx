@@ -4,6 +4,7 @@ import HeroSection from '../components/sections/hero-section';
 import ScrollMarquee from '../components/sections/scroll-marquee';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
 import '../styles/diagnostic-page.css';
+import { Loading } from '../components/common/loading';
 
 export default function HomePage() {
   const mousePosition = useMouseTracking();
@@ -51,7 +52,6 @@ export default function HomePage() {
       </div>
 
       <Navbar />
-      
       <main>
         <section className="h-screen flex items-center">
           <div className="w-full">

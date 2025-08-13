@@ -5,6 +5,7 @@ import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
 import { useModal } from '../../hooks/use-modal';
 import { useTransition } from '../../hooks/use-transition';
+import { useAuth } from '../../hooks/use-auth';
 
 interface NavbarProps {}
 
@@ -12,6 +13,8 @@ export default function Navbar({}: NavbarProps) {
   const { navigateTo } = useTransition();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { login, me, getCurrentUser } = useAuth();
+
 
   const {
     isOpen: isSearchModalOpen,
@@ -65,11 +68,16 @@ export default function Navbar({}: NavbarProps) {
 
   const handleSettingsClick = () => {
     console.log('Settings clicked');
+    getCurrentUser.mutate();
+
   };
 
   const handleLoginClick = () => {
+    login.mutate();
     console.log('Login clicked');
   };
+
+
 
   return (
     <nav className="bg-white/10 backdrop-blur-lg border-b border-white/20 shadow-lg sticky top-0 z-40 w-full">
