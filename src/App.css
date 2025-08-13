@@ -3,6 +3,134 @@
   min-height: 100vh;
 }
 
+* {
+  cursor: url('/cursors/Normal.cur'), auto;
+}
+
+body {
+  cursor: url('/cursors/Normal.cur'), auto;
+}
+
+a, button {
+  cursor: url('/cursors/Link.cur'), pointer;
+}
+
+input, textarea {
+  cursor: url('/cursors/Text.cur'), text;
+}
+
+[disabled] {
+  cursor: url('/cursors/Unavailable.cur'), not-allowed;
+}
+
+.cursor-pointer {
+  cursor: url('/cursors/Link.cur'), pointer;
+}
+
+.cursor-text {
+  cursor: url('/cursors/Text.cur'), text;
+}
+
+.cursor-move {
+  cursor: url('/cursors/Move.cur'), move;
+}
+
+.cursor-help {
+  cursor: url('/cursors/Help.cur'), help;
+}
+
+.cursor-wait {
+  cursor: url('/cursors/Working.ani'), wait;
+}
+
+.cursor-progress {
+  cursor: url('/cursors/Busy.ani'), progress;
+}
+
+.cursor-precision {
+  cursor: url('/cursors/Precision.ani'), crosshair;
+}
+
+.cursor-handwriting {
+  cursor: url('/cursors/Handwriting.cur'), default;
+}
+
+.cursor-person {
+  cursor: url('/cursors/Person.cur'), default;
+}
+
+.cursor-location {
+  cursor: url('/cursors/Location.cur'), default;
+}
+
+.cursor-alternate {
+  cursor: url('/cursors/Alternate.cur'), default;
+}
+
+.cursor-horizontal {
+  cursor: url('/cursors/Horizontal.cur'), ew-resize;
+}
+
+.cursor-vertical {
+  cursor: url('/cursors/Vertical.cur'), ns-resize;
+}
+
+.cursor-diagonal-1 {
+  cursor: url('/cursors/Diagonal 1.cur'), nw-resize;
+}
+
+.cursor-diagonal-2 {
+  cursor: url('/cursors/Diagonal 2.cur'), ne-resize;
+}
+
+.cursor-crystal {
+  cursor: url('/cursors/glowing-crystal.crs'), default;
+}
+
+.navbar button, .navbar a {
+  cursor: url('/cursors/Link.cur'), pointer;
+}
+
+.search-input {
+  cursor: url('/cursors/Text.cur'), text;
+}
+
+.modal-overlay {
+  cursor: url('/cursors/Normal.cur'), auto;
+}
+
+.card:hover {
+  cursor: url('/cursors/Link.cur'), pointer;
+}
+
+.loading {
+  cursor: url('/cursors/Working.ani'), wait;
+}
+
+select {
+  cursor: url('/cursors/Link.cur'), pointer;
+}
+
+.tooltip {
+  cursor: url('/cursors/Help.cur'), help;
+}
+
+.draggable {
+  cursor: url('/cursors/Move.cur'), move;
+}
+
+.resizable-horizontal {
+  cursor: url('/cursors/Horizontal.cur'), ew-resize;
+}
+
+.resizable-vertical {
+  cursor: url('/cursors/Vertical.cur'), ns-resize;
+}
+
+.precision-tool {
+  cursor: url('/cursors/Precision.ani'), crosshair;
+}
+
 @keyframes particleFloat {
   0% {
     transform: translateY(0px) translateX(0px);
