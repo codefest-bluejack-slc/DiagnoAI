@@ -11,6 +11,8 @@ const titleWords = [
   "HEALTHCARE"
 ];
 
+const sentence = titleWords.join(' ');
+
 export default function ScrollMarquee() {
   const [scrollY, setScrollY] = useState(0);
 
@@ -26,7 +28,7 @@ export default function ScrollMarquee() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-900/5 to-transparent">
       <div className="relative w-full max-w-7xl mx-auto px-6">
-        {titleWords.map((word, index) => {
+        {sentence.split(' ').map((word, index) => {
           const moveX = scrollY * 0.5 - index * 100;
           const moveY = index * 80;
           
