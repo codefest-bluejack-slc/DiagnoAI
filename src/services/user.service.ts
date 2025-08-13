@@ -1,8 +1,8 @@
-import { ActorSubclass } from "@ic-reactor/react/dist/types";
+import { ActorSubclass, Principal } from "@ic-reactor/react/dist/types";
 import { BaseService } from "./base.service";
-import { _SERVICE as _USERSERVICE } from "../declarations/user/user.did";
+import { _SERVICE as _USERSERVICE, User } from "../declarations/user/user.did";
 import { canisterId as userCanisterId, createActor as createUserActor } from "../declarations/user";
-import { aw } from "vitest/dist/chunks/reporters.D7Jzd9GS";
+import { firstOrDefault } from "../utils/service-utils";
 
 export class UserService extends BaseService<_USERSERVICE> {
     private II_URL = process.env.DFX_NETWORK === 'ic'
@@ -13,24 +13,63 @@ export class UserService extends BaseService<_USERSERVICE> {
         super(userCanisterId, createUserActor);
     }
 
-
-    public async login() {
+    public async getUserByPrincipal(principal: Principal): Promise<User | null> {    
         try {
-            await BaseService.authClient.login({
-                identityProvider: this.II_URL,
-                onSuccess: async () => {
-                    const identity = await BaseService.getCallerIdentity();
-                    
-                },
-                onError: (error) => {
-                    console.error("Login error:", error);
-                    throw error;
-                }
-            })
+            const response = await this.actor.getUser(principal);
+            return firstOrDefault(response);
         } catch (error) {
-            console.error("Login failed:", error);
+            console.error("Error fetching user by principal:", error);
             throw error;
-        }       
+        }
+    }
+
+    public async addUser(user: User): Promise<User | null> {
+        try {
+            const response = await this.actor.addUser(user.id,user);
+            console.log("User added:", response);
+            return firstOrDefault(response);
+        } catch (error) {
+            console.error("Error adding user:", error);
+            throw error;
+        }
+    }
+
+
+    public async login() : Promise<User | null> {
+        return new Promise<User | null>(async (resolve, reject) => {
+            try {
+                await BaseService.authClient.login({
+                    identityProvider: this.II_URL,
+                    onSuccess: async () => {
+                        const identity = await BaseService.getCallerIdentity();
+                        const response = await this.addUser({
+                            id: identity.getPrincipal(),
+                            name: "WKWK",
+                            email: "",
+                        })
+
+                        resolve(response);
+                    },
+                    onError: (error) => {
+                        console.error("Login error:", error);
+                        reject(error);
+                    }
+                })
+            } catch (error) {
+                console.error("Login failed:", error);
+                reject(error);
+            }       
+        })
+    }
+
+    public async me() : Promise<User | null> {
+        try {
+            const identity = await BaseService.getCallerIdentity();
+            return this.getUserByPrincipal(identity.getPrincipal());
+        } catch (error) {
+            console.error("Error fetching current user:", error);
+            return null;
+        }
     }
 
 

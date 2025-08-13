@@ -12,6 +12,8 @@ import DiagnosticPage from './pages/diagnostic-page';
 import MarketPage from './pages/market-page';
 import ProductPage from './pages/product-page';
 import { TransitionProvider } from './components/animations/diagonal-transition';
+import { ServiceProvider } from './contexts/service-context';
+import { AuthProvider } from './contexts/auth-context';
 
 function AppContent() {
   const location = useLocation();
@@ -48,14 +50,18 @@ function AppContent() {
       currentPage={currentPage}
       onPageChange={handlePageChange}
     >
-      <div className="App bg-dark-bg text-dark-text-primary">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/diagnostic" element={<DiagnosticPage />} />
-          <Route path="/marketplace" element={<MarketPage />} />
-          <Route path="/product/:productId" element={<ProductPage />} />
-        </Routes>
-      </div>
+      <ServiceProvider>
+          <AuthProvider>
+            <div className="App bg-dark-bg text-dark-text-primary">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/diagnostic" element={<DiagnosticPage />} />
+                <Route path="/marketplace" element={<MarketPage />} />
+                <Route path="/product/:productId" element={<ProductPage />} />
+              </Routes>
+            </div>
+          </AuthProvider>
+        </ServiceProvider>
     </TransitionProvider>
   );
 }
