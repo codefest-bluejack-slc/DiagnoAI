@@ -678,40 +678,132 @@ textarea.terminal {
 
 @keyframes flyInChar {
   0% {
-    transform: translate(var(--start-x), var(--start-y)) rotate(180deg);
-    opacity: 1;
+    transform: translate(var(--start-x), var(--start-y)) rotate(45deg) scale(0.8);
+    opacity: 0;
+    filter: blur(2px);
+  }
+  20% {
+    opacity: 0.7;
+    filter: blur(1px);
+  }
+  60% {
+    opacity: 0.9;
+    filter: blur(0.5px);
   }
   100% {
-    transform: translate(var(--final-x), var(--final-y)) rotate(0deg);
+    transform: translate(var(--final-x), var(--final-y)) rotate(0deg) scale(1);
     opacity: 1;
+    filter: blur(0px);
   }
 }
 
-@keyframes subtleBounce {
+@keyframes heartBeat {
   0%, 100% {
-    transform: translateY(0px) scale(1) rotate(0deg);
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  25% {
+    transform: scale(1.2);
+    opacity: 0.8;
   }
   50% {
-    transform: translateY(-3px) scale(1.01) rotate(0deg);
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  75% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes ecgLine {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  20% {
+    transform: translateX(-50%);
+  }
+  25% {
+    transform: translateX(-40%) scaleY(3);
+  }
+  30% {
+    transform: translateX(-30%) scaleY(0.5);
+  }
+  35% {
+    transform: translateX(-20%) scaleY(2);
+  }
+  40% {
+    transform: translateX(-10%) scaleY(1);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
 
 .flying-char {
   animation-name: flyInChar;
-  animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: both;
   will-change: transform, opacity, filter;
   text-shadow: 
     0 0 20px rgba(168, 85, 247, 0.6),
     0 0 40px rgba(168, 85, 247, 0.4),
     0 0 60px rgba(168, 85, 247, 0.2);
-  transition: all 0.3s ease;
 }
 
-.flying-char:hover {
-  text-shadow: 
-    0 0 30px rgba(168, 85, 247, 0.8),
-    0 0 60px rgba(168, 85, 247, 0.6),
-    0 0 90px rgba(168, 85, 247, 0.4);
-  animation: subtleBounce 0.6s ease-in-out;
+.heartbeat-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.heartbeat-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    var(--success-green) 20%, 
+    var(--success-green) 80%, 
+    transparent 100%
+  );
+  top: 50%;
+  transform: translateY(-50%);
+  animation: ecgLine 4s infinite;
+  opacity: 0.6;
+}
+
+.heartbeat-line:nth-child(2) {
+  top: 30%;
+  animation-delay: 0.5s;
+  opacity: 0.4;
+}
+
+.heartbeat-line:nth-child(3) {
+  top: 70%;
+  animation-delay: 1s;
+  opacity: 0.3;
+}
+
+.heartbeat-line:nth-child(4) {
+  top: 20%;
+  animation-delay: 1.5s;
+  opacity: 0.25;
+}
+
+.heartbeat-line:nth-child(5) {
+  top: 80%;
+  animation-delay: 2s;
+  opacity: 0.2;
 }

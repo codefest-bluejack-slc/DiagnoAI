@@ -14,6 +14,7 @@ import {
   HeartPulse,
 } from 'lucide-react';
 import { IAnimatedHeroIcon } from '../../interfaces/IAnimatedIcon';
+import { useTransition } from '../../hooks/use-transition';
 
 const medicalIcons = [
   Heart, Activity, Stethoscope, Brain, Shield, Plus, 
@@ -35,6 +36,7 @@ export default function HeroSection() {
   const [animatedIcons, setAnimatedIcons] = useState<IAnimatedHeroIcon[]>([]);
   const [flyingChars, setFlyingChars] = useState<FlyingCharacter[]>([]);
   const [titleAnimationComplete, setTitleAnimationComplete] = useState(false);
+  const { navigateTo } = useTransition();
 
   useEffect(() => {
     const titleText = "DiagnoAI";
@@ -44,26 +46,28 @@ export default function HeroSection() {
       const side = Math.floor(Math.random() * 4);
       let startX, startY;
       
-      const minDistance = 500;
-      // tar kalo ganti font sizenya bakalan bug jadinya pake extradistance bwt amanin
-      const extraDistance = Math.random() * 800;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const safeDistance = Math.max(screenWidth, screenHeight) * 0.8 + 400;
+      const extraRandomDistance = Math.random() * 600;
+      const totalDistance = safeDistance + extraRandomDistance;
       
       switch(side) {
         case 0:
-          startX = Math.random() * window.innerWidth;
-          startY = -(minDistance + extraDistance);
+          startX = Math.random() * (screenWidth + 600) - 300;
+          startY = -totalDistance;
           break;
         case 1:
-          startX = window.innerWidth + minDistance + extraDistance;
-          startY = Math.random() * window.innerHeight;
+          startX = screenWidth + totalDistance;
+          startY = Math.random() * (screenHeight + 600) - 300;
           break;
         case 2:
-          startX = Math.random() * window.innerWidth;
-          startY = window.innerHeight + minDistance + extraDistance;
+          startX = Math.random() * (screenWidth + 600) - 300;
+          startY = screenHeight + totalDistance;
           break;
         default:
-          startX = -(minDistance + extraDistance);
-          startY = Math.random() * window.innerHeight;
+          startX = -totalDistance;
+          startY = Math.random() * (screenHeight + 600) - 300;
           break;
       }
       
@@ -74,8 +78,8 @@ export default function HeroSection() {
         startY,
         finalX: 0,
         finalY: 0,
-        delay: index * 0.08 + Math.random() * 0.2,
-        duration: 2.8 + Math.random() * 0.7,
+        delay: index * 0.12 + Math.random() * 0.25,
+        duration: 3.5 + Math.random() * 1.0,
       };
     });
 
@@ -84,7 +88,7 @@ export default function HeroSection() {
     const maxDelay = Math.max(...flyingCharacters.map(char => char.delay + char.duration));
     setTimeout(() => {
       setTitleAnimationComplete(true);
-    }, (maxDelay + 0.5) * 1000);
+    }, (maxDelay) * 600);
   }, []);
 
   useEffect(() => {
@@ -116,6 +120,10 @@ export default function HeroSection() {
 
     return () => clearInterval(interval);
   }, [titleAnimationComplete]);
+
+  const handleStartDiagnosticsClick = () => { 
+    navigateTo('/diagnostic');
+  }
 
   return (
     <div className="flex flex-col justify-center items-center h-screen w-full px-6 sm:px-8 md:px-12 lg:px-16 text-center relative">
@@ -178,28 +186,22 @@ export default function HeroSection() {
           </div>
         </div>
         
-        <div className={`transition-all duration-1000 delay-500 ${titleAnimationComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`transition-all duration-800 delay-200 ${titleAnimationComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <p className="text-xl sm:text-2xl lg:text-4xl xl:text-5xl color-text-secondary mb-12 leading-relaxed max-w-4xl mx-auto font-medium">
             Advanced AI-powered diagnostic assistance for healthcare professionals. 
             Precision medicine meets intelligent technology.
           </p>
           
-          <div className={`flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 transition-all duration-1000 delay-700 ${titleAnimationComplete ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'}`}>
-            <button className="bg-primary hover:bg-primary-dark transition-all duration-300 
+          <div className={`flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 transition-all duration-800 delay-300 ${titleAnimationComplete ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'}`}>
+            <button onClick={handleStartDiagnosticsClick} 
+            className="bg-primary hover:bg-primary-dark transition-all duration-300 
                              px-10 sm:px-12 py-5 sm:py-6 rounded-xl text-white font-semibold text-xl sm:text-2xl
                              shadow-lg hover:shadow-glow transform hover:-translate-y-2 hover:scale-105
                              flex items-center gap-4">
               <Activity size={28} />
-              Start Diagnosis
+              Start Diagnostic
             </button>
             
-            <button className="bg-glass hover:bg-glass-hover transition-all duration-300 
-                             px-10 sm:px-12 py-5 sm:py-6 rounded-xl color-text-primary font-semibold text-xl sm:text-2xl
-                             border border-default hover:border-hover transform hover:-translate-y-2 hover:scale-105
-                             flex items-center gap-4">
-              <Brain size={28} />
-              Learn More
-            </button>
           </div>
         </div>
       </div>
