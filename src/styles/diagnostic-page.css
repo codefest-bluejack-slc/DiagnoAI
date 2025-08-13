@@ -1,0 +1,321 @@
+.diagnostic-container {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    to bottom right,
+    var(--background-dark),
+    var(--primary-purple-darker),
+    var(--tertiary-indigo-darker)
+  );
+  font-family:
+    'Inter',
+    'Segoe UI',
+    -apple-system,
+    sans-serif;
+}
+
+@keyframes icon-expand {
+  0% {
+    transform: translate(0, 0) scale(0.1) rotate(0deg);
+    opacity: 0;
+  }
+  5% {
+    transform: translate(0, 0) scale(0.3) rotate(5deg);
+    opacity: 0.4;
+  }
+  15% {
+    transform: translate(
+      calc(cos(var(--angle)) * 30px),
+      calc(sin(var(--angle)) * 30px)
+    ) scale(0.6) rotate(20deg);
+    opacity: 0.7;
+  }
+  25% {
+    transform: translate(
+      calc(cos(var(--angle)) * 60px),
+      calc(sin(var(--angle)) * 60px)
+    ) scale(0.8) rotate(40deg);
+    opacity: 0.8;
+  }
+  35% {
+    transform: translate(
+      calc(cos(var(--angle)) * 100px),
+      calc(sin(var(--angle)) * 100px)
+    ) scale(1.0) rotate(60deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(
+      calc(cos(var(--angle)) * 150px),
+      calc(sin(var(--angle)) * 150px)
+    ) scale(1.2) rotate(90deg);
+    opacity: 0.7;
+  }
+  65% {
+    transform: translate(
+      calc(cos(var(--angle)) * 220px),
+      calc(sin(var(--angle)) * 220px)
+    ) scale(1.4) rotate(130deg);
+    opacity: 0.5;
+  }
+  80% {
+    transform: translate(
+      calc(cos(var(--angle)) * 300px),
+      calc(sin(var(--angle)) * 300px)
+    ) scale(1.6) rotate(180deg);
+    opacity: 0.3;
+  }
+  90% {
+    transform: translate(
+      calc(cos(var(--angle)) * 380px),
+      calc(sin(var(--angle)) * 380px)
+    ) scale(1.8) rotate(220deg);
+    opacity: 0.1;
+  }
+  95% {
+    transform: translate(
+      calc(cos(var(--angle)) * 420px),
+      calc(sin(var(--angle)) * 420px)
+    ) scale(1.9) rotate(245deg);
+    opacity: 0.05;
+  }
+  100% {
+    transform: translate(
+      calc(cos(var(--angle)) * 450px),
+      calc(sin(var(--angle)) * 450px)
+    ) scale(2.0) rotate(270deg);
+    opacity: 0;
+  }
+}
+
+.animate-icon-expand {
+  animation: icon-expand var(--duration, 6s) ease-out forwards;
+  animation-delay: var(--delay, 0s);
+  animation-fill-mode: both;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.progress-card {
+  background: linear-gradient(
+    to bottom right,
+    var(--primary-purple-200),
+    var(--tertiary-indigo-200),
+    var(--secondary-pink-200)
+  );
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-default);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-2xl);
+}
+
+.step-card {
+  background: var(--background-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xl);
+}
+
+.step-item-active {
+  background: var(--primary-purple-200);
+  border: 1px solid var(--border-primary);
+}
+
+.step-item-inactive {
+  background: var(--background-glass);
+}
+
+.add-symptom-card {
+  background: linear-gradient(
+    to bottom right,
+    var(--background-glass-hover),
+    var(--background-glass),
+    var(--background-glass-hover)
+  );
+  backdrop-filter: blur(24px);
+  border: 2px dashed var(--border-primary);
+  border-radius: 1.5rem;
+  padding: 3rem;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-symptom-card:hover {
+  border-color: var(--primary-purple);
+  transform: scale(1.02);
+}
+
+.symptom-form-card {
+  background: linear-gradient(
+    to bottom right,
+    var(--primary-purple-100),
+    var(--background-glass),
+    var(--tertiary-indigo-100)
+  );
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-focus);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: var(--shadow-2xl);
+}
+
+.symptoms-list-card {
+  background: var(--background-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xl);
+}
+
+.warning-card {
+  background: linear-gradient(
+    to bottom right,
+    var(--warning-yellow-200),
+    var(--error-red-100),
+    var(--error-red-100)
+  );
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-warning);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xl);
+}
+
+.tips-card {
+  background: var(--background-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xl);
+}
+
+.background-orbs {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+}
+
+.background-orb-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24rem;
+  height: 24rem;
+  background: var(--primary-purple-500);
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.background-orb-2 {
+  position: absolute;
+  top: 33.333333%;
+  right: 0;
+  width: 20rem;
+  height: 20rem;
+  background: var(--secondary-pink-300);
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-delay: 1s;
+}
+
+.background-orb-3 {
+  position: absolute;
+  bottom: 0;
+  left: 33.333333%;
+  width: 18rem;
+  height: 18rem;
+  background: var(--tertiary-indigo-400);
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-delay: 2s;
+}
+
+.mouse-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.floating-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  animation: particleFloat infinite ease-in-out;
+}
+
+.main-content {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-purple) var(--border-default);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--border-default);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-purple);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-purple-light);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 1;
+  }
+  66% {
+    transform: translateY(-10px) translateX(-15px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.8;
+  }
+}

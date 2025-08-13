@@ -1,0 +1,468 @@
+
+
+/* Enhanced button hover effects */
+.group:hover .group-hover\:animate-pulse {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* Smooth gradient text animation */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-gradient-to-r.from-emerald-400.via-cyan-400.to-blue-400 {
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease-in-out infinite;
+}
+
+@keyframes infiniteExpand {
+  0% {
+    left: 50%;
+    top: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+    filter: blur(2px) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+  }
+  8% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(0.5);
+    filter: blur(1.8px) drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+  }
+  15% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.1);
+    top: calc(50% + (var(--final-y) - 50%) * 0.1);
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(0.7);
+    filter: blur(1.5px) drop-shadow(0 0 14px rgba(255, 255, 255, 0.4));
+  }
+  25% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.2);
+    top: calc(50% + (var(--final-y) - 50%) * 0.2);
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.9);
+    filter: blur(1.2px) drop-shadow(0 0 16px rgba(255, 255, 255, 0.35));
+  }
+  35% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.35);
+    top: calc(50% + (var(--final-y) - 50%) * 0.35);
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.1);
+    filter: blur(1px) drop-shadow(0 0 18px rgba(255, 255, 255, 0.3));
+  }
+  45% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.5);
+    top: calc(50% + (var(--final-y) - 50%) * 0.5);
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.3);
+    filter: blur(0.8px) drop-shadow(0 0 15px rgba(255, 255, 255, 0.25));
+  }
+  55% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.65);
+    top: calc(50% + (var(--final-y) - 50%) * 0.65);
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1.5);
+    filter: blur(0.6px) drop-shadow(0 0 12px rgba(255, 255, 255, 0.2));
+  }
+  65% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.75);
+    top: calc(50% + (var(--final-y) - 50%) * 0.75);
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.8);
+    filter: blur(0.4px) drop-shadow(0 0 10px rgba(255, 255, 255, 0.15));
+  }
+  75% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.85);
+    top: calc(50% + (var(--final-y) - 50%) * 0.85);
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(2.2);
+    filter: blur(0.3px) drop-shadow(0 0 8px rgba(255, 255, 255, 0.12));
+  }
+  85% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.92);
+    top: calc(50% + (var(--final-y) - 50%) * 0.92);
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(2.8);
+    filter: blur(0.5px) drop-shadow(0 0 6px rgba(255, 255, 255, 0.1));
+  }
+  92% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.97);
+    top: calc(50% + (var(--final-y) - 50%) * 0.97);
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(3.5);
+    filter: blur(0.8px) drop-shadow(0 0 4px rgba(255, 255, 255, 0.08));
+  }
+  96% {
+    left: calc(50% + (var(--final-x) - 50%) * 0.99);
+    top: calc(50% + (var(--final-y) - 50%) * 0.99);
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(4.2);
+    filter: blur(1.2px) drop-shadow(0 0 3px rgba(255, 255, 255, 0.05));
+  }
+  100% {
+    left: var(--final-x);
+    top: var(--final-y);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(5);
+    filter: blur(2px) drop-shadow(0 0 2px rgba(255, 255, 255, 0.02));
+  }
+}
+
+@keyframes continuousFloat {
+  0% {
+    transform: translate(-50%, -50%) translateY(0px) translateX(0px)
+      rotate(0deg);
+  }
+  25% {
+    transform: translate(-50%, -50%) translateY(-6px) translateX(3px)
+      rotate(0.5deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(0px) translateX(5px)
+      rotate(0deg);
+  }
+  75% {
+    transform: translate(-50%, -50%) translateY(6px) translateX(-2px)
+      rotate(-0.5deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(0px) translateX(0px)
+      rotate(0deg);
+  }
+}
+
+@keyframes subtleGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+  }
+}
+
+/* Modern minimalist icon effects */
+.medical-cross,
+.stethoscope-tube,
+.stethoscope-details,
+.dna-strand,
+.dna-rung,
+.ekg-line,
+.syringe-body,
+.syringe-liquid-action,
+.syringe-plunger-action,
+.virus-body,
+.virus-spike,
+.pill-bottle,
+.pill,
+.test-tube-body,
+.bubble {
+  transition: all 0.4s ease;
+}
+
+.ekg-line {
+  animation: minimalistPulse 4s ease-in-out infinite;
+}
+
+.bubble {
+  animation: gentleBubbleFloat 6s ease-in-out infinite;
+}
+
+@keyframes minimalistPulse {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes gentleBubbleFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 768px) {
+  .medical-particle {
+    animation: infiniteExpand 14s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medical-particle {
+    animation: fadeInOnly 2s ease-out forwards;
+  }
+
+  @keyframes fadeInOnly {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      left: var(--final-x);
+      top: var(--final-y);
+      opacity: 0.7;
+    }
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes fill-and-push {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(40px);
+  }
+}
+
+@keyframes liquid-fill {
+  0%,
+  50% {
+    height: 55px;
+  }
+  100% {
+    height: 15px;
+  }
+}
+
+@keyframes bubble-up {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 15px currentColor)
+      drop-shadow(0 0 25px currentColor)
+      drop-shadow(0 0 35px rgba(255, 255, 255, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px currentColor)
+      drop-shadow(0 0 40px currentColor)
+      drop-shadow(0 0 50px rgba(255, 255, 255, 0.5));
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 15px currentColor)
+      drop-shadow(0 0 25px rgba(255, 255, 255, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px currentColor)
+      drop-shadow(0 0 45px currentColor)
+      drop-shadow(0 0 60px rgba(255, 255, 255, 0.6));
+  }
+}
+
+.animate-float {
+  animation: float 12s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor)
+    drop-shadow(0 0 35px rgba(255, 255, 255, 0.2));
+}
+
+.animate-float:nth-child(even) {
+  animation-duration: 15s;
+  animation-direction: reverse;
+}
+
+.animate-float:nth-child(3n) {
+  animation-duration: 18s;
+}
+
+.medical-cross {
+  transform: scale(0);
+  transform-origin: center;
+  animation:
+    pop-in 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards,
+    glow 4s ease-in-out infinite;
+}
+
+.stethoscope-tube {
+  stroke-dasharray: 250;
+  stroke-dashoffset: 250;
+  animation: draw 2s ease-out forwards;
+}
+
+.stethoscope-details {
+  transform-origin: center;
+  transform: scale(0);
+  animation:
+    pop-in 0.5s ease-out 1.8s forwards,
+    pulse-glow 5s ease-in-out infinite;
+}
+
+.virus-body {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.virus-spike {
+  transform-origin: 50px 50px;
+  transform: scale(0);
+  animation: grow 1s ease-out 1s forwards;
+}
+
+.syringe-body {
+  stroke-dasharray: 250;
+  stroke-dashoffset: 250;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.syringe-plunger-action {
+  animation: fill-and-push 2s ease-in-out 1.5s forwards;
+}
+
+.syringe-liquid-action {
+  animation: liquid-fill 2s ease-in-out 1.5s forwards;
+}
+
+.dna-strand {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: draw 2.5s ease-out forwards;
+}
+
+.dna-rung {
+  transform: scaleX(0);
+  transform-origin: center;
+  animation: grow 1s ease-out 1.5s forwards;
+}
+
+.ekg-line {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: draw 2s ease-out 0.2s forwards;
+  filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor);
+}
+
+.pill-bottle {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.pill {
+  opacity: 0;
+  animation: pop-in 0.3s ease-out forwards;
+}
+
+.pill-1 {
+  animation-delay: 1.5s;
+}
+.pill-2 {
+  animation-delay: 1.7s;
+}
+.pill-3 {
+  animation-delay: 1.9s;
+}
+
+.test-tube-body {
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  animation: draw 1.5s ease-out forwards;
+}
+
+.bubble {
+  opacity: 0;
+  animation: bubble-up 2s ease-in-out forwards;
+}
+
+.bubble-1 {
+  animation-delay: 1.5s;
+}
+.bubble-2 {
+  animation-delay: 1.8s;
+}
+.bubble-3 {
+  animation-delay: 2.2s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feature-card {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.feature-card:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.feature-card:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.feature-card:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@media (max-width: 768px) {
+  .animate-float {
+    animation-duration: 16s;
+  }
+
+  .medical-cross,
+  .stethoscope-details {
+    animation-duration: 1.5s;
+  }
+}

@@ -1,56 +1,70 @@
-import { useQueryCall, useUpdateCall } from '@ic-reactor/react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import './App.css';
-import motokoLogo from './assets/motoko_moving.png';
-import motokoShadowLogo from './assets/motoko_shadow.png';
-import reactLogo from './assets/react.svg';
-import viteLogo from './assets/vite.svg';
+import HomePage from './pages/home-page';
+import DiagnosticPage from './pages/diagnostic-page';
+import MarketPage from './pages/market-page';
+import ProductPage from './pages/product-page';
+import { TransitionProvider } from './components/animations/diagonal-transition';
 
-function App() {
-  const { data: count, refetch } = useQueryCall({
-    functionName: 'get',
-  });
+function AppContent() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(location.pathname);
 
-  const { call: increment, loading } = useUpdateCall({
-    functionName: 'inc',
-    onSuccess: refetch,
-  });
+  useEffect(() => {
+    setCurrentPage(location.pathname);
+  }, [location.pathname]);
+
+  const handlePageChange = (page: string) => {
+    navigate(page);
+  };
+
+  const renderCurrentPage = () => {
+    if (location.pathname.startsWith('/product/')) {
+      return <ProductPage />;
+    }
+    
+    switch (currentPage) {
+      case '/':
+        return <HomePage />;
+      case '/diagnostic':
+        return <DiagnosticPage />;
+      case '/marketplace':
+        return <MarketPage />;
+      default:
+        return <HomePage />;
+    }
+  };
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-        <a
-          href="https://internetcomputer.org/docs/current/developer-docs/build/cdks/motoko-dfinity/motoko/"
-          target="_blank"
-        >
-          <span className="logo-stack">
-            <img
-              src={motokoShadowLogo}
-              className="logo motoko-shadow"
-              alt="Motoko logo"
-            />
-            <img src={motokoLogo} className="logo motoko" alt="Motoko logo" />
-          </span>
-        </a>
+    <TransitionProvider
+      currentPage={currentPage}
+      onPageChange={handlePageChange}
+    >
+      <div className="App bg-dark-bg text-dark-text-primary">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/diagnostic" element={<DiagnosticPage />} />
+          <Route path="/marketplace" element={<MarketPage />} />
+          <Route path="/product/:productId" element={<ProductPage />} />
+        </Routes>
       </div>
-      <h1>Vite + React + Motoko</h1>
-      <div className="card">
-        <button onClick={increment} disabled={loading}>
-          count is {count?.toString() ?? 'loading...'}
-        </button>
-        <p>
-          Edit <code>backend/Backend.mo</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite, React, and Motoko logos to learn more
-      </p>
-    </div>
+    </TransitionProvider>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 
