@@ -1,5 +1,6 @@
 export interface ISymptom {
   id: string;
+  illness: string;
   description: string;
   severity?: 'mild' | 'moderate' | 'severe';
   duration?: string;

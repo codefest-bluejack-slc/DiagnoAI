@@ -38,8 +38,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   );
   const {
     symptoms,
+    newSymptomIllness,
+    setNewSymptomIllness,
     newSymptomDescription,
     setNewSymptomDescription,
+    newSymptomSeverity,
+    setNewSymptomSeverity,
+    newSymptomDuration,
+    setNewSymptomDuration,
     showAddForm,
     setShowAddForm,
     currentStep,
@@ -154,7 +160,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       </div>
                     </div>
                     <p className="text-purple-200 text-sm font-medium">
-                      Symptoms Recorded
+                      Health Concerns Recorded
                     </p>
                     <p className="text-purple-300 text-xs mt-1">
                       Up to 8 recommended
@@ -195,14 +201,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             }`}
                           >
                             {step === 'input'
-                              ? 'Input Symptoms'
+                              ? 'Input Health Concerns'
                               : step === 'review'
                                 ? 'Review & Confirm'
                                 : 'AI Analysis'}
                           </p>
                           <p className="text-purple-300 text-xs">
                             {step === 'input'
-                              ? 'Describe your symptoms'
+                              ? 'Describe health concerns'
                               : step === 'review'
                                 ? 'Verify information'
                                 : 'Get insights'}
@@ -231,10 +237,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         />
                       </div>
                       <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-purple-200 transition-colors duration-300">
-                        Add New Symptom
+                        Add New Illness
                       </h3>
                       <p className="text-purple-200 mb-6">
-                        Click here to describe what you're experiencing
+                        Tell us about your health concern and symptoms
                       </p>
                       <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
                         <span>Start your health assessment</span>
@@ -252,7 +258,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           <Plus className="text-purple-300" size={20} />
                         </div>
                         <span className="animate-in slide-in-from-left-3 duration-300 delay-200">
-                          Describe Your Symptom
+                          Add Health Concern
                         </span>
                       </h3>
                       <button
@@ -263,10 +269,23 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       </button>
                     </div>
 
-                    <div className="space-y-4 animate-in slide-in-from-bottom-3 duration-400 delay-300">
+                    <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-400 delay-300">
                       <div>
                         <label className="block text-purple-200 text-sm font-medium mb-3">
-                          What are you experiencing?
+                          Illness/Condition Name
+                        </label>
+                        <input
+                          type="text"
+                          value={newSymptomIllness}
+                          onChange={(e) => setNewSymptomIllness(e.target.value)}
+                          placeholder="e.g., Headache, Back Pain, Fever, etc."
+                          className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-purple-200 text-sm font-medium mb-3">
+                          Detailed Description
                         </label>
                         <textarea
                           value={newSymptomDescription}
@@ -281,21 +300,58 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                               addSymptom();
                             }
                           }}
-                          autoFocus
                         />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-purple-200 text-sm font-medium mb-3">
+                            Severity Level
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={newSymptomSeverity}
+                              onChange={(e) => setNewSymptomSeverity(e.target.value as 'mild' | 'moderate' | 'severe')}
+                              className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] appearance-none cursor-pointer"
+                            >
+                              <option value="mild" className="bg-gray-800 text-white">Mild</option>
+                              <option value="moderate" className="bg-gray-800 text-white">Moderate</option>
+                              <option value="severe" className="bg-gray-800 text-white">Severe</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                              <div className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                                newSymptomSeverity === 'mild' ? 'bg-green-400' :
+                                newSymptomSeverity === 'moderate' ? 'bg-amber-400' : 'bg-red-400'
+                              }`}></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-purple-200 text-sm font-medium mb-3">
+                            Duration
+                          </label>
+                          <input
+                            type="text"
+                            value={newSymptomDuration}
+                            onChange={(e) => setNewSymptomDuration(e.target.value)}
+                            placeholder="tunggu dari ko lm"
+                            className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
+                          />
+                        </div>
                       </div>
 
                       <div className="flex gap-3">
                         <button
                           onClick={addSymptom}
-                          disabled={!newSymptomDescription.trim()}
+                          disabled={!newSymptomIllness.trim() || !newSymptomDescription.trim()}
                           className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
                         >
                           <Plus
                             className="text-white transition-transform duration-300 group-hover:rotate-90"
                             size={20}
                           />
-                          <span>Add Symptom</span>
+                          <span>Add Health Concern</span>
                         </button>
                         <button
                           onClick={() => setShowAddForm(false)}
@@ -313,7 +369,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-xl font-semibold text-white flex items-center gap-3">
                         <Activity className="text-purple-300" size={20} />
-                        Your Symptoms ({symptoms.length})
+                        Health Concerns ({symptoms.length})
                       </h3>
                       {!showAddForm && (
                         <button
@@ -339,40 +395,39 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
+                              <div className="flex items-center gap-3 mb-3">
                                 <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                                 <span className="text-purple-300 text-xs font-medium">
-                                  Symptom #{index + 1}
+                                  Health Concern #{index + 1}
                                 </span>
                               </div>
-                              <p className="text-white font-medium leading-relaxed">
-                                {symptom.description}
-                              </p>
-                              {(symptom.severity || symptom.duration) && (
-                                <div
-                                  className="flex items-center gap-3 text-sm mt-3 animate-in fade-in duration-300"
-                                  style={{
-                                    animationDelay: `${index * 150 + 300}ms`,
-                                  }}
-                                >
-                                  {symptom.severity && (
-                                    <span
-                                      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border transition-all duration-300 hover:scale-105 ${getSeverityColor(symptom.severity)}`}
-                                    >
-                                      {getSeverityIcon(symptom.severity)}
-                                      {symptom.severity
-                                        .charAt(0)
-                                        .toUpperCase() +
-                                        symptom.severity.slice(1)}
-                                    </span>
-                                  )}
-                                  {symptom.duration && (
-                                    <span className="text-purple-200 text-xs">
-                                      Duration: {symptom.duration}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                              
+                              <div className="mb-3">
+                                <h4 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></div>
+                                  {symptom.illness}
+                                </h4>
+                                <p className="text-purple-100 text-sm leading-relaxed pl-3.5">
+                                  {symptom.description}
+                                </p>
+                              </div>
+                              
+                              <div className="flex items-center gap-3 text-sm">
+                                {symptom.severity && (
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border transition-all duration-300 hover:scale-105 ${getSeverityColor(symptom.severity)}`}
+                                  >
+                                    {getSeverityIcon(symptom.severity)}
+                                    <span className="capitalize">{symptom.severity}</span>
+                                  </span>
+                                )}
+                                {symptom.duration && (
+                                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-400">
+                                    <Clock size={12} />
+                                    {symptom.duration}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <button
                               onClick={() => removeSymptom(symptom.id)}
@@ -416,13 +471,13 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     {[
                       {
                         icon: Edit3,
-                        tip: 'Be specific about location and intensity',
+                        tip: 'Name the illness clearly (e.g., Headache, Back Pain)',
                       },
-                      { icon: Clock, tip: 'Include duration and frequency' },
-                      { icon: Search, tip: 'Mention triggers or patterns' },
+                      { icon: Clock, tip: 'Include duration and frequency details' },
+                      { icon: Search, tip: 'Describe symptoms and triggers specifically' },
                       {
                         icon: Lightbulb,
-                        tip: 'Add at least 3 symptoms for better analysis',
+                        tip: 'Add at least 3 health concerns for better analysis',
                       },
                     ].map((item, index) => (
                       <div
@@ -447,7 +502,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         <AlertCircle className="text-amber-300" size={20} />
                       </div>
                       <p className="text-amber-200 text-sm font-medium mb-2">
-                        Add {3 - symptoms.length} more symptom
+                        Add {3 - symptoms.length} more concern
                         {3 - symptoms.length !== 1 ? 's' : ''}
                       </p>
                       <p className="text-amber-300 text-xs">
