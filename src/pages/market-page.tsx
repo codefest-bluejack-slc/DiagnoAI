@@ -18,7 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
-import { searchProducts } from '../services/medicineSearchService';
+import { searchProducts } from '../services/medicine.service';
 import { IProduct } from '../interfaces/IProduct';
 import { useSearchFilters, useSortOptions } from '../hooks/use-search-filters';
 import { usePagination } from '../hooks/use-pagination';

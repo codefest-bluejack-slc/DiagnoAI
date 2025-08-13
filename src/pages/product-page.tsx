@@ -16,7 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { IProductDetails } from '../interfaces/IProduct';
-import { getProductDetails, getProductFromCache } from '../services/medicineSearchService';
+import { getProductDetails, getProductFromCache } from '../services/medicine.service';
 import useMouseTracking from '../hooks/use-mouse-tracking';
 import Navbar from '../components/common/navbar';
 
