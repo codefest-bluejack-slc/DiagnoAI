@@ -25,25 +25,25 @@ export const getSeverityColor = (severity?: string) => {
 export const getStepIcon = (step: string) => {
   switch (step) {
     case 'input':
-      return <Stethoscope size={20} />;
+      return <Stethoscope className="text-purple-300" size={20} />;
     case 'review':
-      return <Target size={20} />;
+      return <Target className="text-purple-300" size={20} />;
     case 'analysis':
-      return <TrendingUp size={20} />;
+      return <TrendingUp className="text-purple-300" size={20} />;
     default:
-      return <Activity size={20} />;
+      return <Activity className="text-purple-300" size={20} />;
   }
 };
 
 export const getSeverityIcon = (severity?: string) => {
   switch (severity) {
     case 'mild':
-      return <Heart size={16} />;
+      return <Heart className="text-green-400" size={20} />;
     case 'moderate':
-      return <AlertCircle size={16} />;
+      return <AlertCircle className="text-amber-400" size={20} />;
     case 'severe':
-      return <Thermometer size={16} />;
+      return <Thermometer className="text-red-400" size={20} />;
     default:
-      return <Activity size={16} />;
+      return <Activity className="text-purple-400" size={20} />;
   }
 };

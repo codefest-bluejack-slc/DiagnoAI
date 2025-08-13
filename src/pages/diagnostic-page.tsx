@@ -88,7 +88,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-                <Brain className="text-purple-300" size={32} />
+                <Brain className="text-purple-300" size={24} />
               </div>
               <h1 className="text-4xl font-bold text-white">
                 AI Diagnostic Assistant
@@ -227,7 +227,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                         <Plus
                           className="text-purple-300 group-hover:rotate-90 transition-transform duration-300"
-                          size={32}
+                          size={24}
                         />
                       </div>
                       <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-purple-200 transition-colors duration-300">
@@ -249,7 +249,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
                         <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-300 delay-150">
-                          <Plus className="text-purple-300" size={24} />
+                          <Plus className="text-purple-300" size={20} />
                         </div>
                         <span className="animate-in slide-in-from-left-3 duration-300 delay-200">
                           Describe Your Symptom
@@ -292,8 +292,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
                         >
                           <Plus
+                            className="text-white transition-transform duration-300 group-hover:rotate-90"
                             size={20}
-                            className="transition-transform duration-300 group-hover:rotate-90"
                           />
                           <span>Add Symptom</span>
                         </button>
@@ -312,7 +312,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   <div className="symptoms-list-card animate-in fade-in slide-in-from-bottom-3 duration-500">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-xl font-semibold text-white flex items-center gap-3">
-                        <Activity className="text-purple-300" size={24} />
+                        <Activity className="text-purple-300" size={20} />
                         Your Symptoms ({symptoms.length})
                       </h3>
                       {!showAddForm && (
@@ -322,7 +322,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         >
                           <Plus
                             className="text-purple-300 hover:rotate-90 transition-transform duration-300"
-                            size={18}
+                            size={20}
                           />
                         </button>
                       )}
@@ -378,7 +378,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                               onClick={() => removeSymptom(symptom.id)}
                               className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400/50 hover:scale-110 hover:rotate-90"
                             >
-                              <X size={18} />
+                              <X className="text-red-400" size={20} />
                             </button>
                           </div>
                         </div>
@@ -392,8 +392,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           className="w-full py-4 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-400/50 shadow-lg hover:shadow-indigo-500/25 group"
                         >
                           <Brain
-                            size={24}
-                            className="group-hover:animate-pulse"
+                            className="text-white group-hover:animate-pulse"
+                            size={20}
                           />
                           <span>Start AI Analysis</span>
                           <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
@@ -430,7 +430,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         className="flex items-start gap-3 p-3 bg-white/5 rounded-lg"
                       >
                         <div className="p-1 bg-purple-500/20 rounded">
-                          <item.icon size={16} className="text-purple-300" />
+                          <item.icon className="text-purple-300" size={20} />
                         </div>
                         <p className="text-purple-200 text-sm leading-relaxed">
                           {item.tip}
@@ -444,7 +444,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   <div className="warning-card">
                     <div className="text-center">
                       <div className="w-12 h-12 mx-auto mb-3 bg-amber-500/30 rounded-full flex items-center justify-center">
-                        <AlertCircle className="text-amber-300" size={24} />
+                        <AlertCircle className="text-amber-300" size={20} />
                       </div>
                       <p className="text-amber-200 text-sm font-medium mb-2">
                         Add {3 - symptoms.length} more symptom
