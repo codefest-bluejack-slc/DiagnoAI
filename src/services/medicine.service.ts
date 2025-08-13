@@ -116,8 +116,7 @@ export const searchProducts = async (
 
 export const getProductDetails = async (
   productId: string,
-  apiKey: string,
-  fallbackProduct?: IProduct
+  apiKey: string
 ): Promise<IProductDetails> => {
   const cacheKey = `product_${productId}_${apiKey}`;
   const cachedResult = getCacheEntry(productCache, cacheKey);
@@ -125,41 +124,6 @@ export const getProductDetails = async (
   if (cachedResult) {
     console.log('Using cached product details for:', productId);
     return cachedResult;
-  }
-
-  if (fallbackProduct) {
-    console.log('Using fallback product data for:', productId);
-    const fallbackDetails: IProductDetails = {
-      ...fallbackProduct,
-      description: `${fallbackProduct.title} - Available from ${fallbackProduct.source}`,
-      specifications: {},
-      images: fallbackProduct.thumbnail ? [fallbackProduct.thumbnail] : [],
-      seller_info: {
-        name: fallbackProduct.source || 'Unknown Store',
-        rating: fallbackProduct.rating,
-        reviews_count: fallbackProduct.reviews
-      },
-      availability: 'Available',
-      shipping_info: {
-        cost: 'Varies',
-        time: '3-7 days',
-        free_shipping: fallbackProduct.delivery?.toLowerCase().includes('free') || false
-      },
-      variants: {},
-      reviews_data: {
-        total_reviews: fallbackProduct.reviews || 0,
-        rating_breakdown: {},
-        recent_reviews: []
-      },
-      product_highlights: [fallbackProduct.title],
-      brand: fallbackProduct.source || '',
-      category: 'General',
-      model: '',
-      sku: productId
-    };
-    
-    setCacheEntry(productCache, cacheKey, fallbackDetails);
-    return fallbackDetails;
   }
 
   console.log('Attempting to fetch detailed product info for:', productId);
@@ -276,35 +240,7 @@ export const getProductDetails = async (
       console.warn(`CORS proxy ${CORS_PROXIES[i]} failed for product details:`, error);
       
       if (i === CORS_PROXIES.length - 1) {
-        const fallbackDetails: IProductDetails = {
-          position: 1,
-          title: 'Product not available',
-          link: '',
-          product_link: '',
-          product_id: productId,
-          thumbnail: '',
-          source: '',
-          price: 'N/A',
-          extracted_price: 0,
-          rating: 0,
-          reviews: 0,
-          delivery: '',
-          description: 'Unable to fetch detailed product information. Please try again later.',
-          specifications: {},
-          images: [],
-          seller_info: { name: 'Unknown', rating: 0, reviews_count: 0 },
-          availability: 'Unknown',
-          shipping_info: { cost: 'N/A', time: 'N/A', free_shipping: false },
-          variants: {},
-          reviews_data: { total_reviews: 0, rating_breakdown: {}, recent_reviews: [] },
-          product_highlights: [],
-          brand: '',
-          category: '',
-          model: '',
-          sku: ''
-        };
-        
-        return fallbackDetails;
+        throw new Error(`All CORS proxies failed. Last error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
   }
