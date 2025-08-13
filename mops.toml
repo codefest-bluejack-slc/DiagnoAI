@@ -1,4 +1,3 @@
-# Motoko dependencies (https://mops.one/)
-
 [dependencies]
 base = "0.7.4"
+motoko-hash-map = "https://github.com/ZhenyaUsenko/motoko-hash-map"
