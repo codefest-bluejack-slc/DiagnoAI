@@ -12,16 +12,17 @@ import {
   UserCheck,
   Microscope,
   HeartPulse,
-  Clock
 } from 'lucide-react';
+import { IAnimatedHeroIcon } from '../../interfaces/IAnimatedIcon';
 
 const medicalIcons = [
   Heart, Activity, Stethoscope, Brain, Shield, Plus, 
   Zap, Eye, Pill, UserCheck, Microscope, HeartPulse
 ];
 
+
 export default function HeroSection() {
-  const [animatedIcons, setAnimatedIcons] = useState([]);
+  const [animatedIcons, setAnimatedIcons] = useState<IAnimatedHeroIcon[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -30,9 +31,9 @@ export default function HeroSection() {
       for (let i = 0; i < iconsToSpawn; i++) {
         setTimeout(() => {
           const IconComponent = medicalIcons[Math.floor(Math.random() * medicalIcons.length)];
-          const newIcon = {
+          const newIcon : IAnimatedHeroIcon = {
             id: Date.now() + Math.random() + i,
-            Icon: IconComponent,
+            icon: IconComponent,
             angle: Math.random() * 360,
             duration: 6 + Math.random() * 2,
             delay: Math.random() * 0.5,
@@ -64,9 +65,9 @@ export default function HeroSection() {
               '--delay': `${iconData.delay}s`,
               animationDuration: `${iconData.duration}s`,
               animationDelay: `${iconData.delay}s`,
-            }}
+            } as React.CSSProperties}
           >
-            <iconData.Icon 
+            <iconData.icon 
               size={iconData.size} 
               className="text-purple-300/80"
             />
