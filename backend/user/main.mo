@@ -1,7 +1,7 @@
 import Map "mo:motoko-hash-map/Map";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
-import Type "type";
+import Type "lib";
 
 
 persistent actor User {

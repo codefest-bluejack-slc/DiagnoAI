@@ -1,5 +1,6 @@
 
-CANISTERS=("backend" "user")
+# Modify CANISTERS array to include the canisters you want to create
+CANISTERS=("user" "symptomp" "history")
 dfx stop
 dfx identity use default
 dfx start --clean --background

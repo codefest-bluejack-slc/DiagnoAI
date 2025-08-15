@@ -49,8 +49,10 @@ export default function HeroSection() {
       }
     }, 500 + Math.random() * 300);
 
+    console.log(import.meta.env)
     return () => clearInterval(interval);
   }, []);
+
 
   return (
     <div className="flex flex-col justify-center items-center h-screen w-full px-6 sm:px-8 md:px-12 lg:px-16 text-center relative">
