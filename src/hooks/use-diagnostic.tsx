@@ -64,6 +64,12 @@ export const useDiagnostic = () => {
     setSymptoms((prev) => prev.filter((symptom) => symptom.id !== id));
   };
 
+  const updateSymptom = (id: string, updatedSymptom: Partial<ISymptom>) => {
+    setSymptoms((prev) => prev.map(symptom => 
+      symptom.id === id ? { ...symptom, ...updatedSymptom } : symptom
+    ));
+  };
+
   const getProgressPercentage = () => {
     return Math.min(symptoms.length * 12.5, 100);
   };
@@ -84,6 +90,7 @@ export const useDiagnostic = () => {
     setCurrentStep,
     addSymptom,
     removeSymptom,
+    updateSymptom,
     getProgressPercentage,
   };
 };

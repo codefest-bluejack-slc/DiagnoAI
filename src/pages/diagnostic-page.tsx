@@ -16,6 +16,9 @@ import {
   Shield,
   Zap,
   Timer,
+  Trash2,
+  Edit,
+  Play,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
@@ -31,6 +34,7 @@ import '../styles/diagnostic-page.css';
 export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const mousePosition = useMouseTracking();
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -57,6 +61,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setCurrentStep,
     addSymptom,
     removeSymptom,
+    updateSymptom,
     getProgressPercentage,
   } = useDiagnostic();
 
@@ -73,6 +78,51 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const handleAddSymptom = () => {
     addSymptom();
+  };
+
+  const handleEditSymptom = (symptomId: string) => {
+    const symptom = symptoms.find(s => s.id === symptomId);
+    if (symptom) {
+      setNewSymptomIllness(symptom.illness);
+      setNewSymptomDescription(symptom.description);
+      setNewSymptomSeverity(symptom.severity);
+      setNewSymptomDuration(symptom.duration || '');
+      setEditingSymptom(symptomId);
+      setShowAddForm(true);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (editingSymptom) {
+      updateSymptom(editingSymptom, {
+        illness: newSymptomIllness.trim(),
+        description: newSymptomDescription.trim(),
+        severity: newSymptomSeverity,
+        duration: newSymptomDuration.trim() || undefined,
+      });
+      
+      setNewSymptomIllness('');
+      setNewSymptomDescription('');
+      setNewSymptomSeverity('mild');
+      setNewSymptomDuration('');
+      setEditingSymptom(null);
+      setShowAddForm(false);
+    } else {
+      addSymptom();
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setNewSymptomIllness('');
+    setNewSymptomDescription('');
+    setNewSymptomSeverity('mild');
+    setNewSymptomDuration('');
+    setEditingSymptom(null);
+    setShowAddForm(false);
+  };
+
+  const handleStartDiagnostic = () => {
+    setCurrentStep('analysis');
   };
 
   return (
@@ -218,11 +268,11 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
                         </div>
                         <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
-                          Add Health Concern
+                          {editingSymptom ? 'Edit Health Concern' : 'Add Health Concern'}
                         </span>
                       </h3>
                       <button
-                        onClick={handleHideAddForm}
+                        onClick={handleCancelEdit}
                         className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transform hover:scale-110"
                       >
                         <X className="text-purple-300" size={20} />
@@ -303,18 +353,19 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
                       <div className="flex gap-3">
                         <button
-                          onClick={handleAddSymptom}
+                          onClick={handleSaveEdit}
                           disabled={!newSymptomIllness.trim() || !newSymptomDescription.trim()}
                           className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
                         >
-                          <Plus
-                            className="text-white transition-transform duration-300 group-hover:rotate-90"
-                            size={20}
-                          />
-                          <span>Add Health Concern</span>
+                          {editingSymptom ? (
+                            <Edit className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                          ) : (
+                            <Plus className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                          )}
+                          <span>{editingSymptom ? 'Update Health Concern' : 'Add Health Concern'}</span>
                         </button>
                         <button
-                          onClick={() => setShowAddForm(false)}
+                          onClick={handleCancelEdit}
                           className="py-4 px-6 bg-white/10 hover:bg-white/20 text-purple-200 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98]"
                         >
                           Cancel
@@ -329,10 +380,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
                 <div className="tips-card">
-                  <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                    <Stethoscope className="text-purple-300" size={20} />
-                    Health Concerns
-                  </h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-white font-semibold flex items-center gap-2">
+                      <Stethoscope className="text-purple-300" size={20} />
+                      Health Concerns
+                    </h4>
+                    {symptoms.length >= 2 && (
+                      <button
+                        onClick={handleStartDiagnostic}
+                        className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
+                      >
+                        <Play size={12} />
+                        Start Diagnostic
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-3">
                     {symptoms.length === 0 ? (
                       <div className="text-center py-6">
@@ -350,42 +412,62 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       symptoms.map((symptom, index) => (
                         <div
                           key={symptom.id}
-                          className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-300"
+                          className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-300 group"
                         >
-                          <div className="flex items-center gap-2 mb-2">
-                            <Heart className="w-3 h-3 text-purple-400" />
-                            <h5 className="text-white text-sm font-medium">
-                              {symptom.illness}
-                            </h5>
-                          </div>
-                          <p className="text-purple-200 text-xs leading-relaxed mb-2 pl-5">
-                            {symptom.description.length > 60 
-                              ? `${symptom.description.substring(0, 60)}...` 
-                              : symptom.description}
-                          </p>
-                          <div className="flex items-center gap-2 pl-5">
-                            {symptom.severity && (
-                              <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
-                                symptom.severity === 'mild' ? 'bg-green-400/20 text-green-400' :
-                                symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-400' :
-                                'bg-red-400/20 text-red-400'
-                              }`}>
-                                {symptom.severity === 'mild' ? (
-                                  <Shield className="w-3 h-3" />
-                                ) : symptom.severity === 'moderate' ? (
-                                  <AlertCircle className="w-3 h-3" />
-                                ) : (
-                                  <Zap className="w-3 h-3" />
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Heart className="w-3 h-3 text-purple-400" />
+                                <h5 className="text-white text-sm font-medium">
+                                  {symptom.illness}
+                                </h5>
+                              </div>
+                              <p className="text-purple-200 text-xs leading-relaxed mb-2 pl-5">
+                                {symptom.description.length > 45 
+                                  ? `${symptom.description.substring(0, 45)}...` 
+                                  : symptom.description}
+                              </p>
+                              <div className="flex items-center gap-1.5 pl-5">
+                                {symptom.severity && (
+                                  <span className={`text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1 ${
+                                    symptom.severity === 'mild' ? 'bg-green-400/20 text-green-400' :
+                                    symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-400' :
+                                    'bg-red-400/20 text-red-400'
+                                  }`}>
+                                    {symptom.severity === 'mild' ? (
+                                      <Shield className="w-2.5 h-2.5" />
+                                    ) : symptom.severity === 'moderate' ? (
+                                      <AlertCircle className="w-2.5 h-2.5" />
+                                    ) : (
+                                      <Zap className="w-2.5 h-2.5" />
+                                    )}
+                                    {symptom.severity}
+                                  </span>
                                 )}
-                                {symptom.severity}
-                              </span>
-                            )}
-                            {symptom.duration && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
-                                <Timer className="w-3 h-3" />
-                                {symptom.duration}
-                              </span>
-                            )}
+                                {symptom.duration && (
+                                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
+                                    <Timer className="w-2.5 h-2.5" />
+                                    {symptom.duration}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <button
+                                onClick={() => handleEditSymptom(symptom.id)}
+                                className="p-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-blue-400/50"
+                                title="Edit"
+                              >
+                                <Edit size={12} />
+                              </button>
+                              <button
+                                onClick={() => removeSymptom(symptom.id)}
+                                className="p-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-red-400/50"
+                                title="Remove"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))
