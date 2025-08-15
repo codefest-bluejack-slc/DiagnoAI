@@ -21,7 +21,6 @@ export const useDiagnostic = () => {
     onSuccess: (data) => {
       console.log('Symptom added successfully:', data);
       if (!data) return;
-      setSymptoms((prev) => [...prev, data]);
       setNewSymptomDescription('');
       setShowAddForm(false);
     },
@@ -66,8 +65,7 @@ export const useDiagnostic = () => {
   };
 
   const getProgressPercentage = () => {
-    const maxSymptoms = 8;
-    return Math.min((symptoms.length / maxSymptoms) * 100, 100);
+    return Math.min(symptoms.length * 12.5, 100);
   };
 
   return {

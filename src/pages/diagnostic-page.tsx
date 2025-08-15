@@ -108,66 +108,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
-                <div className="progress-card">
-                  <div className="text-center">
-                    <div className="relative w-24 h-24 mx-auto mb-4">
-                      <svg
-                        className="w-24 h-24 transform -rotate-90"
-                        viewBox="0 0 100 100"
-                      >
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          stroke="var(--primary-purple-300)"
-                          strokeWidth="8"
-                          fill="none"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          stroke="url(#gradient)"
-                          strokeWidth="8"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeDasharray={`${getProgressPercentage() * 2.51} 251`}
-                          className="transition-all duration-500"
-                        />
-                        <defs>
-                          <linearGradient
-                            id="gradient"
-                            x1="0%"
-                            y1="0%"
-                            x2="100%"
-                            y2="100%"
-                          >
-                            <stop
-                              offset="0%"
-                              stopColor="var(--primary-purple)"
-                            />
-                            <stop
-                              offset="100%"
-                              stopColor="var(--tertiary-indigo)"
-                            />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
-                          {symptoms.length}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-purple-200 text-sm font-medium">
-                      Health Concerns Recorded
-                    </p>
-                    <p className="text-purple-300 text-xs mt-1">
-                      Up to 8 recommended
-                    </p>
-                  </div>
-                </div>
-
                 <div className="step-card">
                   <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                     <Activity className="text-purple-300" size={20} />
@@ -475,10 +415,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       },
                       { icon: Clock, tip: 'Include duration and frequency details' },
                       { icon: Search, tip: 'Describe symptoms and triggers specifically' },
-                      {
-                        icon: Lightbulb,
-                        tip: 'Add at least 3 health concerns for better analysis',
-                      },
                     ].map((item, index) => (
                       <div
                         key={index}
@@ -495,22 +431,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   </div>
                 </div>
 
-                {symptoms.length > 0 && symptoms.length < 3 && (
-                  <div className="warning-card">
-                    <div className="text-center">
-                      <div className="w-12 h-12 mx-auto mb-3 bg-amber-500/30 rounded-full flex items-center justify-center">
-                        <AlertCircle className="text-amber-300" size={20} />
-                      </div>
-                      <p className="text-amber-200 text-sm font-medium mb-2">
-                        Add {3 - symptoms.length} more concern
-                        {3 - symptoms.length !== 1 ? 's' : ''}
-                      </p>
-                      <p className="text-amber-300 text-xs">
-                        For more accurate analysis
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
