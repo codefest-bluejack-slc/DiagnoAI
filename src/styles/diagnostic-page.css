@@ -10,6 +10,70 @@
   );
 }
 
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-out-up {
+  animation: slideOutUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-in-down {
+  animation: slideInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-out-down {
+  animation: slideOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
 @keyframes icon-expand {
   0% {
     transform: translate(0, 0) scale(0.3) rotate(0deg);
@@ -79,11 +143,14 @@
   padding: 3rem;
   cursor: pointer;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideInSmooth 0.6s ease-out forwards;
 }
 
 .add-symptom-card:hover {
   border-color: var(--primary-purple);
-  transform: scale(1.02);
+  transform: translateY(15px) scale(1.02);
 }
 
 .symptom-form-card {
@@ -98,6 +165,31 @@
   border-radius: 1.5rem;
   padding: 2rem;
   box-shadow: var(--shadow-2xl);
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: slideInSmoothForm 0.6s ease-out forwards;
+}
+
+@keyframes slideInSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInSmoothForm {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-input {

@@ -26,6 +26,7 @@ import '../styles/diagnostic-page.css';
 
 export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const mousePosition = useMouseTracking();
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -54,6 +55,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     removeSymptom,
     getProgressPercentage,
   } = useDiagnostic();
+
+  const [isExiting, setIsExiting] = useState(false);
+  const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
+
+  const handleShowAddForm = () => {
+    setShowAddForm(true);
+  };
+
+  const handleHideAddForm = () => {
+    setShowAddForm(false);
+  };
+
+  const handleAddSymptom = () => {
+    addSymptom();
+  };
 
   return (
     <div className="diagnostic-container">
@@ -165,21 +181,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               <div className="space-y-6">
                 {!showAddForm && (
                   <div
-                    className="add-symptom-card group animate-in fade-in slide-in-from-bottom-4 duration-700"
-                    onClick={() => setShowAddForm(true)}
+                    className="add-symptom-card group transition-all duration-500 ease-in-out transform hover:scale-105"
+                    onClick={handleShowAddForm}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="relative text-center">
-                      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                    <div className="relative text-center transform transition-all duration-500 group-hover:scale-105">
+                      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 animate-pulse">
                         <Plus
-                          className="text-purple-300 group-hover:rotate-90 transition-transform duration-300"
+                          className="text-purple-300 group-hover:rotate-90 transition-transform duration-500"
                           size={24}
                         />
                       </div>
                       <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-purple-200 transition-colors duration-300">
                         Add New Illness
                       </h3>
-                      <p className="text-purple-200 mb-6">
+                      <p className="text-purple-200 mb-6 transform transition-all duration-300 group-hover:scale-105">
                         Tell us about your health concern and symptoms
                       </p>
                       <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
@@ -191,25 +207,25 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                 )}
 
                 {showAddForm && (
-                  <div className="symptom-form-card animate-in slide-in-from-top-5 fade-in duration-500">
+                  <div className="symptom-form-card transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-top-3">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
-                        <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-300 delay-150">
-                          <Plus className="text-purple-300" size={20} />
+                        <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-500 delay-200">
+                          <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
                         </div>
-                        <span className="animate-in slide-in-from-left-3 duration-300 delay-200">
+                        <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
                           Add Health Concern
                         </span>
                       </h3>
                       <button
-                        onClick={() => setShowAddForm(false)}
-                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+                        onClick={handleHideAddForm}
+                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transform hover:scale-110"
                       >
                         <X className="text-purple-300" size={20} />
                       </button>
                     </div>
 
-                    <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-400 delay-300">
+                    <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-600 delay-500">
                       <div>
                         <label className="block text-purple-200 text-sm font-medium mb-3">
                           Illness/Condition Name
@@ -283,7 +299,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
                       <div className="flex gap-3">
                         <button
-                          onClick={addSymptom}
+                          onClick={handleAddSymptom}
                           disabled={!newSymptomIllness.trim() || !newSymptomDescription.trim()}
                           className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
                         >
@@ -301,100 +317,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         </button>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {symptoms.length > 0 && (
-                  <div className="symptoms-list-card animate-in fade-in slide-in-from-bottom-3 duration-500">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-semibold text-white flex items-center gap-3">
-                        <Activity className="text-purple-300" size={20} />
-                        Health Concerns ({symptoms.length})
-                      </h3>
-                      {!showAddForm && (
-                        <button
-                          onClick={() => setShowAddForm(true)}
-                          className="p-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
-                        >
-                          <Plus
-                            className="text-purple-300 hover:rotate-90 transition-transform duration-300"
-                            size={20}
-                          />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
-                      {symptoms.map((symptom, index) => (
-                        <div
-                          key={symptom.id}
-                          className="p-4 bg-gradient-to-r from-white/5 via-white/10 to-white/5 border border-white/10 rounded-xl transition-all duration-300 group animate-in fade-in duration-500"
-                          style={{
-                            animationDelay: `${index * 100}ms`,
-                          }}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                                <span className="text-purple-300 text-xs font-medium">
-                                  Health Concern #{index + 1}
-                                </span>
-                              </div>
-                              
-                              <div className="mb-3">
-                                <h4 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></div>
-                                  {symptom.illness}
-                                </h4>
-                                <p className="text-purple-100 text-sm leading-relaxed pl-3.5">
-                                  {symptom.description}
-                                </p>
-                              </div>
-                              
-                              <div className="flex items-center gap-3 text-sm">
-                                {symptom.severity && (
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border transition-all duration-300 hover:scale-105 ${getSeverityColor(symptom.severity)}`}
-                                  >
-                                    {getSeverityIcon(symptom.severity)}
-                                    <span className="capitalize">{symptom.severity}</span>
-                                  </span>
-                                )}
-                                {symptom.duration && (
-                                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-400">
-                                    <Clock size={12} />
-                                    {symptom.duration}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => removeSymptom(symptom.id)}
-                              className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400/50 hover:scale-110 hover:rotate-90"
-                            >
-                              <X className="text-red-400" size={20} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {symptoms.length >= 3 && (
-                      <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
-                        <button
-                          onClick={() => setCurrentStep('analysis')}
-                          className="w-full py-4 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-400/50 shadow-lg hover:shadow-indigo-500/25 group"
-                        >
-                          <Brain
-                            className="text-white group-hover:animate-pulse"
-                            size={20}
-                          />
-                          <span>Start AI Analysis</span>
-                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        </button>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
