@@ -1,7 +1,7 @@
 import Map "mo:motoko-hash-map/Map";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
-import Type "type";
+import Type "lib";
 
 
 persistent actor User {
@@ -11,9 +11,9 @@ persistent actor User {
         Map.get<Principal, Type.User>(map, Map.phash, id);
     };
 
-    public func addUser(id: Principal, value: Type.User) : async ?Type.User {
-        ignore Map.put<Principal, Type.User>(map, Map.phash, id, value);
-        Map.get<Principal, Type.User>(map, Map.phash, id);
+    public func addUser(value: Type.User) : async ?Type.User {
+        ignore Map.put<Principal, Type.User>(map, Map.phash, value.id, value);
+        Map.get<Principal, Type.User>(map, Map.phash, value.id);
     };
 
     

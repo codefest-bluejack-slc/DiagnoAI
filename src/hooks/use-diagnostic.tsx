@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { ISymptom } from '../interfaces/IDiagnostic';
+import { useService } from './use-service';
+import { useMutation } from './use-mutation';
+import { Symptom } from '../declarations/symptom/symptom.did';
+import { v4 as uuidv4 } from 'uuid';
 
 export const useDiagnostic = () => {
   const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
@@ -11,6 +15,32 @@ export const useDiagnostic = () => {
   const [currentStep, setCurrentStep] = useState<
     'input' | 'review' | 'analysis'
   >('input');
+  const { symptomService, historyService } = useService();
+  const addSymptomMutation = useMutation({
+    mutationFn: (symptom: Symptom) => symptomService.addSymptom(symptom),
+    onSuccess: (data) => {
+      console.log('Symptom added successfully:', data);
+      if (!data) return;
+      setSymptoms((prev) => [...prev, data]);
+      setNewSymptomDescription('');
+      setShowAddForm(false);
+    },
+    onError: (error) => {
+      console.error('Error adding symptom:', error);
+    }
+  });
+
+  const getHistoryMutation = useMutation({
+    mutationFn: () => historyService.getMyHistories(),
+    onSuccess: (data) => {
+      console.log('History fetched successfully:', data);
+      // if (!data) return;
+      // setSymptoms((prev) => [...prev, data]);
+    },
+    onError: (error) => {
+      console.error('Error fetching symptom:', error);
+    }
+  });
 
   const addSymptom = () => {
     if (newSymptomIllness.trim() && newSymptomDescription.trim()) {

@@ -1,20 +1,26 @@
 {
   "canisters": {
-    "backend": {
-      "type": "motoko",
-      "main": "backend/Backend.mo",
-      "declarations": {
-        "node_compatibility": true
-      }
-    },
     "frontend": {
-      "dependencies": ["backend"],
       "type": "assets",
       "source": ["dist/"]
     },
     "user": {
       "type": "motoko",
       "main": "backend/user/main.mo",
+      "declarations": {
+        "node_compatibility": true
+      }
+    },
+    "symptom": {
+      "type": "motoko",
+      "main": "backend/symptom/main.mo",
+      "declarations": {
+        "node_compatibility": true
+      }
+    },
+    "history": {
+      "type": "motoko",
+      "main": "backend/history/main.mo",
       "declarations": {
         "node_compatibility": true
       }
