@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "setup": "npm i && dfx canister create --all && dfx generate && dfx deploy",
+    "setup": "./setup.sh",
     "start": "run-p frontend backend",
     "frontend": "vite --port 3000",
     "backend": "mo-dev --generate --deploy -y",
