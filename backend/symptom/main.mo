@@ -17,13 +17,16 @@ persistent actor Symptoms {
     public func addSymptom(userId: Principal, value: Type.Symptom, historyCanisterId : Text) : async ?Type.Symptom {
         let historyActor = actor (historyCanisterId) : HistoryModule.HistoryActor;
         let history = await historyActor.getHistory(value.historyId);
-        if (history == null) {
-            ignore await historyActor.addHistory(value.historyId, {
-                id = value.historyId;
-                userId = userId;
-                title = "Your Symptoms";
-                result = "";
-            });
+        switch (history) {
+            case (#err _) {
+                ignore await historyActor.addHistory({
+                    id = value.historyId;
+                    userId = userId;
+                    title = "Your Symptoms";
+                    result = "";
+                });
+            };
+            case (#ok _) {};
         };
 
         ignore Map.put<Text, Type.Symptom>(map, Map.thash, value.id, value);
@@ -49,7 +52,7 @@ persistent actor Symptoms {
         };
     };
 
-    public query func getAllHistories() : async [(Text, Type.Symptom)] {
+    public query func getAllSymptoms() : async [(Text, Type.Symptom)] {
         Iter.toArray(Map.entries<Text, Type.Symptom>(map));
     };
 

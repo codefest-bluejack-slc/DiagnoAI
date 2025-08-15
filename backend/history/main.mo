@@ -2,6 +2,8 @@ import Map "mo:motoko-hash-map/Map";
 import Iter "mo:base/Iter";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
+import Principal "mo:base/Principal";
+import Array "mo:base/Array";
 import Type "lib";
 import SymptomModule "../symptom/interface";
 
@@ -9,7 +11,15 @@ import SymptomModule "../symptom/interface";
 persistent actor History{
     let map = Map.new<Text, Type.History>();
 
-    public func getHistory(id: Text,symptomActorCanisterId: Text) : async Result.Result<Type.HistoryResponse, Text> {
+    public func getHistory(id: Text) : async Result.Result<Type.History, Text> {
+        let history = Map.get<Text, Type.History>(map, Map.thash, id);
+        switch (history) {
+            case (?history) { #ok(history) };
+            case null { #err("History not found") };
+        };
+    };
+
+    public func getHistoryWithSymptoms(id: Text, symptomActorCanisterId: Text) : async Result.Result<Type.HistoryResponse, Text> {
         let histories = Map.get<Text, Type.History>(map, Map.thash, id);
         switch (histories) {
             case (?history) { 
@@ -26,12 +36,21 @@ persistent actor History{
              };
             case null { #err("History not found") };
         };
-
     };
 
-    public func addHistory(id: Text, value: Type.History) : async ?Type.History {
-        ignore Map.put<Text, Type.History>(map, Map.thash, id, value);
-        Map.get<Text, Type.History>(map, Map.thash, id);
+    public query func getHistoryByUserId(id: Principal) : async Result.Result<[Type.History], Text> {
+        let histories = Iter.toArray(Map.entries<Text, Type.History>(map));
+        let userHistories = Array.filter(histories, func ((_, history) : (Text, Type.History)) : Bool {
+            history.userId == id
+        });
+        #ok(Array.map(userHistories, func ((_, history) : (Text, Type.History)) : Type.History {
+            history
+        }));
+    };
+
+    public func addHistory(value: Type.History) : async ?Type.History {
+        ignore Map.put<Text, Type.History>(map, Map.thash, value.id, value);
+        Map.get<Text, Type.History>(map, Map.thash, value.id);
     };
 
     

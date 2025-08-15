@@ -1,6 +1,6 @@
 
 # Modify CANISTERS array to include the canisters you want to create
-CANISTERS=("user" "symptom" "history")
+CANISTERS=("user" "symptom" "history" "internet_identity")
 dfx stop
 dfx identity use default
 dfx start --clean --background

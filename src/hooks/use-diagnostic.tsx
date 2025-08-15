@@ -12,7 +12,7 @@ export const useDiagnostic = () => {
   const [currentStep, setCurrentStep] = useState<
     'input' | 'review' | 'analysis'
   >('input');
-  const { symptomService } = useService();
+  const { symptomService, historyService } = useService();
   const addSymptomMutation = useMutation({
     mutationFn: (symptom: Symptom) => symptomService.addSymptom(symptom),
     onSuccess: (data) => {
@@ -27,20 +27,33 @@ export const useDiagnostic = () => {
     }
   });
 
+  const getHistoryMutation = useMutation({
+    mutationFn: () => historyService.getMyHistories(),
+    onSuccess: (data) => {
+      console.log('History fetched successfully:', data);
+      // if (!data) return;
+      // setSymptoms((prev) => [...prev, data]);
+    },
+    onError: (error) => {
+      console.error('Error fetching symptom:', error);
+    }
+  });
+
   const addSymptom = () => {
     if (newSymptomDescription.trim()) {
       const symptom: Symptom = {
-        id: Date.now().toString(),
+        id: uuidv4(),
         description: newSymptomDescription.trim(),
         historyId: uuidv4(),
         severity: 'mild',
-        duration: BigInt(0),
+        duration: BigInt(20),
       };
 
       setSymptoms((prev) => [...prev, symptom]);
       setNewSymptomDescription('');
-      
-
+      console.log('Adding symptom:', symptom);
+      addSymptomMutation.mutate(symptom);
+      getHistoryMutation.mutate();
       setShowAddForm(false);
     }
   };
