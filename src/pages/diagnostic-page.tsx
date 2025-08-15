@@ -12,6 +12,10 @@ import {
   Stethoscope,
   TrendingUp,
   AlertCircle,
+  Heart,
+  Shield,
+  Zap,
+  Timer,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
@@ -346,31 +350,39 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       symptoms.map((symptom, index) => (
                         <div
                           key={symptom.id}
-                          className="p-3 bg-white/5 rounded-lg border border-white/10"
+                          className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-300"
                         >
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                            <Heart className="w-3 h-3 text-purple-400" />
                             <h5 className="text-white text-sm font-medium">
                               {symptom.illness}
                             </h5>
                           </div>
-                          <p className="text-purple-200 text-xs leading-relaxed mb-2">
+                          <p className="text-purple-200 text-xs leading-relaxed mb-2 pl-5">
                             {symptom.description.length > 60 
                               ? `${symptom.description.substring(0, 60)}...` 
                               : symptom.description}
                           </p>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 pl-5">
                             {symptom.severity && (
-                              <span className={`text-xs px-2 py-1 rounded-full ${
+                              <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
                                 symptom.severity === 'mild' ? 'bg-green-400/20 text-green-400' :
                                 symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-400' :
                                 'bg-red-400/20 text-red-400'
                               }`}>
+                                {symptom.severity === 'mild' ? (
+                                  <Shield className="w-3 h-3" />
+                                ) : symptom.severity === 'moderate' ? (
+                                  <AlertCircle className="w-3 h-3" />
+                                ) : (
+                                  <Zap className="w-3 h-3" />
+                                )}
                                 {symptom.severity}
                               </span>
                             )}
                             {symptom.duration && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-blue-400/20 text-blue-400">
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
+                                <Timer className="w-3 h-3" />
                                 {symptom.duration}
                               </span>
                             )}
