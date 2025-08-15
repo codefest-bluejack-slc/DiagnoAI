@@ -108,7 +108,7 @@ const ProductCard: React.FC<{
             background:
               'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
             WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            color: 'transparent',
             backgroundClip: 'text',
           }}
         >

@@ -203,6 +203,14 @@ body {
   overflow-x: hidden;
 }
 
+*, *::before, *::after {
+  animation-play-state: running !important;
+}
+
+[class*="animate-"], [class*="animation-"], .flying-char, .particle, .background-orb, .animate-icon-expand {
+  animation-play-state: running !important;
+}
+
 @keyframes particleFloat {
   0% {
     transform: translateY(0px) translateX(0px);
@@ -220,4 +228,12 @@ body {
     transform: translateY(0px) translateX(0px);
     opacity: 0.8;
   }
+}
+
+* {
+  animation-play-state: running !important;
+}
+
+*:not([data-no-animation]) {
+  animation-play-state: running !important;
 }

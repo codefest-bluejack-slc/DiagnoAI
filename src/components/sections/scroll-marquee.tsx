@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const titleSentence = "PRECISION MEDICINE MEETS ARTIFICIAL INTELLIGENCE FOR BETTER HEALTHCARE";
+const titleSentence = "WELCOME TO THE FUTURE OF DIAGNOSTICS • REVOLUTIONIZING HEALTHCARE WITH AI TECHNOLOGY • DIAGNOAI LEADS THE WAY";
 
 export default function ScrollMarquee() {
   const [sectionProgress, setSectionProgress] = useState(0);
@@ -46,33 +46,30 @@ export default function ScrollMarquee() {
   return (
     <section 
       ref={sectionRef}
-      className="relative min-h-screen flex items-center justify-start overflow-hidden bg-gradient-to-b from-purple-900/5 to-transparent"
+      className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-900/5 to-transparent"
     >
-      <div className="relative w-full h-full flex items-center justify-start">
-        <div className="w-full">
-          <div
-            className="select-none pointer-events-none transition-all duration-700 ease-out whitespace-nowrap"
-            style={{
-              transform: `translateX(${isInView ? sectionProgress * 100 - 100 : -100}%)`,
-              fontSize: 'clamp(2.5rem, 8vw, 6rem)',
-              fontWeight: '900',
-              letterSpacing: '0.1em',
-              opacity: isInView ? Math.max(0.3, 1 - sectionProgress * 0.1) : 0.3,
-              willChange: 'transform, opacity',
-              background: `linear-gradient(135deg, #a855f7 0%, #6366f1 30%, #ec4899 60%, #f59e0b 100%)`,
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 0 50px rgba(168, 85, 247, 0.6)',
-              filter: `brightness(${1 + sectionProgress * 0.3})`,
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              textTransform: 'uppercase',
-              paddingLeft: '2rem',
-            }}
-          >
-            {titleSentence}
-          </div>
-        </div>
+      <div className="w-full max-w-[98vw] px-2 flex items-center justify-center overflow-hidden">
+        <h1 
+          className={`text-[8vw] md:text-[6vw] lg:text-[4vw] font-bold text-center relative group transition-all duration-1000 whitespace-nowrap ${
+            isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+          }`}
+          style={{
+            transform: `translateX(${isInView ? (sectionProgress - 0.5) * 100 : -50}%)`,
+            willChange: 'transform, opacity',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+          }}
+        >
+          <span className="inline-block animate-float-title gradient-text-glow">WELCOME TO THE FUTURE</span>
+          <span className="inline-block animate-float-title-delayed mx-2 gradient-text-glow">OF DIAGNOSTICS</span>
+          <span className="inline-block animate-float-title mx-2 gradient-text-glow">•</span>
+          <span className="inline-block animate-float-title-delayed gradient-text-glow">REVOLUTIONIZING</span>
+          <span className="inline-block animate-float-title mx-2 gradient-text-glow">HEALTHCARE</span>
+          <span className="inline-block animate-float-title-delayed mx-2 gradient-text-glow">•</span>
+          <span className="inline-block animate-float-title gradient-text-glow">DIAGNOAI</span>
+          <span className="inline-block animate-float-title-delayed mx-2 gradient-text-glow">LEADS THE WAY</span>
+        </h1>
       </div>
     </section>
   );

@@ -60,7 +60,7 @@ export default function ProductPage() {
         
         if (cachedProduct) {
           console.log('Found cached product data, using as fallback');
-          const productDetails = await getProductDetails(productId, SERPAPI_KEY, cachedProduct);
+          const productDetails = await getProductDetails(productId, SERPAPI_KEY);
           setProduct(productDetails);
         } else {
           console.log('No cached data found, fetching from API');
@@ -366,7 +366,7 @@ export default function ProductPage() {
                         style={{
                           background: 'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
                           WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
+                          color: 'transparent',
                           backgroundClip: 'text',
                         }}
                       >

@@ -86,39 +86,61 @@ export default function HeroSection() {
     setFlyingChars(flyingCharacters);
 
     const maxDelay = Math.max(...flyingCharacters.map(char => char.delay + char.duration));
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setTitleAnimationComplete(true);
-    }, (maxDelay) * 600);
+    }, (maxDelay) * 800);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
     if (!titleAnimationComplete) return;
 
-    const interval = setInterval(() => {
-      const iconsToSpawn = 1 + Math.floor(Math.random() * 3);
+    let lastTime = Date.now();
+    let animationFrameId: number;
+    
+    const spawnIcons = () => {
+      const currentTime = Date.now();
+      const elapsed = currentTime - lastTime;
       
-      for (let i = 0; i < iconsToSpawn; i++) {
-        setTimeout(() => {
-          const IconComponent = medicalIcons[Math.floor(Math.random() * medicalIcons.length)];
-          const newIcon : IAnimatedHeroIcon = {
-            id: Date.now() + Math.random() + i,
-            icon: IconComponent,
-            angle: Math.random() * 360,
-            duration: 6 + Math.random() * 2,
-            delay: Math.random() * 0.5,
-            size: 30 + Math.random() * 16,
-          };
-
-          setAnimatedIcons(prev => [...prev, newIcon]);
-
+      if (elapsed >= 800) {
+        const iconsToSpawn = 1 + Math.floor(Math.random() * 3);
+        
+        for (let i = 0; i < iconsToSpawn; i++) {
           setTimeout(() => {
-            setAnimatedIcons(prev => prev.filter(icon => icon.id !== newIcon.id));
-          }, (newIcon.duration + newIcon.delay + 0.5) * 1000);
-        }, i * 150);
-      }
-    }, 500 + Math.random() * 300);
+            const IconComponent = medicalIcons[Math.floor(Math.random() * medicalIcons.length)];
+            const newIcon : IAnimatedHeroIcon = {
+              id: Date.now() + Math.random() + i,
+              icon: IconComponent,
+              angle: Math.random() * 360,
+              duration: 6 + Math.random() * 2,
+              delay: Math.random() * 0.5,
+              size: 30 + Math.random() * 16,
+            };
 
-    return () => clearInterval(interval);
+            setAnimatedIcons(prev => [...prev, newIcon]);
+
+            setTimeout(() => {
+              setAnimatedIcons(prev => prev.filter(icon => icon.id !== newIcon.id));
+            }, (newIcon.duration + newIcon.delay + 0.5) * 1000);
+          }, i * 150);
+        }
+        
+        lastTime = currentTime;
+      }
+      
+      animationFrameId = requestAnimationFrame(spawnIcons);
+    };
+    
+    animationFrameId = requestAnimationFrame(spawnIcons);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [titleAnimationComplete]);
 
   const handleStartDiagnosticsClick = () => { 

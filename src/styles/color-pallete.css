@@ -752,6 +752,7 @@ textarea.terminal {
   animation-name: flyInChar;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: both;
+  animation-play-state: running !important;
   will-change: transform, opacity, filter;
   text-shadow: 
     0 0 20px rgba(168, 85, 247, 0.6),
