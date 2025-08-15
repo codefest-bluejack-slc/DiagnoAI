@@ -404,30 +404,58 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               <div className="sticky top-24 space-y-6">
                 <div className="tips-card">
                   <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                    <Target className="text-purple-300" size={20} />
-                    Quick Tips
+                    <Stethoscope className="text-purple-300" size={20} />
+                    Health Concerns
                   </h4>
                   <div className="space-y-3">
-                    {[
-                      {
-                        icon: Edit3,
-                        tip: 'Name the illness clearly (e.g., Headache, Back Pain)',
-                      },
-                      { icon: Clock, tip: 'Include duration and frequency details' },
-                      { icon: Search, tip: 'Describe symptoms and triggers specifically' },
-                    ].map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start gap-3 p-3 bg-white/5 rounded-lg"
-                      >
-                        <div className="p-1 bg-purple-500/20 rounded">
-                          <item.icon className="text-purple-300" size={20} />
+                    {symptoms.length === 0 ? (
+                      <div className="text-center py-6">
+                        <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-full flex items-center justify-center">
+                          <Plus className="text-purple-300" size={20} />
                         </div>
-                        <p className="text-purple-200 text-sm leading-relaxed">
-                          {item.tip}
+                        <p className="text-purple-200 text-sm">
+                          No health concerns added yet
+                        </p>
+                        <p className="text-purple-300 text-xs mt-1">
+                          Click "Add New Illness" to start
                         </p>
                       </div>
-                    ))}
+                    ) : (
+                      symptoms.map((symptom, index) => (
+                        <div
+                          key={symptom.id}
+                          className="p-3 bg-white/5 rounded-lg border border-white/10"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                            <h5 className="text-white text-sm font-medium">
+                              {symptom.illness}
+                            </h5>
+                          </div>
+                          <p className="text-purple-200 text-xs leading-relaxed mb-2">
+                            {symptom.description.length > 60 
+                              ? `${symptom.description.substring(0, 60)}...` 
+                              : symptom.description}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            {symptom.severity && (
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                symptom.severity === 'mild' ? 'bg-green-400/20 text-green-400' :
+                                symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-400' :
+                                'bg-red-400/20 text-red-400'
+                              }`}>
+                                {symptom.severity}
+                              </span>
+                            )}
+                            {symptom.duration && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-400/20 text-blue-400">
+                                {symptom.duration}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
