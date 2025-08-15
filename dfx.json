@@ -11,9 +11,9 @@
         "node_compatibility": true
       }
     },
-    "symptomp": {
+    "symptom": {
       "type": "motoko",
-      "main": "backend/symptomp/main.mo",
+      "main": "backend/symptom/main.mo",
       "declarations": {
         "node_compatibility": true
       }
@@ -21,9 +21,6 @@
     "history": {
       "type": "motoko",
       "main": "backend/history/main.mo",
-      "dependencies": [
-        "symptomp"
-      ],
       "declarations": {
         "node_compatibility": true
       }

@@ -348,7 +348,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                               <p className="text-white font-medium leading-relaxed">
                                 {symptom.description}
                               </p>
-                              {(symptom.severity || symptom.duration) && (
+                              {(symptom.severity || Number(symptom.duration)) && (
                                 <div
                                   className="flex items-center gap-3 text-sm mt-3 animate-in fade-in duration-300"
                                   style={{
@@ -366,9 +366,9 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                                         symptom.severity.slice(1)}
                                     </span>
                                   )}
-                                  {symptom.duration && (
+                                  {Number(symptom.duration) && (
                                     <span className="text-purple-200 text-xs">
-                                      Duration: {symptom.duration}
+                                      Duration: {symptom.duration.toString()}
                                     </span>
                                   )}
                                 </div>

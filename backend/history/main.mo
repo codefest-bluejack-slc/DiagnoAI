@@ -3,24 +3,24 @@ import Iter "mo:base/Iter";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Type "lib";
-import SymptompModule "../symptomp/interface";
+import SymptomModule "../symptom/interface";
 
 
 persistent actor History{
     let map = Map.new<Text, Type.History>();
 
-    public func getHistory(id: Text,symptompActorCanisterId: Text) : async Result.Result<Type.HistoryResponse, Text> {
+    public func getHistory(id: Text,symptomActorCanisterId: Text) : async Result.Result<Type.HistoryResponse, Text> {
         let histories = Map.get<Text, Type.History>(map, Map.thash, id);
         switch (histories) {
             case (?history) { 
-                let symptompActor = actor (symptompActorCanisterId) : SymptompModule.SymptompActor;
-                let symptompList = await symptompActor.getSymptompsByHistoryId(id);
+                let symptomActor = actor (symptomActorCanisterId) : SymptomModule.SymptomActor;
+                let symptomList = await symptomActor.getSymptomsByHistoryId(id);
                 let response: Type.HistoryResponse = {
                     id = history.id;
                     userId = history.userId;
                     title = history.title;
                     result = history.result;
-                    symptomps = symptompList;
+                    symptomps = symptomList;
                 };
                 #ok(response)
              };

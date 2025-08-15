@@ -1,6 +1,6 @@
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
-import SymptompType "../symptomp";
+import SymptomType "../symptom";
 
 module {
     public type History = {
@@ -15,6 +15,6 @@ module {
         userId: Principal;
         title: Text;
         result: Text;
-        symptomps: [SymptompType.Symptomp];
+        symptomps: [SymptomType.Symptom];
     };
 }
