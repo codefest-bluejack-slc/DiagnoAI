@@ -14,4 +14,3 @@ for c in "${CANISTERS[@]}"; do
 done
 dfx canister create frontend
 dfx deploy frontend
-npm start
