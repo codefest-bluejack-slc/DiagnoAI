@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ISymptom } from '../interfaces/IDiagnostic';
 import { useService } from './use-service';
 import { useMutation } from './use-mutation';
 import { Symptom } from '../declarations/symptom/symptom.did';
 import { v4 as uuidv4 } from 'uuid';
+
+const SYMPTOMS_STORAGE_KEY = 'diagnoai_symptoms';
 
 export const useDiagnostic = () => {
   const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
@@ -16,6 +18,24 @@ export const useDiagnostic = () => {
     'input' | 'review' | 'analysis'
   >('input');
   const { symptomService, historyService } = useService();
+
+  useEffect(() => {
+    const savedSymptoms = localStorage.getItem(SYMPTOMS_STORAGE_KEY);
+    if (savedSymptoms) {
+      try {
+        const parsedSymptoms = JSON.parse(savedSymptoms);
+        setSymptoms(parsedSymptoms);
+      } catch (error) {
+        console.error('Error parsing saved symptoms:', error);
+        localStorage.removeItem(SYMPTOMS_STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(SYMPTOMS_STORAGE_KEY, JSON.stringify(symptoms));
+  }, [symptoms]);
+
   const addSymptomMutation = useMutation({
     mutationFn: (symptom: Symptom) => symptomService.addSymptom(symptom),
     onSuccess: (data) => {
@@ -70,6 +90,11 @@ export const useDiagnostic = () => {
     ));
   };
 
+  const clearAllSymptoms = () => {
+    setSymptoms([]);
+    localStorage.removeItem(SYMPTOMS_STORAGE_KEY);
+  };
+
   const getProgressPercentage = () => {
     return Math.min(symptoms.length * 12.5, 100);
   };
@@ -91,6 +116,7 @@ export const useDiagnostic = () => {
     addSymptom,
     removeSymptom,
     updateSymptom,
+    clearAllSymptoms,
     getProgressPercentage,
   };
 };

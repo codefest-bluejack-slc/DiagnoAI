@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Plus,
   X,
@@ -19,6 +19,7 @@ import {
   Trash2,
   Edit,
   Play,
+  RefreshCw,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
@@ -62,6 +63,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     addSymptom,
     removeSymptom,
     updateSymptom,
+    clearAllSymptoms,
     getProgressPercentage,
   } = useDiagnostic();
 
@@ -123,6 +125,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const handleStartDiagnostic = () => {
     setCurrentStep('analysis');
+  };
+
+  const handleClearAll = () => {
+    if (confirm('Are you sure you want to clear all health concerns?')) {
+      clearAllSymptoms();
+      setEditingSymptom(null);
+      setShowAddForm(false);
+    }
   };
 
   return (
@@ -383,17 +393,28 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-white font-semibold flex items-center gap-2">
                       <Stethoscope className="text-purple-300" size={20} />
-                      Health Concerns
+                      Health Concerns ({symptoms.length})
                     </h4>
-                    {symptoms.length >= 2 && (
-                      <button
-                        onClick={handleStartDiagnostic}
-                        className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
-                      >
-                        <Play size={12} />
-                        Start Diagnostic
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {symptoms.length >= 2 && (
+                        <button
+                          onClick={handleStartDiagnostic}
+                          className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
+                        >
+                          <Play size={12} />
+                          Start
+                        </button>
+                      )}
+                      {symptoms.length > 0 && (
+                        <button
+                          onClick={handleClearAll}
+                          className="px-2 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+                        >
+                          <RefreshCw size={10} />
+                          Clear
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {symptoms.length === 0 ? (
