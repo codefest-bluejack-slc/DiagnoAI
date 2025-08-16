@@ -85,9 +85,19 @@ export default function MarketPage() {
     totalItems,
   } = usePagination(filteredProducts, 20);
 
-  const handleNavigateToProduct = useCallback((productId: string) => {
+    const handleNavigateToProduct = useCallback((productId: string) => {
+    const stateToSave = {
+      searchState,
+      filters,
+      sortBy,
+      viewMode,
+      showFilters,
+      currentPage,
+      timestamp: Date.now(),
+    };
+    sessionStorage.setItem('marketPageState', JSON.stringify(stateToSave));
     navigate(`/product/${encodeURIComponent(productId)}`);
-  }, [navigate]);
+  }, [navigate, searchState, filters, sortBy, viewMode, showFilters, currentPage]);
 
   const handleSearch = async () => {
     if (!searchState.query.trim()) {
@@ -166,6 +176,44 @@ export default function MarketPage() {
   const handleInputChange = (value: string) => {
     setSearchState((prev) => ({ ...prev, query: value, error: null }));
   };
+
+  useEffect(() => {
+    const savedState = sessionStorage.getItem('marketPageState');
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        
+        const isRecent = parsedState.timestamp && (Date.now() - parsedState.timestamp) < 5 * 60 * 1000;
+        
+        if (isRecent) {
+          if (parsedState.searchState) {
+            setSearchState(parsedState.searchState);
+          }
+          
+          if (parsedState.sortBy) setSortBy(parsedState.sortBy);
+          if (parsedState.viewMode) setViewMode(parsedState.viewMode);
+          if (typeof parsedState.showFilters === 'boolean') setShowFilters(parsedState.showFilters);
+          
+          if (parsedState.filters) {
+            Object.keys(parsedState.filters).forEach(key => {
+              updateFilter(key as any, parsedState.filters[key]);
+            });
+          }
+          
+          if (parsedState.currentPage && parsedState.currentPage > 1) {
+            setTimeout(() => {
+              goToPage(parsedState.currentPage);
+            }, 300);
+          }
+        }
+        
+        sessionStorage.removeItem('marketPageState');
+      } catch (error) {
+        console.error('Failed to restore market page state:', error);
+        sessionStorage.removeItem('marketPageState');
+      }
+    }
+  }, [updateFilter, goToPage]);
 
   return (
     <div
