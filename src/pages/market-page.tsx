@@ -23,10 +23,12 @@ import { IProduct } from '../interfaces/IProduct';
 import { useSearchFilters, useSortOptions } from '../hooks/use-search-filters';
 import { usePagination } from '../hooks/use-pagination';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
+import { useToastContext } from '../contexts/toast-context';
 
 export default function MarketPage() {
   const navigate = useNavigate();
   const mousePosition = useMouseTracking();
+  const { addToast } = useToastContext();
   const [particles] = useState(() =>
     Array.from({ length: 20 }, (_, i) => ({
       id: i,

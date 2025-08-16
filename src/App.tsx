@@ -14,6 +14,7 @@ import ProductPage from './pages/product-page';
 import { TransitionProvider } from './components/animations/diagonal-transition';
 import { ServiceProvider } from './contexts/service-context';
 import { AuthProvider } from './contexts/auth-context';
+import { ToastProvider } from './contexts/toast-context';
 
 function AppContent() {
   const location = useLocation();
@@ -51,7 +52,8 @@ function AppContent() {
       onPageChange={handlePageChange}
     >
       <ServiceProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ToastProvider>
             <div className="App bg-dark-bg text-dark-text-primary">
               <Routes>
                 <Route path="/" element={<HomePage />} />
@@ -60,8 +62,9 @@ function AppContent() {
                 <Route path="/product/:productId" element={<ProductPage />} />
               </Routes>
             </div>
-          </AuthProvider>
-        </ServiceProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </ServiceProvider>
     </TransitionProvider>
   );
 }

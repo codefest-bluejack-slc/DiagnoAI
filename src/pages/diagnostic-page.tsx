@@ -87,7 +87,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     if (symptom) {
       setNewSymptomIllness(symptom.illness);
       setNewSymptomDescription(symptom.description);
-      setNewSymptomSeverity(symptom.severity);
+      setNewSymptomSeverity(symptom.severity || 'mild');
       setNewSymptomDuration(symptom.duration || '');
       setEditingSymptom(symptomId);
       setShowAddForm(true);
