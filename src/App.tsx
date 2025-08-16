@@ -16,6 +16,7 @@ import { ServiceProvider } from './contexts/service-context';
 import { AuthProvider } from './contexts/auth-context';
 import { ToastProvider } from './contexts/toast-context';
 import ProfilePage from './pages/profile-page';
+import AuthorizedRoute from './routes/authorized-route';
 
 function AppContent() {
   const location = useLocation();
@@ -41,10 +42,12 @@ function AppContent() {
             <div className="App bg-dark-bg text-dark-text-primary">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/diagnostic" element={<DiagnosticPage />} />
-                <Route path="/marketplace" element={<MarketPage />} />
-                <Route path="/product/:productId" element={<ProductPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
+                <Route element={<AuthorizedRoute />}>
+                  <Route path="/diagnostic" element={<DiagnosticPage />} />
+                  <Route path="/marketplace" element={<MarketPage />} />
+                  <Route path="/product/:productId" element={<ProductPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                </Route>
               </Routes>
             </div>
           </ToastProvider>
