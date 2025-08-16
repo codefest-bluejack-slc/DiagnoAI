@@ -4,7 +4,6 @@ import { IServiceContextType } from "../interfaces/IServiceContextType";
 import { ServiceContext } from "../hooks/use-service";
 import { HistoryService } from "../services/history.service";
 import { SymptomService } from "../services/symptom.service";
-import { TransitionProvider } from "../components/animations/diagonal-transition";
 
 export const ServiceProvider = ({ children } : { children: ReactNode }) => {
     const [userService, setUserService] = useState<UserService>(new UserService());
@@ -17,13 +16,20 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
     useEffect(() => {
         const initializeServices = async () => {
             setLoading(true);
+            const userService = new UserService();
+            const historyService = new HistoryService();
+            const symptomService = new SymptomService();
 
             await Promise.all([
                 userService.ensureInitialized(),
                 historyService.ensureInitialized(),
-                symptomService.ensureInitialized(),
+                symptomService.ensureInitialized()
             ]);
+            setUserService(userService);
+            setHistoryService(historyService);
+            setSymptomService(symptomService);
 
+            
             setLoading(false);
             setTimeout(() => {
                 setCurrentPage("loaded");
@@ -45,11 +51,17 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
         setCurrentPage(page);
     };
 
+    if (loading) {
+        return (
+            <div className="loading-screen">
+                <h1>Loading...</h1>
+            </div>
+        );
+    }
+
     return (
-        <TransitionProvider currentPage={currentPage} onPageChange={handlePageChange}>
-            <ServiceContext.Provider value={value}>
-                {children}
-            </ServiceContext.Provider>
-        </TransitionProvider>
+        <ServiceContext.Provider value={value}>
+            {children}
+        </ServiceContext.Provider>
     );
 };

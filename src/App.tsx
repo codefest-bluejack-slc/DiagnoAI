@@ -15,6 +15,7 @@ import { TransitionProvider } from './components/animations/diagonal-transition'
 import { ServiceProvider } from './contexts/service-context';
 import { AuthProvider } from './contexts/auth-context';
 import { ToastProvider } from './contexts/toast-context';
+import ProfilePage from './pages/profile-page';
 
 function AppContent() {
   const location = useLocation();
@@ -27,23 +28,6 @@ function AppContent() {
 
   const handlePageChange = (page: string) => {
     navigate(page);
-  };
-
-  const renderCurrentPage = () => {
-    if (location.pathname.startsWith('/product/')) {
-      return <ProductPage />;
-    }
-    
-    switch (currentPage) {
-      case '/':
-        return <HomePage />;
-      case '/diagnostic':
-        return <DiagnosticPage />;
-      case '/marketplace':
-        return <MarketPage />;
-      default:
-        return <HomePage />;
-    }
   };
 
   return (
@@ -60,6 +44,7 @@ function AppContent() {
                 <Route path="/diagnostic" element={<DiagnosticPage />} />
                 <Route path="/marketplace" element={<MarketPage />} />
                 <Route path="/product/:productId" element={<ProductPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
               </Routes>
             </div>
           </ToastProvider>

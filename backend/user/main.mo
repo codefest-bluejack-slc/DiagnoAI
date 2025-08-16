@@ -12,6 +12,11 @@ persistent actor User {
     };
 
     public func addUser(value: Type.User) : async ?Type.User {
+        // Check if user already exists
+        let existingUser = Map.get<Principal, Type.User>(map, Map.phash, value.id);
+        if (existingUser != null) {
+            return existingUser;
+        };
         ignore Map.put<Principal, Type.User>(map, Map.phash, value.id, value);
         Map.get<Principal, Type.User>(map, Map.phash, value.id);
     };

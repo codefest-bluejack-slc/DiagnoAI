@@ -10,7 +10,9 @@ import './styles/welcome-sections.css';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <AgentProvider withProcessEnv>
+      <ActorProvider canisterId={canisterId} idlFactory={idlFactory}>
         <App />
+      </ActorProvider>
     </AgentProvider>
   </React.StrictMode>,
 );
