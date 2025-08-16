@@ -4,5 +4,7 @@ module {
         id: Principal;
         name: Text;
         email: Text;
+        bio: Text;
+        profilePicture: [Nat8];
     };
 }

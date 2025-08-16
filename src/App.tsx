@@ -14,6 +14,9 @@ import ProductPage from './pages/product-page';
 import { TransitionProvider } from './components/animations/diagonal-transition';
 import { ServiceProvider } from './contexts/service-context';
 import { AuthProvider } from './contexts/auth-context';
+import { ToastProvider } from './contexts/toast-context';
+import ProfilePage from './pages/profile-page';
+import AuthorizedRoute from './routes/authorized-route';
 
 function AppContent() {
   const location = useLocation();
@@ -28,40 +31,28 @@ function AppContent() {
     navigate(page);
   };
 
-  const renderCurrentPage = () => {
-    if (location.pathname.startsWith('/product/')) {
-      return <ProductPage />;
-    }
-    
-    switch (currentPage) {
-      case '/':
-        return <HomePage />;
-      case '/diagnostic':
-        return <DiagnosticPage />;
-      case '/marketplace':
-        return <MarketPage />;
-      default:
-        return <HomePage />;
-    }
-  };
-
   return (
     <TransitionProvider
       currentPage={currentPage}
       onPageChange={handlePageChange}
     >
       <ServiceProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ToastProvider>
             <div className="App bg-dark-bg text-dark-text-primary">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/diagnostic" element={<DiagnosticPage />} />
-                <Route path="/marketplace" element={<MarketPage />} />
-                <Route path="/product/:productId" element={<ProductPage />} />
+                <Route element={<AuthorizedRoute />}>
+                  <Route path="/diagnostic" element={<DiagnosticPage />} />
+                  <Route path="/marketplace" element={<MarketPage />} />
+                  <Route path="/product/:productId" element={<ProductPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                </Route>
               </Routes>
             </div>
-          </AuthProvider>
-        </ServiceProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </ServiceProvider>
     </TransitionProvider>
   );
 }

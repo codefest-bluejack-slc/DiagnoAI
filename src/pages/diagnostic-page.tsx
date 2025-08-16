@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Plus,
   X,
@@ -12,8 +12,22 @@ import {
   Stethoscope,
   TrendingUp,
   AlertCircle,
+  Heart,
+  Shield,
+  Zap,
+  Timer,
+  Trash2,
+  Edit,
+  Play,
+  RefreshCw,
+  History,
+  Calendar,
+  FileText,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
+import Tooltip from '../components/common/tooltip';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
@@ -26,6 +40,9 @@ import '../styles/diagnostic-page.css';
 
 export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const mousePosition = useMouseTracking();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -36,8 +53,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       size: 0.2 + Math.random() * 0.3,
     })),
   );
+
   const {
     symptoms,
+    history,
     newSymptomIllness,
     setNewSymptomIllness,
     newSymptomDescription,
@@ -52,8 +71,150 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setCurrentStep,
     addSymptom,
     removeSymptom,
+    updateSymptom,
+    clearAllSymptoms,
     getProgressPercentage,
+    addToHistory,
+    clearHistory,
   } = useDiagnostic();
+
+  const mockHistoryData = history.length > 0 ? history : [
+    {
+      id: '1',
+      date: '2024-12-15',
+      title: 'Headache Analysis',
+      symptoms: ['Migraine', 'Nausea', 'Light Sensitivity'],
+      diagnosis: 'Tension Headache',
+      status: 'completed' as const,
+      severity: 'moderate' as const
+    },
+    {
+      id: '2',
+      date: '2024-12-10',
+      title: 'Back Pain Assessment',
+      symptoms: ['Lower Back Pain', 'Stiffness', 'Muscle Spasm'],
+      diagnosis: 'Muscle Strain',
+      status: 'completed' as const,
+      severity: 'mild' as const
+    },
+    {
+      id: '3',
+      date: '2024-12-08',
+      title: 'Fever Symptoms',
+      symptoms: ['High Temperature', 'Chills', 'Fatigue', 'Body Aches'],
+      diagnosis: 'Viral Infection',
+      status: 'completed' as const,
+      severity: 'severe' as const
+    },
+    {
+      id: '4',
+      date: '2024-12-05',
+      title: 'Stomach Issues',
+      symptoms: ['Abdominal Pain', 'Bloating', 'Nausea'],
+      diagnosis: 'Indigestion',
+      status: 'completed' as const,
+      severity: 'mild' as const
+    },
+    {
+      id: '5',
+      date: '2024-12-01',
+      title: 'Sleep Problems',
+      symptoms: ['Insomnia', 'Restlessness', 'Anxiety', 'Racing Thoughts'],
+      diagnosis: 'Sleep Disorder',
+      status: 'in-progress' as const,
+      severity: 'moderate' as const
+    },
+    {
+      id: '6',
+      date: '2024-11-28',
+      title: 'Respiratory Issues',
+      symptoms: ['Cough', 'Shortness of Breath', 'Chest Tightness'],
+      diagnosis: 'Bronchitis',
+      status: 'completed' as const,
+      severity: 'moderate' as const
+    }
+  ];
+
+  const [isExiting, setIsExiting] = useState(false);
+  const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
+
+  const handleShowAddForm = () => {
+    setShowAddForm(true);
+  };
+
+  const handleHideAddForm = () => {
+    setShowAddForm(false);
+  };
+
+  const handleAddSymptom = () => {
+    addSymptom();
+  };
+
+  const handleEditSymptom = (symptomId: string) => {
+    const symptom = symptoms.find(s => s.id === symptomId);
+    if (symptom) {
+      setNewSymptomIllness(symptom.illness);
+      setNewSymptomDescription(symptom.description);
+      setNewSymptomSeverity(symptom.severity || 'mild');
+      setNewSymptomDuration(symptom.duration || '');
+      setEditingSymptom(symptomId);
+      setShowAddForm(true);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (editingSymptom) {
+      updateSymptom(editingSymptom, {
+        illness: newSymptomIllness.trim(),
+        description: newSymptomDescription.trim(),
+        severity: newSymptomSeverity,
+        duration: newSymptomDuration.trim() || undefined,
+      });
+      
+      setNewSymptomIllness('');
+      setNewSymptomDescription('');
+      setNewSymptomSeverity('mild');
+      setNewSymptomDuration('');
+      setEditingSymptom(null);
+      setShowAddForm(false);
+    } else {
+      addSymptom();
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setNewSymptomIllness('');
+    setNewSymptomDescription('');
+    setNewSymptomSeverity('mild');
+    setNewSymptomDuration('');
+    setEditingSymptom(null);
+    setShowAddForm(false);
+  };
+
+  const handleStartDiagnostic = () => {
+    setCurrentStep('analysis');
+  };
+
+  const handleClearAll = () => {
+    if (confirm('Are you sure you want to clear all health concerns?')) {
+      clearAllSymptoms();
+      setEditingSymptom(null);
+      setShowAddForm(false);
+    }
+  };
+
+  const toggleHistoryModal = () => {
+    setIsHistoryModalOpen(!isHistoryModalOpen);
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
 
   return (
     <div className="diagnostic-container">
@@ -89,8 +250,297 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
       <Navbar />
 
-      <main className="main-content">
-        <div className="max-w-7xl mx-auto px-6">
+      {isHistoryModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ 
+            background: 'var(--background-overlay)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)'
+          }}
+          onClick={toggleHistoryModal}
+        >
+          <div 
+            className="w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 rounded-2xl"
+            style={{
+              background: 'linear-gradient(135deg, var(--background-elevated), var(--background-surface))',
+              border: '1px solid var(--border-default)',
+              boxShadow: `
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 10px 10px -5px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1)
+              `
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div 
+              className="flex items-center justify-between p-6"
+              style={{
+                background: 'linear-gradient(135deg, var(--primary-purple-100), var(--tertiary-indigo-100))',
+                borderBottom: '1px solid var(--border-default)'
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div 
+                  className="p-3 rounded-full"
+                  style={{
+                    background: 'var(--primary-purple-200)',
+                    border: '1px solid var(--border-primary)'
+                  }}
+                >
+                  <History className="text-purple-300" size={24} />
+                </div>
+                <div>
+                  <h2 
+                    className="text-2xl font-semibold mb-1"
+                    style={{ 
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-family-title-modern)'
+                    }}
+                  >
+                    Assessment History
+                  </h2>
+                  <p 
+                    className="text-sm"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {mockHistoryData.length} previous assessments
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {mockHistoryData.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Are you sure you want to clear all history?')) {
+                        clearHistory();
+                        window.location.reload();
+                      }
+                    }}
+                    className="p-2 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    style={{
+                      background: 'var(--error-red-100)',
+                      color: 'var(--error-red)',
+                      border: '1px solid var(--border-error)'
+                    }}
+                    title="Clear History"
+                  >
+                    <RefreshCw size={18} />
+                  </button>
+                )}
+                <button
+                  onClick={toggleHistoryModal}
+                  className="p-2 rounded-full transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  style={{
+                    background: 'var(--background-glass)',
+                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-default)'
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div 
+              className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]"
+              style={{ background: 'var(--background-surface)' }}
+            >
+              {mockHistoryData.length === 0 ? (
+                <div className="text-center py-16">
+                  <div 
+                    className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
+                    style={{
+                      background: 'var(--primary-purple-100)',
+                      border: '1px solid var(--border-primary)'
+                    }}
+                  >
+                    <History className="text-purple-300" size={32} />
+                  </div>
+                  <h3 
+                    className="text-xl font-semibold mb-2"
+                    style={{ 
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-family-title-modern)'
+                    }}
+                  >
+                    No History Found
+                  </h3>
+                  <p 
+                    className="text-sm max-w-md mx-auto"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    Your previous health assessments will appear here once you complete some diagnostic sessions.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {mockHistoryData.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="history-item p-5 rounded-xl transition-all duration-300 group cursor-pointer hover:scale-[1.02]"
+                      style={{ 
+                        animationDelay: `${index * 50}ms`,
+                        background: 'var(--background-glass)',
+                        border: '1px solid var(--border-default)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--background-glass-hover)';
+                        e.currentTarget.style.borderColor = 'var(--border-primary)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'var(--background-glass)';
+                        e.currentTarget.style.borderColor = 'var(--border-default)';
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex-1">
+                          <h3 
+                            className="font-semibold text-lg mb-2 transition-colors group-hover:text-purple-300"
+                            style={{ 
+                              color: 'var(--text-primary)',
+                              fontFamily: 'var(--font-family-title-modern)'
+                            }}
+                          >
+                            {item.title}
+                          </h3>
+                          <div 
+                            className="flex items-center gap-2 text-sm mb-3"
+                            style={{ color: 'var(--text-secondary)' }}
+                          >
+                            <Calendar className="w-4 h-4" />
+                            <span>{formatDate(item.date)}</span>
+                          </div>
+                        </div>
+                        <div 
+                          className="px-3 py-1.5 rounded-full text-xs font-medium transition-transform duration-200 group-hover:scale-105"
+                          style={{
+                            background: item.status === 'completed' ? 'var(--success-green-100)' : 'var(--warning-yellow-100)',
+                            color: item.status === 'completed' ? 'var(--success-green)' : 'var(--warning-yellow)',
+                            border: `1px solid ${item.status === 'completed' ? 'var(--border-success)' : 'var(--border-warning)'}`
+                          }}
+                        >
+                          {item.status}
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText 
+                            className="w-4 h-4" 
+                            style={{ color: 'var(--tertiary-indigo)' }}
+                          />
+                          <span 
+                            className="text-sm font-medium"
+                            style={{ color: 'var(--text-secondary)' }}
+                          >
+                            Symptoms:
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {item.symptoms.slice(0, 3).map((symptom, idx) => (
+                            <Tooltip
+                              key={idx}
+                              content={`Symptom: ${symptom} - Reported during assessment on ${formatDate(item.date)}`}
+                              position="top"
+                            >
+                              <span
+                                className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105"
+                                style={{
+                                  background: 'var(--primary-purple-100)',
+                                  color: 'var(--primary-purple)',
+                                  border: '1px solid var(--border-primary)'
+                                }}
+                              >
+                                {symptom}
+                              </span>
+                            </Tooltip>
+                          ))}
+                          {item.symptoms.length > 3 && (
+                            <Tooltip
+                              content={`Additional symptoms: ${item.symptoms.slice(3).join(', ')}`}
+                              position="top"
+                            >
+                              <span 
+                                className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105"
+                                style={{
+                                  background: 'var(--background-glass-hover)',
+                                  color: 'var(--text-primary)',
+                                  border: '1px solid var(--border-default)'
+                                }}
+                              >
+                                +{item.symptoms.length - 3} more
+                              </span>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </div>
+
+                      <div 
+                        className="flex items-center justify-between pt-3"
+                        style={{ borderTop: '1px solid var(--border-default)' }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span 
+                            className="w-3 h-3 rounded-full"
+                            style={{
+                              background: item.severity === 'mild' ? 'var(--success-green)' :
+                                         item.severity === 'moderate' ? 'var(--warning-yellow)' : 'var(--error-red)'
+                            }}
+                          ></span>
+                          <Tooltip
+                            content={`Diagnosis: ${item.diagnosis} - Severity: ${item.severity.charAt(0).toUpperCase() + item.severity.slice(1)}`}
+                            position="top"
+                          >
+                            <span 
+                              className="text-sm font-medium cursor-help"
+                              style={{ color: 'var(--text-primary)' }}
+                            >
+                              {item.diagnosis}
+                            </span>
+                          </Tooltip>
+                        </div>
+                        <ChevronRight 
+                          className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
+                          style={{ color: 'var(--tertiary-indigo)' }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={toggleHistoryModal}
+        className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group"
+        style={{
+          background: 'var(--background-glass)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid var(--border-default)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--background-glass-hover)';
+          e.currentTarget.style.borderColor = 'var(--border-primary)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'var(--background-glass)';
+          e.currentTarget.style.borderColor = 'var(--border-default)';
+        }}
+      >
+        <History 
+          className="group-hover:rotate-12 transition-transform duration-300" 
+          style={{ color: 'var(--primary-purple)' }}
+          size={20} 
+        />
+      </button>
+
+      <main className="main-content pt-20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-6 pl-20 lg:pl-6">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
@@ -165,21 +615,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               <div className="space-y-6">
                 {!showAddForm && (
                   <div
-                    className="add-symptom-card group animate-in fade-in slide-in-from-bottom-4 duration-700"
-                    onClick={() => setShowAddForm(true)}
+                    className="add-symptom-card group transition-all duration-500 ease-in-out transform hover:scale-105"
+                    onClick={handleShowAddForm}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="relative text-center">
-                      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                    <div className="relative text-center transform transition-all duration-500 group-hover:scale-105">
+                      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 animate-pulse">
                         <Plus
-                          className="text-purple-300 group-hover:rotate-90 transition-transform duration-300"
+                          className="text-purple-300 group-hover:rotate-90 transition-transform duration-500"
                           size={24}
                         />
                       </div>
                       <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-purple-200 transition-colors duration-300">
                         Add New Illness
                       </h3>
-                      <p className="text-purple-200 mb-6">
+                      <p className="text-purple-200 mb-6 transform transition-all duration-300 group-hover:scale-105">
                         Tell us about your health concern and symptoms
                       </p>
                       <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
@@ -191,25 +641,25 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                 )}
 
                 {showAddForm && (
-                  <div className="symptom-form-card animate-in slide-in-from-top-5 fade-in duration-500">
+                  <div className="symptom-form-card transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-top-3">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
-                        <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-300 delay-150">
-                          <Plus className="text-purple-300" size={20} />
+                        <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-500 delay-200">
+                          <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
                         </div>
-                        <span className="animate-in slide-in-from-left-3 duration-300 delay-200">
-                          Add Health Concern
+                        <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
+                          {editingSymptom ? 'Edit Health Concern' : 'Add Health Concern'}
                         </span>
                       </h3>
                       <button
-                        onClick={() => setShowAddForm(false)}
-                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 hover:rotate-90 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+                        onClick={handleCancelEdit}
+                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transform hover:scale-110"
                       >
                         <X className="text-purple-300" size={20} />
                       </button>
                     </div>
 
-                    <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-400 delay-300">
+                    <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-600 delay-500">
                       <div>
                         <label className="block text-purple-200 text-sm font-medium mb-3">
                           Illness/Condition Name
@@ -283,18 +733,19 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
                       <div className="flex gap-3">
                         <button
-                          onClick={addSymptom}
+                          onClick={handleSaveEdit}
                           disabled={!newSymptomIllness.trim() || !newSymptomDescription.trim()}
                           className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
                         >
-                          <Plus
-                            className="text-white transition-transform duration-300 group-hover:rotate-90"
-                            size={20}
-                          />
-                          <span>Add Health Concern</span>
+                          {editingSymptom ? (
+                            <Edit className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                          ) : (
+                            <Plus className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                          )}
+                          <span>{editingSymptom ? 'Update Health Concern' : 'Add Health Concern'}</span>
                         </button>
                         <button
-                          onClick={() => setShowAddForm(false)}
+                          onClick={handleCancelEdit}
                           className="py-4 px-6 bg-white/10 hover:bg-white/20 text-purple-200 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98]"
                         >
                           Cancel
@@ -303,131 +754,115 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     </div>
                   </div>
                 )}
-
-                {symptoms.length > 0 && (
-                  <div className="symptoms-list-card animate-in fade-in slide-in-from-bottom-3 duration-500">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-semibold text-white flex items-center gap-3">
-                        <Activity className="text-purple-300" size={20} />
-                        Health Concerns ({symptoms.length})
-                      </h3>
-                      {!showAddForm && (
-                        <button
-                          onClick={() => setShowAddForm(true)}
-                          className="p-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
-                        >
-                          <Plus
-                            className="text-purple-300 hover:rotate-90 transition-transform duration-300"
-                            size={20}
-                          />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
-                      {symptoms.map((symptom, index) => (
-                        <div
-                          key={symptom.id}
-                          className="p-4 bg-gradient-to-r from-white/5 via-white/10 to-white/5 border border-white/10 rounded-xl transition-all duration-300 group animate-in fade-in duration-500"
-                          style={{
-                            animationDelay: `${index * 100}ms`,
-                          }}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                                <span className="text-purple-300 text-xs font-medium">
-                                  Health Concern #{index + 1}
-                                </span>
-                              </div>
-                              
-                              <div className="mb-3">
-                                <h4 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></div>
-                                  {symptom.illness}
-                                </h4>
-                                <p className="text-purple-100 text-sm leading-relaxed pl-3.5">
-                                  {symptom.description}
-                                </p>
-                              </div>
-                              
-                              <div className="flex items-center gap-3 text-sm">
-                                {symptom.severity && (
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border transition-all duration-300 hover:scale-105 ${getSeverityColor(symptom.severity)}`}
-                                  >
-                                    {getSeverityIcon(symptom.severity)}
-                                    <span className="capitalize">{symptom.severity}</span>
-                                  </span>
-                                )}
-                                {symptom.duration && (
-                                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-400">
-                                    <Clock size={12} />
-                                    {symptom.duration}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => removeSymptom(symptom.id)}
-                              className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400/50 hover:scale-110 hover:rotate-90"
-                            >
-                              <X className="text-red-400" size={20} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {symptoms.length >= 3 && (
-                      <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
-                        <button
-                          onClick={() => setCurrentStep('analysis')}
-                          className="w-full py-4 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-400/50 shadow-lg hover:shadow-indigo-500/25 group"
-                        >
-                          <Brain
-                            className="text-white group-hover:animate-pulse"
-                            size={20}
-                          />
-                          <span>Start AI Analysis</span>
-                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
                 <div className="tips-card">
-                  <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                    <Target className="text-purple-300" size={20} />
-                    Quick Tips
-                  </h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-white font-semibold flex items-center gap-2">
+                      <Stethoscope className="text-purple-300" size={20} />
+                      Health Concerns ({symptoms.length})
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      {symptoms.length >= 2 && (
+                        <button
+                          onClick={handleStartDiagnostic}
+                          className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
+                        >
+                          <Play size={12} />
+                          Start
+                        </button>
+                      )}
+                      {symptoms.length > 0 && (
+                        <button
+                          onClick={handleClearAll}
+                          className="px-2 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+                        >
+                          <RefreshCw size={10} />
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <div className="space-y-3">
-                    {[
-                      {
-                        icon: Edit3,
-                        tip: 'Name the illness clearly (e.g., Headache, Back Pain)',
-                      },
-                      { icon: Clock, tip: 'Include duration and frequency details' },
-                      { icon: Search, tip: 'Describe symptoms and triggers specifically' },
-                    ].map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start gap-3 p-3 bg-white/5 rounded-lg"
-                      >
-                        <div className="p-1 bg-purple-500/20 rounded">
-                          <item.icon className="text-purple-300" size={20} />
+                    {symptoms.length === 0 ? (
+                      <div className="text-center py-6">
+                        <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-full flex items-center justify-center">
+                          <Plus className="text-purple-300" size={20} />
                         </div>
-                        <p className="text-purple-200 text-sm leading-relaxed">
-                          {item.tip}
+                        <p className="text-purple-200 text-sm">
+                          No health concerns added yet
+                        </p>
+                        <p className="text-purple-300 text-xs mt-1">
+                          Click "Add New Illness" to start
                         </p>
                       </div>
-                    ))}
+                    ) : (
+                      symptoms.map((symptom, index) => (
+                        <div
+                          key={symptom.id}
+                          className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Heart className="w-3 h-3 text-purple-400" />
+                                <h5 className="text-white text-sm font-medium">
+                                  {symptom.illness}
+                                </h5>
+                              </div>
+                              <p className="text-purple-200 text-xs leading-relaxed mb-2 pl-5">
+                                {symptom.description.length > 45 
+                                  ? `${symptom.description.substring(0, 45)}...` 
+                                  : symptom.description}
+                              </p>
+                              <div className="flex items-center gap-1.5 pl-5">
+                                {symptom.severity && (
+                                  <span className={`text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1 ${
+                                    symptom.severity === 'mild' ? 'bg-green-400/20 text-green-400' :
+                                    symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-400' :
+                                    'bg-red-400/20 text-red-400'
+                                  }`}>
+                                    {symptom.severity === 'mild' ? (
+                                      <Shield className="w-2.5 h-2.5" />
+                                    ) : symptom.severity === 'moderate' ? (
+                                      <AlertCircle className="w-2.5 h-2.5" />
+                                    ) : (
+                                      <Zap className="w-2.5 h-2.5" />
+                                    )}
+                                    {symptom.severity}
+                                  </span>
+                                )}
+                                {symptom.duration && (
+                                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
+                                    <Timer className="w-2.5 h-2.5" />
+                                    {symptom.duration}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <button
+                                onClick={() => handleEditSymptom(symptom.id)}
+                                className="p-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-blue-400/50"
+                                title="Edit"
+                              >
+                                <Edit size={12} />
+                              </button>
+                              <button
+                                onClick={() => removeSymptom(symptom.id)}
+                                className="p-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-red-400/50"
+                                title="Remove"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 

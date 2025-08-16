@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -13,141 +13,22 @@ import {
   ArrowUpDown,
   ChevronDown,
   X,
-  Eye,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
+import { ProductCard, SkeletonCard } from '../components/common/product-card';
 import { searchProducts } from '../services/medicine.service';
 import { IProduct } from '../interfaces/IProduct';
 import { useSearchFilters, useSortOptions } from '../hooks/use-search-filters';
 import { usePagination } from '../hooks/use-pagination';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
-
-const ProductCard: React.FC<{ 
-  product: IProduct; 
-  index: number; 
-  viewMode: 'grid' | 'list';
-  onNavigate: (productId: string) => void;
-}> = React.memo(({ product, index, viewMode, onNavigate }) => (
-  <div
-    className={`group relative ${
-      viewMode === 'grid'
-        ? 'p-6 border rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl'
-        : 'flex p-4 border rounded-lg transition-all duration-200'
-    }`}
-    style={{
-      background: 'var(--background-glass)',
-      borderColor: 'var(--border-default)',
-    }}
-  >
-    <div
-      className={`${
-        viewMode === 'grid'
-          ? 'aspect-square mb-4 rounded-lg p-4 flex items-center justify-center overflow-hidden'
-          : 'w-20 h-20 rounded-lg p-2 flex items-center justify-center overflow-hidden flex-shrink-0 mr-4'
-      }`}
-      style={{ background: 'var(--background-glass)' }}
-    >
-      <img
-        src={product.thumbnail}
-        alt={product.title}
-        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.src = 'https://placehold.co/300x300/1e293b/94a3b8?text=No+Image';
-        }}
-      />
-    </div>
-
-    <div className="flex-1 flex flex-col">
-      <h3
-        className={`text-white font-medium mb-2 group-hover:text-purple-200 transition-colors duration-200 ${
-          viewMode === 'grid'
-            ? 'line-clamp-2 text-sm leading-relaxed'
-            : 'text-sm truncate'
-        }`}
-        title={product.title}
-      >
-        {product.title}
-      </h3>
-
-      <div
-        className={`flex items-center ${viewMode === 'grid' ? 'justify-between mb-3' : 'gap-4 mb-2'}`}
-      >
-        <span
-          className="text-purple-300/80 text-xs truncate px-2 py-1 rounded-full"
-          style={{
-            background: 'var(--primary-purple-100)',
-          }}
-        >
-          {product.source || 'Unknown'}
-        </span>
-        {product.rating && (
-          <div
-            className="flex items-center gap-1 px-2 py-1 rounded-full border"
-            style={{
-              background: 'var(--warning-yellow-100)',
-              borderColor: 'var(--border-warning)',
-            }}
-          >
-            <Star size={10} className="text-amber-400 fill-current" />
-            <span className="text-amber-300 text-xs font-medium">
-              {product.rating}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div
-        className={`mt-auto flex items-center ${viewMode === 'grid' ? 'justify-between gap-2' : 'gap-4'}`}
-      >
-        <p
-          className="text-lg font-bold text-purple-300"
-          style={{
-            background:
-              'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          {product.price}
-        </p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onNavigate(product.product_id)}
-            className="flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors duration-200 text-sm font-medium px-3 py-1 rounded-full border"
-            style={{
-              background: 'var(--primary-purple-100)',
-              borderColor: 'var(--border-primary)',
-            }}
-          >
-            <Eye size={12} />
-            <span>Details</span>
-          </button>
-          <a
-            href={product.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors duration-200 text-sm font-medium px-3 py-1 rounded-full border"
-            style={{
-              background: 'var(--tertiary-indigo-100)',
-              borderColor: 'var(--border-secondary)',
-            }}
-          >
-            <span>Visit</span>
-            <ExternalLink size={12} />
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-));
+import { useToastContext } from '../contexts/toast-context';
 
 export default function MarketPage() {
   const navigate = useNavigate();
   const mousePosition = useMouseTracking();
+  const { addToast } = useToastContext();
   const [particles] = useState(() =>
     Array.from({ length: 20 }, (_, i) => ({
       id: i,
@@ -204,9 +85,19 @@ export default function MarketPage() {
     totalItems,
   } = usePagination(filteredProducts, 20);
 
-  const handleNavigateToProduct = useCallback((productId: string) => {
+    const handleNavigateToProduct = useCallback((productId: string) => {
+    const stateToSave = {
+      searchState,
+      filters,
+      sortBy,
+      viewMode,
+      showFilters,
+      currentPage,
+      timestamp: Date.now(),
+    };
+    sessionStorage.setItem('marketPageState', JSON.stringify(stateToSave));
     navigate(`/product/${encodeURIComponent(productId)}`);
-  }, [navigate]);
+  }, [navigate, searchState, filters, sortBy, viewMode, showFilters, currentPage]);
 
   const handleSearch = async () => {
     if (!searchState.query.trim()) {
@@ -285,6 +176,44 @@ export default function MarketPage() {
   const handleInputChange = (value: string) => {
     setSearchState((prev) => ({ ...prev, query: value, error: null }));
   };
+
+  useEffect(() => {
+    const savedState = sessionStorage.getItem('marketPageState');
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        
+        const isRecent = parsedState.timestamp && (Date.now() - parsedState.timestamp) < 5 * 60 * 1000;
+        
+        if (isRecent) {
+          if (parsedState.searchState) {
+            setSearchState(parsedState.searchState);
+          }
+          
+          if (parsedState.sortBy) setSortBy(parsedState.sortBy);
+          if (parsedState.viewMode) setViewMode(parsedState.viewMode);
+          if (typeof parsedState.showFilters === 'boolean') setShowFilters(parsedState.showFilters);
+          
+          if (parsedState.filters) {
+            Object.keys(parsedState.filters).forEach(key => {
+              updateFilter(key as any, parsedState.filters[key]);
+            });
+          }
+          
+          if (parsedState.currentPage && parsedState.currentPage > 1) {
+            setTimeout(() => {
+              goToPage(parsedState.currentPage);
+            }, 300);
+          }
+        }
+        
+        sessionStorage.removeItem('marketPageState');
+      } catch (error) {
+        console.error('Failed to restore market page state:', error);
+        sessionStorage.removeItem('marketPageState');
+      }
+    }
+  }, [updateFilter, goToPage]);
 
   return (
     <div
@@ -702,31 +631,22 @@ export default function MarketPage() {
 
               {searchState.isLoading && (
                 <div
-                  className="backdrop-blur-xl border rounded-2xl p-12 shadow-2xl"
+                  className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl"
                   style={{
                     background: 'var(--background-glass)',
                     borderColor: 'var(--border-default)',
                   }}
                 >
-                  <div className="text-center">
-                    <div className="relative w-16 h-16 mx-auto mb-6">
-                      <div className="absolute inset-0 rounded-full border-4 border-purple-500/20"></div>
-                      <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent animate-spin"></div>
-                      <div
-                        className="absolute inset-2 rounded-full flex items-center justify-center"
-                        style={{
-                          background: 'var(--primary-purple-200)',
-                        }}
-                      >
-                        <Search className="text-purple-400" size={20} />
-                      </div>
-                    </div>
-                    <h3 className="text-purple-200 font-medium mb-2">
-                      Searching Products
-                    </h3>
-                    <p className="text-purple-300/70 text-sm">
-                      Finding the best results for you...
-                    </p>
+                  <div
+                    className={`${
+                      viewMode === 'grid'
+                        ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                        : 'space-y-4'
+                    }`}
+                  >
+                    {Array.from({ length: 20 }).map((_, index) => (
+                      <SkeletonCard key={index} viewMode={viewMode} />
+                    ))}
                   </div>
                 </div>
               )}

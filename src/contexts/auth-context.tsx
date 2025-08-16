@@ -36,7 +36,7 @@ export function AuthProvider({ children }: AuthProps) {
                 console.error('Failed to fetch user:', error);
                 setUser(null);
                 setIsAuthenticated(false);
-            }
+          }
         });
 
     useEffect(() => {

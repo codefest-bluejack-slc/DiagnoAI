@@ -10,6 +10,70 @@
   );
 }
 
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-out-up {
+  animation: slideOutUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-in-down {
+  animation: slideInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-out-down {
+  animation: slideOutDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
 @keyframes icon-expand {
   0% {
     transform: translate(0, 0) scale(0.3) rotate(0deg);
@@ -79,11 +143,14 @@
   padding: 3rem;
   cursor: pointer;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideInSmooth 0.6s ease-out forwards;
 }
 
 .add-symptom-card:hover {
   border-color: var(--primary-purple);
-  transform: scale(1.02);
+  transform: translateY(15px) scale(1.02);
 }
 
 .symptom-form-card {
@@ -98,6 +165,31 @@
   border-radius: 1.5rem;
   padding: 2rem;
   box-shadow: var(--shadow-2xl);
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: slideInSmoothForm 0.6s ease-out forwards;
+}
+
+@keyframes slideInSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInSmoothForm {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-input {
@@ -492,4 +584,82 @@
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)) drop-shadow(0 0 20px rgba(167, 139, 250, 0.6)) drop-shadow(0 0 30px rgba(232, 121, 249, 0.4));
   -webkit-filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)) drop-shadow(0 0 20px rgba(167, 139, 250, 0.6)) drop-shadow(0 0 30px rgba(232, 121, 249, 0.4));
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes historyItemSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes historyItemFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.history-modal {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.history-modal-content {
+  animation: modalZoomIn 0.3s ease-out;
+}
+
+.history-item {
+  animation: historyItemSlideUp 0.4s ease-out both;
+}
+
+.history-item:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
+}
+
+.history-toggle-button {
+  transition: all 0.3s ease;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.history-toggle-button:hover {
+  transform: scale(1.1) rotate(12deg);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.25);
+}
+
+.history-status-badge {
+  transition: all 0.2s ease;
+}
+
+.history-status-badge:hover {
+  transform: scale(1.05);
 }

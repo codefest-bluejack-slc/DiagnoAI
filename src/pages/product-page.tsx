@@ -8,7 +8,6 @@ import {
   Package, 
   Truck, 
   Shield, 
-  Heart,
   Share2,
   ChevronLeft,
   ChevronRight,
@@ -19,11 +18,13 @@ import { IProductDetails } from '../interfaces/IProduct';
 import { getProductDetails, getProductFromCache } from '../services/medicine.service';
 import useMouseTracking from '../hooks/use-mouse-tracking';
 import Navbar from '../components/common/navbar';
+import { useToastContext } from '../contexts/toast-context';
 
 export default function ProductPage() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const mousePosition = useMouseTracking();
+  const { addToast } = useToastContext();
   const [product, setProduct] = useState<IProductDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,22 +57,16 @@ export default function ProductPage() {
       try {
         setIsLoading(true);
         
-        const cachedProduct = getProductFromCache(productId);
-        
-        if (cachedProduct) {
-          console.log('Found cached product data, using as fallback');
-          const productDetails = await getProductDetails(productId, SERPAPI_KEY);
-          setProduct(productDetails);
-        } else {
-          console.log('No cached data found, fetching from API');
-          const productDetails = await getProductDetails(productId, SERPAPI_KEY);
-          setProduct(productDetails);
-        }
-        
+        const productDetails = await getProductDetails(productId, SERPAPI_KEY);
+        setProduct(productDetails);
         setError(null);
       } catch (err) {
         console.error('Error fetching product details:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch product details');
+        if (err instanceof Error && err.message.includes('Please search for products first')) {
+          setError('Product details not available. Please return to the marketplace and search for products first.');
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to fetch product details');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -95,6 +90,24 @@ export default function ProductPage() {
       setSelectedImageIndex(prev => 
         prev === product.images!.length - 1 ? 0 : prev + 1
       );
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const currentUrl = window.location.href;
+      await navigator.clipboard.writeText(currentUrl);
+      addToast('Product link copied to clipboard!', {
+        type: 'success',
+        title: 'Link Copied',
+        duration: 3000
+      });
+    } catch (error) {
+      addToast('Failed to copy link to clipboard', {
+        type: 'error',
+        title: 'Copy Failed',
+        duration: 3000
+      });
     }
   };
 
@@ -370,7 +383,7 @@ export default function ProductPage() {
                           backgroundClip: 'text',
                         }}
                       >
-                        {product.price}
+                        Rp.{product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}
                       </p>
                       {product.source && (
                         <p className="text-purple-300 text-sm mt-1">from {product.source}</p>
@@ -380,7 +393,7 @@ export default function ProductPage() {
 
                   <div className="flex gap-3">
                     <a
-                      href={product.link}
+                      href={product.product_link || product.link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-white font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-xl"
@@ -391,20 +404,32 @@ export default function ProductPage() {
                       <ExternalLink size={18} />
                       Buy Now
                     </a>
+                    {/* Heart icon removed as requested */}
                     <button
                       className="p-3 rounded-xl border transition-all duration-200 hover:scale-110 text-purple-300"
                       style={{
                         background: 'var(--background-glass)',
                         borderColor: 'var(--border-default)',
                       }}
-                    >
-                      <Heart size={18} />
-                    </button>
-                    <button
-                      className="p-3 rounded-xl border transition-all duration-200 hover:scale-110 text-purple-300"
-                      style={{
-                        background: 'var(--background-glass)',
-                        borderColor: 'var(--border-default)',
+                      onClick={() => {
+                        if (product.product_link || product.link) {
+                          navigator.clipboard.writeText(product.product_link || product.link);
+                          addToast('Link copied to clipboard!', {
+                            type: 'success',
+                            title: 'Copied',
+                            duration: 2000,
+                            position: 'top-right',
+                            closable: false,
+                          });
+                        } else {
+                          addToast('No link available to copy.', {
+                            type: 'error',
+                            title: 'Error',
+                            duration: 2000,
+                            position: 'top-right',
+                            closable: false,
+                          });
+                        }
                       }}
                     >
                       <Share2 size={18} />

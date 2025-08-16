@@ -67,14 +67,12 @@ export default function Navbar({}: NavbarProps) {
   };
 
   const handleSettingsClick = () => {
-    console.log('Settings clicked');
-    getCurrentUser.mutate();
+    navigateTo('/profile')
 
   };
 
   const handleLoginClick = () => {
     login.mutate();
-    console.log('Login clicked');
   };
 
 
