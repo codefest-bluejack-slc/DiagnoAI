@@ -4,6 +4,7 @@ import { IServiceContextType } from "../interfaces/IServiceContextType";
 import { ServiceContext } from "../hooks/use-service";
 import { HistoryService } from "../services/history.service";
 import { SymptomService } from "../services/symptom.service";
+import { TransitionProvider } from "../components/animations/diagonal-transition";
 
 export const ServiceProvider = ({ children } : { children: ReactNode }) => {
     const [userService, setUserService] = useState<UserService>(new UserService());
@@ -11,6 +12,7 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
     const [symptomService, setSymptomService] = useState<SymptomService>(new SymptomService());
 
     const [loading, setLoading] = useState<boolean>(true);
+    const [currentPage, setCurrentPage] = useState<string>("loading");
 
     useEffect(() => {
         const initializeServices = async () => {
@@ -23,6 +25,9 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
             ]);
 
             setLoading(false);
+            setTimeout(() => {
+                setCurrentPage("loaded");
+            }, 100);
         };
 
         initializeServices();
@@ -36,12 +41,15 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
         };
     }, [userService]);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const handlePageChange = (page: string) => {
+        setCurrentPage(page);
+    };
+
     return (
-        <ServiceContext.Provider value={value}>
-            {children}
-        </ServiceContext.Provider>
+        <TransitionProvider currentPage={currentPage} onPageChange={handlePageChange}>
+            <ServiceContext.Provider value={value}>
+                {children}
+            </ServiceContext.Provider>
+        </TransitionProvider>
     );
 };
