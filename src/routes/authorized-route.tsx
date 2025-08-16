@@ -11,7 +11,7 @@ const AuthorizedRoute = () => {
   }
 
   if (isAuthenticated === false) {
-    return <Navigate to="/" replace />;
+    // return <Navigate to="/" replace />;
   }
 
 

@@ -52,15 +52,7 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
     };
 
     if (loading) {
-<<<<<<< HEAD
         return <div></div>;
-=======
-        return (
-            <div className="loading-screen">
-                <h1>Loading...</h1>
-            </div>
-        );
->>>>>>> dd118dcf59b07b7721eaa1650de646cc2a7c2667
     }
 
     return (

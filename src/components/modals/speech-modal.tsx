@@ -22,7 +22,7 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       startListening();
-}
+    }
   }, [isOpen, startListening]);
 
   if (!isOpen) return null;
@@ -183,7 +183,7 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
             </div>
 
             <div className="text-center text-xs text-purple-400">
-              TODO: Implement actual speech recognition with Web Speech API
+              Web Speech API integration pending
             </div>
           </div>
         </div>

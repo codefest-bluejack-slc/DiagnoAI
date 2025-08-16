@@ -21,15 +21,12 @@ import {
   Play,
   RefreshCw,
   History,
-  Calendar,
-  FileText,
-  ChevronRight,
-  ChevronLeft,
   Mic,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import Tooltip from '../components/common/tooltip';
 import { SpeechModal } from '../components/modals/speech-modal';
+import { HistoryModal } from '../components/modals/history-modal';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
@@ -262,291 +259,27 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
       <Navbar />
 
-      {isHistoryModalOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ 
-            background: 'var(--background-overlay)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)'
-          }}
-          onClick={toggleHistoryModal}
-        >
-          <div 
-            className="w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 rounded-2xl"
-            style={{
-              background: 'linear-gradient(135deg, var(--background-elevated), var(--background-surface))',
-              border: '1px solid var(--border-default)',
-              boxShadow: `
-                0 20px 25px -5px rgba(0, 0, 0, 0.4),
-                0 10px 10px -5px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1)
-              `
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div 
-              className="flex items-center justify-between p-6"
-              style={{
-                background: 'linear-gradient(135deg, var(--primary-purple-100), var(--tertiary-indigo-100))',
-                borderBottom: '1px solid var(--border-default)'
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div 
-                  className="p-3 rounded-full"
-                  style={{
-                    background: 'var(--primary-purple-200)',
-                    border: '1px solid var(--border-primary)'
-                  }}
-                >
-                  <History className="text-purple-300" size={24} />
-                </div>
-                <div>
-                  <h2 
-                    className="text-2xl font-semibold mb-1"
-                    style={{ 
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-family-title-modern)'
-                    }}
-                  >
-                    Assessment History
-                  </h2>
-                  <p 
-                    className="text-sm"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    {mockHistoryData.length} previous assessments
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {mockHistoryData.length > 0 && (
-                  <button
-                    onClick={() => {
-                      if (confirm('Are you sure you want to clear all history?')) {
-                        clearHistory();
-                        window.location.reload();
-                      }
-                    }}
-                    className="p-2 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400"
-                    style={{
-                      background: 'var(--error-red-100)',
-                      color: 'var(--error-red)',
-                      border: '1px solid var(--border-error)'
-                    }}
-                    title="Clear History"
-                  >
-                    <RefreshCw size={18} />
-                  </button>
-                )}
-                <button
-                  onClick={toggleHistoryModal}
-                  className="p-2 rounded-full transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                  style={{
-                    background: 'var(--background-glass)',
-                    color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-default)'
-                  }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-            <div 
-              className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]"
-              style={{ background: 'var(--background-surface)' }}
-            >
-              {mockHistoryData.length === 0 ? (
-                <div className="text-center py-16">
-                  <div 
-                    className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
-                    style={{
-                      background: 'var(--primary-purple-100)',
-                      border: '1px solid var(--border-primary)'
-                    }}
-                  >
-                    <History className="text-purple-300" size={32} />
-                  </div>
-                  <h3 
-                    className="text-xl font-semibold mb-2"
-                    style={{ 
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-family-title-modern)'
-                    }}
-                  >
-                    No History Found
-                  </h3>
-                  <p 
-                    className="text-sm max-w-md mx-auto"
-                    style={{ color: 'var(--text-muted)' }}
-                  >
-                    Your previous health assessments will appear here once you complete some diagnostic sessions.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {mockHistoryData.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className="history-item p-5 rounded-xl transition-all duration-300 group cursor-pointer hover:scale-[1.02]"
-                      style={{ 
-                        animationDelay: `${index * 50}ms`,
-                        background: 'var(--background-glass)',
-                        border: '1px solid var(--border-default)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'var(--background-glass-hover)';
-                        e.currentTarget.style.borderColor = 'var(--border-primary)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'var(--background-glass)';
-                        e.currentTarget.style.borderColor = 'var(--border-default)';
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-4">
-                        <div className="flex-1">
-                          <h3 
-                            className="font-semibold text-lg mb-2 transition-colors group-hover:text-purple-300"
-                            style={{ 
-                              color: 'var(--text-primary)',
-                              fontFamily: 'var(--font-family-title-modern)'
-                            }}
-                          >
-                            {item.title}
-                          </h3>
-                          <div 
-                            className="flex items-center gap-2 text-sm mb-3"
-                            style={{ color: 'var(--text-secondary)' }}
-                          >
-                            <Calendar className="w-4 h-4" />
-                            <span>{formatDate(item.date)}</span>
-                          </div>
-                        </div>
-                        <div 
-                          className="px-3 py-1.5 rounded-full text-xs font-medium transition-transform duration-200 group-hover:scale-105"
-                          style={{
-                            background: item.status === 'completed' ? 'var(--success-green-100)' : 'var(--warning-yellow-100)',
-                            color: item.status === 'completed' ? 'var(--success-green)' : 'var(--warning-yellow)',
-                            border: `1px solid ${item.status === 'completed' ? 'var(--border-success)' : 'var(--border-warning)'}`
-                          }}
-                        >
-                          {item.status}
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileText 
-                            className="w-4 h-4" 
-                            style={{ color: 'var(--tertiary-indigo)' }}
-                          />
-                          <span 
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--text-secondary)' }}
-                          >
-                            Symptoms:
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {item.symptoms.slice(0, 3).map((symptom, idx) => (
-                            <Tooltip
-                              key={idx}
-                              content={`Symptom: ${symptom} - Reported during assessment on ${formatDate(item.date)}`}
-                              position="top"
-                            >
-                              <span
-                                className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105"
-                                style={{
-                                  background: 'var(--primary-purple-100)',
-                                  color: 'var(--primary-purple)',
-                                  border: '1px solid var(--border-primary)'
-                                }}
-                              >
-                                {symptom}
-                              </span>
-                            </Tooltip>
-                          ))}
-                          {item.symptoms.length > 3 && (
-                            <Tooltip
-                              content={`Additional symptoms: ${item.symptoms.slice(3).join(', ')}`}
-                              position="top"
-                            >
-                              <span 
-                                className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105"
-                                style={{
-                                  background: 'var(--background-glass-hover)',
-                                  color: 'var(--text-primary)',
-                                  border: '1px solid var(--border-default)'
-                                }}
-                              >
-                                +{item.symptoms.length - 3} more
-                              </span>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </div>
-
-                      <div 
-                        className="flex items-center justify-between pt-3"
-                        style={{ borderTop: '1px solid var(--border-default)' }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span 
-                            className="w-3 h-3 rounded-full"
-                            style={{
-                              background: item.severity === 'mild' ? 'var(--success-green)' :
-                                         item.severity === 'moderate' ? 'var(--warning-yellow)' : 'var(--error-red)'
-                            }}
-                          ></span>
-                          <Tooltip
-                            content={`Diagnosis: ${item.diagnosis} - Severity: ${item.severity.charAt(0).toUpperCase() + item.severity.slice(1)}`}
-                            position="top"
-                          >
-                            <span 
-                              className="text-sm font-medium cursor-help"
-                              style={{ color: 'var(--text-primary)' }}
-                            >
-                              {item.diagnosis}
-                            </span>
-                          </Tooltip>
-                        </div>
-                        <ChevronRight 
-                          className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
-                          style={{ color: 'var(--tertiary-indigo)' }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <HistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={toggleHistoryModal}
+        historyData={mockHistoryData}
+        onClearHistory={clearHistory}
+      />
 
       <button
         onClick={toggleHistoryModal}
-        className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group"
-        style={{
-          background: 'var(--background-glass)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid var(--border-default)'
-        }}
+        className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group bg-slate-800/80 backdrop-blur-sm border border-purple-500/30 hover:bg-slate-800 hover:border-purple-400/50"
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'var(--background-glass-hover)';
-          e.currentTarget.style.borderColor = 'var(--border-primary)';
+          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.9)';
+          e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.5)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'var(--background-glass)';
-          e.currentTarget.style.borderColor = 'var(--border-default)';
+          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.8)';
+          e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)';
         }}
       >
         <History 
-          className="group-hover:rotate-12 transition-transform duration-300" 
-          style={{ color: 'var(--primary-purple)' }}
+          className="group-hover:rotate-12 transition-transform duration-300 text-purple-300" 
           size={20} 
         />
       </button>
