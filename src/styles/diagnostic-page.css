@@ -585,3 +585,81 @@
   filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)) drop-shadow(0 0 20px rgba(167, 139, 250, 0.6)) drop-shadow(0 0 30px rgba(232, 121, 249, 0.4));
   -webkit-filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)) drop-shadow(0 0 20px rgba(167, 139, 250, 0.6)) drop-shadow(0 0 30px rgba(232, 121, 249, 0.4));
 }
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes historyItemSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes historyItemFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.history-modal {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.history-modal-content {
+  animation: modalZoomIn 0.3s ease-out;
+}
+
+.history-item {
+  animation: historyItemSlideUp 0.4s ease-out both;
+}
+
+.history-item:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
+}
+
+.history-toggle-button {
+  transition: all 0.3s ease;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.history-toggle-button:hover {
+  transform: scale(1.1) rotate(12deg);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.25);
+}
+
+.history-status-badge {
+  transition: all 0.2s ease;
+}
+
+.history-status-badge:hover {
+  transform: scale(1.05);
+}

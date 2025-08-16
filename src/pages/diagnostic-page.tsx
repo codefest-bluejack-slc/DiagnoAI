@@ -20,6 +20,11 @@ import {
   Edit,
   Play,
   RefreshCw,
+  History,
+  Calendar,
+  FileText,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
@@ -36,6 +41,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const mousePosition = useMouseTracking();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -46,8 +52,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       size: 0.2 + Math.random() * 0.3,
     })),
   );
+
   const {
     symptoms,
+    history,
     newSymptomIllness,
     setNewSymptomIllness,
     newSymptomDescription,
@@ -65,7 +73,11 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     updateSymptom,
     clearAllSymptoms,
     getProgressPercentage,
+    addToHistory,
+    clearHistory,
   } = useDiagnostic();
+
+  const mockHistoryData = history;
 
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
@@ -135,6 +147,19 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     }
   };
 
+  const toggleHistoryModal = () => {
+    setIsHistoryModalOpen(!isHistoryModalOpen);
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
   return (
     <div className="diagnostic-container">
       <div className="background-orbs">
@@ -169,8 +194,136 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
       <Navbar />
 
-      <main className="main-content">
-        <div className="max-w-7xl mx-auto px-6">
+      {isHistoryModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={toggleHistoryModal}
+        >
+          <div 
+            className="bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-500/20 rounded-full">
+                  <History className="text-purple-300" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">Assessment History</h2>
+                  <p className="text-purple-300 text-sm">{history.length} previous assessments</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {history.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Are you sure you want to clear all history?')) {
+                        clearHistory();
+                      }
+                    }}
+                    className="p-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+                    title="Clear History"
+                  >
+                    <RefreshCw size={18} />
+                  </button>
+                )}
+                <button
+                  onClick={toggleHistoryModal}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+                >
+                  <X className="text-purple-300" size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+              {mockHistoryData.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-purple-500/20 rounded-full flex items-center justify-center">
+                    <History className="text-purple-300" size={32} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">No History Found</h3>
+                  <p className="text-purple-300 text-sm max-w-md mx-auto">
+                    Your previous health assessments will appear here once you complete some diagnostic sessions.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {mockHistoryData.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="history-item p-5 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300 group cursor-pointer hover:scale-[1.02] hover:border-purple-400/30"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-white font-semibold text-lg mb-2 group-hover:text-purple-200 transition-colors">
+                            {item.title}
+                          </h3>
+                          <div className="flex items-center gap-2 text-sm text-purple-300 mb-3">
+                            <Calendar className="w-4 h-4" />
+                            <span>{formatDate(item.date)}</span>
+                          </div>
+                        </div>
+                        <div className={`px-3 py-1.5 rounded-full text-xs font-medium transition-transform duration-200 group-hover:scale-105 ${
+                          item.status === 'completed' 
+                            ? 'bg-green-400/20 text-green-400' 
+                            : 'bg-amber-400/20 text-amber-400'
+                        }`}>
+                          {item.status}
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-purple-400" />
+                          <span className="text-sm text-purple-200 font-medium">Symptoms:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {item.symptoms.slice(0, 3).map((symptom, idx) => (
+                            <span
+                              key={idx}
+                              className="px-3 py-1 bg-purple-500/20 text-purple-200 text-xs rounded-full border border-purple-400/20"
+                            >
+                              {symptom}
+                            </span>
+                          ))}
+                          {item.symptoms.length > 3 && (
+                            <span className="px-3 py-1 bg-white/10 text-white text-xs rounded-full">
+                              +{item.symptoms.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded-full ${
+                            item.severity === 'mild' ? 'bg-green-400' :
+                            item.severity === 'moderate' ? 'bg-amber-400' : 'bg-red-400'
+                          }`}></span>
+                          <span className="text-sm text-purple-200 font-medium">{item.diagnosis}</span>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform duration-200" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={toggleHistoryModal}
+        className="fixed top-20 right-6 p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400/50 group"
+      >
+        <History className="text-purple-300 group-hover:rotate-12 transition-transform duration-300" size={20} />
+      </button>
+
+      <main className="main-content pt-20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-6 pl-20 lg:pl-6">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">

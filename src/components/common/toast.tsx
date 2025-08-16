@@ -49,7 +49,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
       const startTime = Date.now();
       const updateProgress = () => {
         const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, 100 - (elapsed / toast.duration) * 100);
+        const remaining = Math.max(0, 100 - (elapsed / (toast.duration || 3000)) * 100);
         setProgress(remaining);
         
         if (remaining > 0 && !isExiting) {
