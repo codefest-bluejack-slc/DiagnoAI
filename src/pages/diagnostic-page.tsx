@@ -27,6 +27,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
+import Tooltip from '../components/common/tooltip';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
@@ -438,29 +439,39 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {item.symptoms.slice(0, 3).map((symptom, idx) => (
-                            <span
+                            <Tooltip
                               key={idx}
-                              className="px-3 py-1 text-xs rounded-full"
-                              style={{
-                                background: 'var(--primary-purple-100)',
-                                color: 'var(--primary-purple)',
-                                border: '1px solid var(--border-primary)'
-                              }}
+                              content={`Symptom: ${symptom} - Reported during assessment on ${formatDate(item.date)}`}
+                              position="top"
                             >
-                              {symptom}
-                            </span>
+                              <span
+                                className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105"
+                                style={{
+                                  background: 'var(--primary-purple-100)',
+                                  color: 'var(--primary-purple)',
+                                  border: '1px solid var(--border-primary)'
+                                }}
+                              >
+                                {symptom}
+                              </span>
+                            </Tooltip>
                           ))}
                           {item.symptoms.length > 3 && (
-                            <span 
-                              className="px-3 py-1 text-xs rounded-full"
-                              style={{
-                                background: 'var(--background-glass-hover)',
-                                color: 'var(--text-primary)',
-                                border: '1px solid var(--border-default)'
-                              }}
+                            <Tooltip
+                              content={`Additional symptoms: ${item.symptoms.slice(3).join(', ')}`}
+                              position="top"
                             >
-                              +{item.symptoms.length - 3} more
-                            </span>
+                              <span 
+                                className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105"
+                                style={{
+                                  background: 'var(--background-glass-hover)',
+                                  color: 'var(--text-primary)',
+                                  border: '1px solid var(--border-default)'
+                                }}
+                              >
+                                +{item.symptoms.length - 3} more
+                              </span>
+                            </Tooltip>
                           )}
                         </div>
                       </div>
@@ -477,12 +488,17 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                                          item.severity === 'moderate' ? 'var(--warning-yellow)' : 'var(--error-red)'
                             }}
                           ></span>
-                          <span 
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--text-primary)' }}
+                          <Tooltip
+                            content={`Diagnosis: ${item.diagnosis} - Severity: ${item.severity.charAt(0).toUpperCase() + item.severity.slice(1)}`}
+                            position="top"
                           >
-                            {item.diagnosis}
-                          </span>
+                            <span 
+                              className="text-sm font-medium cursor-help"
+                              style={{ color: 'var(--text-primary)' }}
+                            >
+                              {item.diagnosis}
+                            </span>
+                          </Tooltip>
                         </div>
                         <ChevronRight 
                           className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
