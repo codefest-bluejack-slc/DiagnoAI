@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Star,
@@ -24,6 +25,7 @@ import { usePagination } from '../hooks/use-pagination';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
 
 export default function MarketPage() {
+  const navigate = useNavigate();
   const mousePosition = useMouseTracking();
   const [particles] = useState(() =>
     Array.from({ length: 20 }, (_, i) => ({
@@ -80,6 +82,10 @@ export default function MarketPage() {
     hasPreviousPage,
     totalItems,
   } = usePagination(filteredProducts, 20);
+
+  const handleNavigateToProduct = useCallback((productId: string) => {
+    navigate(`/product/${encodeURIComponent(productId)}`);
+  }, [navigate]);
 
   const handleSearch = async () => {
     if (!searchState.query.trim()) {
@@ -616,6 +622,7 @@ export default function MarketPage() {
                         product={product}
                         index={index}
                         viewMode={viewMode}
+                        onNavigate={handleNavigateToProduct}
                       />
                     ))}
                   </div>

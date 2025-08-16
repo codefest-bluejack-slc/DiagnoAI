@@ -20,8 +20,12 @@ export const ProductCard: React.FC<{
   product: IProduct; 
   index: number; 
   viewMode: 'grid' | 'list';
-}> = React.memo(({ product, index, viewMode }) => (
-  <div className={`${viewMode === 'grid' ? 'space-y-4' : 'flex gap-4'} p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group`}>
+  onNavigate: (productId: string) => void;
+}> = React.memo(({ product, index, viewMode, onNavigate }) => (
+  <div 
+    className={`${viewMode === 'grid' ? 'space-y-4' : 'flex gap-4'} p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group cursor-pointer`}
+    onClick={() => onNavigate(product.product_id)}
+  >
     <div className={`${viewMode === 'grid' ? 'w-full aspect-square' : 'w-16 h-16 flex-shrink-0'} bg-white/5 rounded-lg overflow-hidden`}>
       <img
         src={product.thumbnail}
@@ -60,6 +64,7 @@ export const ProductCard: React.FC<{
           href={product.link}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-colors"
         >
           Visit
