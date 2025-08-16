@@ -37,7 +37,7 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
     }, [userService]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div></div>;
     }
     return (
         <ServiceContext.Provider value={value}>

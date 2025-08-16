@@ -25,9 +25,11 @@ import {
   FileText,
   ChevronRight,
   ChevronLeft,
+  Mic,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import Tooltip from '../components/common/tooltip';
+import { SpeechModal } from '../components/modals/speech-modal';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
@@ -43,6 +45,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isSpeechModalOpen, setIsSpeechModalOpen] = useState(false);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -193,6 +196,15 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const handleStartDiagnostic = () => {
     setCurrentStep('analysis');
+  };
+
+  const toggleSpeechModal = () => {
+    setIsSpeechModalOpen(!isSpeechModalOpen);
+  };
+
+  const handleSpeechTranscript = (transcript: string) => {
+    setNewSymptomDescription(transcript);
+    setIsSpeechModalOpen(false);
   };
 
   const handleClearAll = () => {
@@ -674,9 +686,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       </div>
 
                       <div>
-                        <label className="block text-purple-200 text-sm font-medium mb-3">
-                          Detailed Description
-                        </label>
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="block text-purple-200 text-sm font-medium">
+                            Detailed Description
+                          </label>
+                          <button
+                            onClick={toggleSpeechModal}
+                            className="p-2 rounded-full bg-white/10 hover:bg-purple-500/20 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group"
+                            title="Use voice input"
+                          >
+                            <Mic 
+                              className="text-purple-300 group-hover:text-purple-200 transition-colors duration-300" 
+                              size={16} 
+                            />
+                          </button>
+                        </div>
                         <textarea
                           value={newSymptomDescription}
                           onChange={(e) =>
@@ -871,6 +895,12 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
           </div>
         </div>
       </main>
+
+      <SpeechModal
+        isOpen={isSpeechModalOpen}
+        onClose={toggleSpeechModal}
+        onTranscriptComplete={handleSpeechTranscript}
+      />
     </div>
   );
 }
