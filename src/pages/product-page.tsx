@@ -56,22 +56,16 @@ export default function ProductPage() {
       try {
         setIsLoading(true);
         
-        const cachedProduct = getProductFromCache(productId);
-        
-        if (cachedProduct) {
-          console.log('Found cached product data, using as fallback');
-          const productDetails = await getProductDetails(productId, SERPAPI_KEY);
-          setProduct(productDetails);
-        } else {
-          console.log('No cached data found, fetching from API');
-          const productDetails = await getProductDetails(productId, SERPAPI_KEY);
-          setProduct(productDetails);
-        }
-        
+        const productDetails = await getProductDetails(productId, SERPAPI_KEY);
+        setProduct(productDetails);
         setError(null);
       } catch (err) {
         console.error('Error fetching product details:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch product details');
+        if (err instanceof Error && err.message.includes('Please search for products first')) {
+          setError('Product details not available. Please return to the marketplace and search for products first.');
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to fetch product details');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -370,7 +364,7 @@ export default function ProductPage() {
                           backgroundClip: 'text',
                         }}
                       >
-                        {product.price}
+                        Rp.{product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}
                       </p>
                       {product.source && (
                         <p className="text-purple-300 text-sm mt-1">from {product.source}</p>

@@ -5,7 +5,7 @@ const SERPAPI_BASE_URL = 'https://serpapi.com/search.json';
 const CORS_PROXY = 'https://api.allorigins.win/get?url=';
 
 const searchCache = new Map<string, CacheEntry<ISerpAPIResponse>>();
-const productCache = new Map<string, CacheEntry<IProductDetails>>();
+const productDetailsCache = new Map<string, CacheEntry<IProductDetails>>();
 const CACHE_DURATION = 30 * 60 * 1000;
 
 interface CacheEntry<T> {
@@ -57,10 +57,37 @@ export const searchProducts = async (
     if (data.shopping_results) {
       const enhancedResults = {
         ...data,
-        shopping_results: data.shopping_results.map((product: IProduct) => ({
-          ...product,
-          product_id: product.product_id || product.link?.split('?')[0]?.split('/').pop() || `${Date.now()}_${Math.random()}`
-        }))
+        shopping_results: data.shopping_results.map((product: IProduct) => {
+          const enhancedProduct = {
+            ...product,
+            product_id: product.product_id || product.link?.split('?')[0]?.split('/').pop() || `${Date.now()}_${Math.random()}`
+          };
+          
+          const productDetails: IProductDetails = {
+            ...enhancedProduct,
+            description: product.description || '',
+            specifications: {},
+            images: [product.thumbnail],
+            seller_info: { name: product.source || '' },
+            availability: 'Available',
+            shipping_info: {},
+            variants: {},
+            reviews_data: {
+              total_reviews: product.reviews || 0,
+              rating_breakdown: {},
+              recent_reviews: []
+            },
+            product_highlights: [],
+            brand: '',
+            category: '',
+            model: '',
+            sku: ''
+          };
+          
+          setCacheEntry(productDetailsCache, enhancedProduct.product_id, productDetails);
+          
+          return enhancedProduct;
+        })
       };
       setCacheEntry(searchCache, cacheKey, enhancedResults);
       return enhancedResults;
@@ -77,71 +104,47 @@ export const getProductDetails = async (
   productId: string,
   apiKey: string
 ): Promise<IProductDetails> => {
-  const cacheKey = `product_${productId}_${apiKey}`;
-  const cachedResult = getCacheEntry(productCache, cacheKey);
+  const cacheKey = `product_${productId}`;
+  const cachedResult = getCacheEntry(productDetailsCache, cacheKey);
   
   if (cachedResult) {
     console.log('Using cached product details for:', productId);
     return cachedResult;
   }
 
-  console.log('Attempting to fetch detailed product info for:', productId);
+  const cachedProduct = getProductFromCache(productId);
   
-  const endpoint = `${SERPAPI_BASE_URL}?engine=google_product&product_id=${encodeURIComponent(productId)}&location=Indonesia&gl=id&hl=id&api_key=${apiKey}`;
-
-  try {
-    const proxyUrl = `${CORS_PROXY}${encodeURIComponent(endpoint)}`;
-    const response = await axios.get(proxyUrl);
-    
-    if (response.status !== 200) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = JSON.parse(response.data.contents);
-    
-    if (data.error) {
-      throw new Error(data.error);
-    }
-
-    const productResult = data.product_results || {};
-    
+  if (cachedProduct) {
+    console.log('Creating product details from cached search result for:', productId);
     const productDetails: IProductDetails = {
-      position: 1,
-      title: productResult.title || 'Product Details',
-      link: productResult.link || '',
-      product_link: productResult.product_link || '',
-      product_id: productId,
-      thumbnail: productResult.thumbnail || '',
-      source: productResult.source || '',
-      price: productResult.price || '',
-      extracted_price: productResult.extracted_price || 0,
-      rating: productResult.rating || 0,
-      reviews: productResult.reviews || 0,
-      delivery: productResult.delivery || '',
-      description: productResult.description || '',
-      specifications: productResult.specifications || {},
-      images: productResult.images || [],
-      seller_info: productResult.seller_info || {},
-      availability: productResult.availability || '',
-      shipping_info: productResult.shipping_info || {},
-      variants: productResult.variants || {},
-      reviews_data: productResult.reviews_data || {
-        total_reviews: productResult.reviews || 0,
+      ...cachedProduct,
+      description: cachedProduct.description || 'No description available',
+      specifications: {},
+      images: cachedProduct.thumbnail ? [cachedProduct.thumbnail] : [],
+      seller_info: { name: cachedProduct.source || 'Unknown Seller' },
+      availability: 'Available',
+      shipping_info: {
+        time: cachedProduct.delivery || 'Standard delivery',
+        free_shipping: false
+      },
+      variants: {},
+      reviews_data: {
+        total_reviews: cachedProduct.reviews || 0,
         rating_breakdown: {},
         recent_reviews: []
       },
-      product_highlights: productResult.product_highlights || [],
-      brand: productResult.brand || '',
-      category: productResult.category || '',
-      model: productResult.model || '',
-      sku: productResult.sku || ''
+      product_highlights: [],
+      brand: '',
+      category: '',
+      model: '',
+      sku: productId
     };
     
-    setCacheEntry(productCache, cacheKey, productDetails);
+    setCacheEntry(productDetailsCache, cacheKey, productDetails);
     return productDetails;
-  } catch (error) {
-    throw new Error(`CORS proxy failed for product details: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+
+  throw new Error('Product not found. Please search for products first.');
 };
 
 export const getProductFromCache = (productId: string): IProduct | null => {
@@ -160,14 +163,14 @@ export const getProductFromCache = (productId: string): IProduct | null => {
 
 export const clearCache = () => {
   searchCache.clear();
-  productCache.clear();
+  productDetailsCache.clear();
   console.log('Cache cleared');
 };
 
 export const getCacheStats = () => {
   return {
     searchEntries: searchCache.size,
-    productEntries: productCache.size,
-    totalMemoryUsage: `${searchCache.size + productCache.size} entries`
+    productEntries: productDetailsCache.size,
+    totalMemoryUsage: `${searchCache.size + productDetailsCache.size} entries`
   };
 };
