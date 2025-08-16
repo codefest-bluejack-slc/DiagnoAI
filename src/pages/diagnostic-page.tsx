@@ -77,7 +77,62 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     clearHistory,
   } = useDiagnostic();
 
-  const mockHistoryData = history;
+  const mockHistoryData = history.length > 0 ? history : [
+    {
+      id: '1',
+      date: '2024-12-15',
+      title: 'Headache Analysis',
+      symptoms: ['Migraine', 'Nausea', 'Light Sensitivity'],
+      diagnosis: 'Tension Headache',
+      status: 'completed' as const,
+      severity: 'moderate' as const
+    },
+    {
+      id: '2',
+      date: '2024-12-10',
+      title: 'Back Pain Assessment',
+      symptoms: ['Lower Back Pain', 'Stiffness', 'Muscle Spasm'],
+      diagnosis: 'Muscle Strain',
+      status: 'completed' as const,
+      severity: 'mild' as const
+    },
+    {
+      id: '3',
+      date: '2024-12-08',
+      title: 'Fever Symptoms',
+      symptoms: ['High Temperature', 'Chills', 'Fatigue', 'Body Aches'],
+      diagnosis: 'Viral Infection',
+      status: 'completed' as const,
+      severity: 'severe' as const
+    },
+    {
+      id: '4',
+      date: '2024-12-05',
+      title: 'Stomach Issues',
+      symptoms: ['Abdominal Pain', 'Bloating', 'Nausea'],
+      diagnosis: 'Indigestion',
+      status: 'completed' as const,
+      severity: 'mild' as const
+    },
+    {
+      id: '5',
+      date: '2024-12-01',
+      title: 'Sleep Problems',
+      symptoms: ['Insomnia', 'Restlessness', 'Anxiety', 'Racing Thoughts'],
+      diagnosis: 'Sleep Disorder',
+      status: 'in-progress' as const,
+      severity: 'moderate' as const
+    },
+    {
+      id: '6',
+      date: '2024-11-28',
+      title: 'Respiratory Issues',
+      symptoms: ['Cough', 'Shortness of Breath', 'Chest Tightness'],
+      diagnosis: 'Bronchitis',
+      status: 'completed' as const,
+      severity: 'moderate' as const
+    }
+  ];
 
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
@@ -196,32 +251,77 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
       {isHistoryModalOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ 
+            background: 'var(--background-overlay)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)'
+          }}
           onClick={toggleHistoryModal}
         >
           <div 
-            className="bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300"
+            className="w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 rounded-2xl"
+            style={{
+              background: 'linear-gradient(135deg, var(--background-elevated), var(--background-surface))',
+              border: '1px solid var(--border-default)',
+              boxShadow: `
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 10px 10px -5px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1)
+              `
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div 
+              className="flex items-center justify-between p-6"
+              style={{
+                background: 'linear-gradient(135deg, var(--primary-purple-100), var(--tertiary-indigo-100))',
+                borderBottom: '1px solid var(--border-default)'
+              }}
+            >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-full">
+                <div 
+                  className="p-3 rounded-full"
+                  style={{
+                    background: 'var(--primary-purple-200)',
+                    border: '1px solid var(--border-primary)'
+                  }}
+                >
                   <History className="text-purple-300" size={24} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-semibold text-white">Assessment History</h2>
-                  <p className="text-purple-300 text-sm">{history.length} previous assessments</p>
+                  <h2 
+                    className="text-2xl font-semibold mb-1"
+                    style={{ 
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-family-title-modern)'
+                    }}
+                  >
+                    Assessment History
+                  </h2>
+                  <p 
+                    className="text-sm"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {mockHistoryData.length} previous assessments
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {history.length > 0 && (
+                {mockHistoryData.length > 0 && (
                   <button
                     onClick={() => {
                       if (confirm('Are you sure you want to clear all history?')) {
                         clearHistory();
+                        window.location.reload();
                       }
                     }}
-                    className="p-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+                    className="p-2 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    style={{
+                      background: 'var(--error-red-100)',
+                      color: 'var(--error-red)',
+                      border: '1px solid var(--border-error)'
+                    }}
                     title="Clear History"
                   >
                     <RefreshCw size={18} />
@@ -229,21 +329,46 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                 )}
                 <button
                   onClick={toggleHistoryModal}
-                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+                  className="p-2 rounded-full transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  style={{
+                    background: 'var(--background-glass)',
+                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-default)'
+                  }}
                 >
-                  <X className="text-purple-300" size={20} />
+                  <X size={20} />
                 </button>
               </div>
             </div>
 
-            <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+            <div 
+              className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]"
+              style={{ background: 'var(--background-surface)' }}
+            >
               {mockHistoryData.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <div 
+                    className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
+                    style={{
+                      background: 'var(--primary-purple-100)',
+                      border: '1px solid var(--border-primary)'
+                    }}
+                  >
                     <History className="text-purple-300" size={32} />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">No History Found</h3>
-                  <p className="text-purple-300 text-sm max-w-md mx-auto">
+                  <h3 
+                    className="text-xl font-semibold mb-2"
+                    style={{ 
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-family-title-modern)'
+                    }}
+                  >
+                    No History Found
+                  </h3>
+                  <p 
+                    className="text-sm max-w-md mx-auto"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
                     Your previous health assessments will appear here once you complete some diagnostic sessions.
                   </p>
                 </div>
@@ -252,59 +377,117 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   {mockHistoryData.map((item, index) => (
                     <div
                       key={item.id}
-                      className="history-item p-5 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300 group cursor-pointer hover:scale-[1.02] hover:border-purple-400/30"
-                      style={{ animationDelay: `${index * 50}ms` }}
+                      className="history-item p-5 rounded-xl transition-all duration-300 group cursor-pointer hover:scale-[1.02]"
+                      style={{ 
+                        animationDelay: `${index * 50}ms`,
+                        background: 'var(--background-glass)',
+                        border: '1px solid var(--border-default)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--background-glass-hover)';
+                        e.currentTarget.style.borderColor = 'var(--border-primary)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'var(--background-glass)';
+                        e.currentTarget.style.borderColor = 'var(--border-default)';
+                      }}
                     >
                       <div className="flex items-start justify-between gap-3 mb-4">
                         <div className="flex-1">
-                          <h3 className="text-white font-semibold text-lg mb-2 group-hover:text-purple-200 transition-colors">
+                          <h3 
+                            className="font-semibold text-lg mb-2 transition-colors group-hover:text-purple-300"
+                            style={{ 
+                              color: 'var(--text-primary)',
+                              fontFamily: 'var(--font-family-title-modern)'
+                            }}
+                          >
                             {item.title}
                           </h3>
-                          <div className="flex items-center gap-2 text-sm text-purple-300 mb-3">
+                          <div 
+                            className="flex items-center gap-2 text-sm mb-3"
+                            style={{ color: 'var(--text-secondary)' }}
+                          >
                             <Calendar className="w-4 h-4" />
                             <span>{formatDate(item.date)}</span>
                           </div>
                         </div>
-                        <div className={`px-3 py-1.5 rounded-full text-xs font-medium transition-transform duration-200 group-hover:scale-105 ${
-                          item.status === 'completed' 
-                            ? 'bg-green-400/20 text-green-400' 
-                            : 'bg-amber-400/20 text-amber-400'
-                        }`}>
+                        <div 
+                          className="px-3 py-1.5 rounded-full text-xs font-medium transition-transform duration-200 group-hover:scale-105"
+                          style={{
+                            background: item.status === 'completed' ? 'var(--success-green-100)' : 'var(--warning-yellow-100)',
+                            color: item.status === 'completed' ? 'var(--success-green)' : 'var(--warning-yellow)',
+                            border: `1px solid ${item.status === 'completed' ? 'var(--border-success)' : 'var(--border-warning)'}`
+                          }}
+                        >
                           {item.status}
                         </div>
                       </div>
 
                       <div className="mb-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <FileText className="w-4 h-4 text-purple-400" />
-                          <span className="text-sm text-purple-200 font-medium">Symptoms:</span>
+                          <FileText 
+                            className="w-4 h-4" 
+                            style={{ color: 'var(--tertiary-indigo)' }}
+                          />
+                          <span 
+                            className="text-sm font-medium"
+                            style={{ color: 'var(--text-secondary)' }}
+                          >
+                            Symptoms:
+                          </span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {item.symptoms.slice(0, 3).map((symptom, idx) => (
                             <span
                               key={idx}
-                              className="px-3 py-1 bg-purple-500/20 text-purple-200 text-xs rounded-full border border-purple-400/20"
+                              className="px-3 py-1 text-xs rounded-full"
+                              style={{
+                                background: 'var(--primary-purple-100)',
+                                color: 'var(--primary-purple)',
+                                border: '1px solid var(--border-primary)'
+                              }}
                             >
                               {symptom}
                             </span>
                           ))}
                           {item.symptoms.length > 3 && (
-                            <span className="px-3 py-1 bg-white/10 text-white text-xs rounded-full">
+                            <span 
+                              className="px-3 py-1 text-xs rounded-full"
+                              style={{
+                                background: 'var(--background-glass-hover)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--border-default)'
+                              }}
+                            >
                               +{item.symptoms.length - 3} more
                             </span>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                      <div 
+                        className="flex items-center justify-between pt-3"
+                        style={{ borderTop: '1px solid var(--border-default)' }}
+                      >
                         <div className="flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${
-                            item.severity === 'mild' ? 'bg-green-400' :
-                            item.severity === 'moderate' ? 'bg-amber-400' : 'bg-red-400'
-                          }`}></span>
-                          <span className="text-sm text-purple-200 font-medium">{item.diagnosis}</span>
+                          <span 
+                            className="w-3 h-3 rounded-full"
+                            style={{
+                              background: item.severity === 'mild' ? 'var(--success-green)' :
+                                         item.severity === 'moderate' ? 'var(--warning-yellow)' : 'var(--error-red)'
+                            }}
+                          ></span>
+                          <span 
+                            className="text-sm font-medium"
+                            style={{ color: 'var(--text-primary)' }}
+                          >
+                            {item.diagnosis}
+                          </span>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform duration-200" />
+                        <ChevronRight 
+                          className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
+                          style={{ color: 'var(--tertiary-indigo)' }}
+                        />
                       </div>
                     </div>
                   ))}
@@ -317,9 +500,27 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
       <button
         onClick={toggleHistoryModal}
-        className="fixed top-20 right-6 p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400/50 group"
+        className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group"
+        style={{
+          background: 'var(--background-glass)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid var(--border-default)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--background-glass-hover)';
+          e.currentTarget.style.borderColor = 'var(--border-primary)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'var(--background-glass)';
+          e.currentTarget.style.borderColor = 'var(--border-default)';
+        }}
       >
-        <History className="text-purple-300 group-hover:rotate-12 transition-transform duration-300" size={20} />
+        <History 
+          className="group-hover:rotate-12 transition-transform duration-300" 
+          style={{ color: 'var(--primary-purple)' }}
+          size={20} 
+        />
       </button>
 
       <main className="main-content pt-20">
