@@ -22,7 +22,7 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       startListening();
-    }
+}
   }, [isOpen, startListening]);
 
   if (!isOpen) return null;

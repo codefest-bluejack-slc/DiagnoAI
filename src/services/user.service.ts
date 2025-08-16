@@ -25,6 +25,7 @@ export class UserService extends BaseService<UserCanisterService> {
     }
 
     public async addUser(user: User): Promise<User | null> {
+        console.log("Adding user:", user);
         try {
             const response = await this.actor.addUser(user);
             console.log("User added:", response);
@@ -43,11 +44,14 @@ export class UserService extends BaseService<UserCanisterService> {
                     identityProvider: this.II_URL,
                     onSuccess: async () => {
                         const identity = await BaseService.getCallerIdentity();
-                        const response = await this.addUser({
+                        const user : User = {
                             id: identity.getPrincipal(),
-                            name: "WKWK",
+                            name: "",
                             email: "",
-                        })
+                            bio: "My Bio",
+                            profilePicture: []
+                        }
+                        const response = await this.addUser(user)
 
                         resolve(response);
                     },
@@ -63,10 +67,30 @@ export class UserService extends BaseService<UserCanisterService> {
         })
     }
 
+    public async updateUser(user: User): Promise<boolean> {
+        try {
+            const principal = await BaseService.getCallerPrincipal();
+            if (principal.isAnonymous()) {
+                throw new Error("User is not authenticated");
+            }
+            console.log("Updating user:", user);
+            const response = await this.actor.updateUser(user.id,user);
+            return response;
+        }
+        catch (error) {
+            console.error("Error updating user:", error);
+            throw error;
+        }
+    }
+
     public async me() : Promise<User | null> {
         try {
-            const identity = await BaseService.getCallerIdentity();
-            return this.getUserByPrincipal(identity.getPrincipal());
+            console.log(BaseService.authClient)
+            const principal = await BaseService.getCallerPrincipal();
+            if (principal.isAnonymous()) {
+                throw new Error("User is not authenticated");
+            }
+            return this.getUserByPrincipal(principal);
         } catch (error) {
             console.error("Error fetching current user:", error);
             return null;

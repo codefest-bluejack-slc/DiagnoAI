@@ -15,6 +15,7 @@ export class SpeechService {
     });
   }
 
+  // TODO: Real implementation untuk Speech Recognition
   public static stopSpeechRecognition(): void {
     console.log('TODO: Stop speech recognition');
   }
