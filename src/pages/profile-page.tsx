@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useMouseTracking from "../hooks/use-mouse-tracking";
 import Navbar from "../components/common/navbar";
-import { Camera, Plus, Save, User as UserIcon, X } from "lucide-react";
+import { Camera, Plus, Save, User as UserIcon, X, LogOut } from "lucide-react";
 import { User } from "../declarations/user/user.did";
 import { useAuth } from "../hooks/use-auth";
 import { deserializeImage, serializeImage } from "../utils/image-utils";
@@ -11,7 +11,7 @@ import { Principal } from "@dfinity/principal";
 
 export default function ProfilePage() {
   const mousePosition = useMouseTracking();
-  const { me } = useAuth();
+  const { me, logout } = useAuth();
   const { userService } = useService();
   const [particles] = useState(() =>
       Array.from({ length: 50 }, (_, i) => ({
@@ -181,6 +181,15 @@ export default function ProfilePage() {
                 >
                   <Save className="text-white transition-transform duration-300" size={20} />
                   <span>Save Profile</span>
+                </button>
+                <button
+                  onClick={() => {
+                    logout.mutate();
+                  }}
+                  className="py-4 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-400/50 shadow-lg hover:shadow-red-500/25"
+                >
+                  <LogOut className="text-white transition-transform duration-300" size={20} />
+                  <span>Logout</span>
                 </button>
               </div>
             </div>
