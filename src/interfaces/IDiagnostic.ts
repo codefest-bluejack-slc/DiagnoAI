@@ -1,9 +1,13 @@
 export interface ISymptom {
+  name: string;
+  severity: 'mild' | 'moderate' | 'severe';
+}
+
+export interface IHealthAssessment {
   id: string;
-  illness: string;
   description: string;
-  severity?: 'mild' | 'moderate' | 'severe';
-  since?: string;
+  symptoms: ISymptom[];
+  since: string;
 }
 
 export interface IDiagnosticPageProps {}

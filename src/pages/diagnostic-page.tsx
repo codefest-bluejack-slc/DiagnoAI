@@ -28,10 +28,9 @@ import Tooltip from '../components/common/tooltip';
 import { SpeechModal } from '../components/modals/speech-modal';
 import { HistoryModal } from '../components/modals/history-modal';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
-import { ISymptom } from '../interfaces/IDiagnostic';
+import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
-import { v4 as uuidv4 } from 'uuid';
 import {
   getSeverityColor,
   getStepIcon,
@@ -57,25 +56,28 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   );
 
   const {
-    symptoms,
-    setSymptoms,
+    assessments,
     history,
-    newSymptomIllness,
-    setNewSymptomIllness,
-    newSymptomDescription,
-    setNewSymptomDescription,
+    newSymptomName,
+    setNewSymptomName,
     newSymptomSeverity,
     setNewSymptomSeverity,
-    newSymptomSince,
-    setNewSymptomSince,
+    newDescription,
+    setNewDescription,
+    newSince,
+    setNewSince,
+    symptoms,
     showAddForm,
     setShowAddForm,
     currentStep,
     setCurrentStep,
-    addSymptom,
-    removeSymptom,
-    updateSymptom,
-    clearAllSymptoms,
+    addAssessment,
+    removeAssessment,
+    updateAssessment,
+    addToSymptomList,
+    removeFromSymptomList,
+    clearSymptomList,
+    clearAllAssessments,
     getProgressPercentage,
     addToHistory,
     clearHistory,
@@ -140,6 +142,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
+  const [editingAssessment, setEditingAssessment] = useState<string | null>(null);
 
   const handleShowAddForm = () => {
     setShowAddForm(true);
@@ -149,48 +152,70 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setShowAddForm(false);
   };
 
-  const handleAddSymptom = () => {
-    addSymptom();
+
+  const handleEditSymptom = (index: number) => {
+    const symptom = symptoms[index];
+    if (symptom) {
+      setNewSymptomName(symptom.name);
+      setNewSymptomSeverity(symptom.severity);
+      setEditingSymptom(index.toString());
+      setShowAddForm(true);
+    }
   };
 
-  const handleEditSymptom = (symptomId: string) => {
-    const symptom = symptoms.find(s => s.id === symptomId);
-    if (symptom) {
-      setNewSymptomIllness(symptom.illness);
-      setNewSymptomDescription(symptom.description);
-      setNewSymptomSeverity(symptom.severity || 'mild');
-      setNewSymptomSince(symptom.since || '');
-      setEditingSymptom(symptomId);
+  const handleEditAssessment = (assessmentId: string) => {
+    const assessment = assessments.find(a => a.id === assessmentId);
+    if (assessment) {
+      setNewDescription(assessment.description);
+      setNewSince(assessment.since);
+      setSymptoms([...assessment.symptoms]);
+      setEditingAssessment(assessmentId);
       setShowAddForm(true);
     }
   };
 
   const handleSaveEdit = () => {
-    if (editingSymptom) {
-      updateSymptom(editingSymptom, {
-        illness: newSymptomIllness.trim(),
-        description: newSymptomDescription.trim(),
-        severity: newSymptomSeverity,
-        since: newSymptomSince.trim() || undefined,
-      });
-      
-      setNewSymptomIllness('');
-      setNewSymptomDescription('');
-      setNewSymptomSeverity('mild');
-      setNewSymptomSince('');
-      setEditingSymptom(null);
-      setShowAddForm(false);
+    if (editingAssessment) {
+      if (newDescription.trim() && newSince) {
+        updateAssessment(editingAssessment, {
+          description: newDescription.trim(),
+          symptoms: [...symptoms],
+          since: newSince,
+        });
+        setNewDescription('');
+        setNewSince('');
+        setSymptoms([]);
+        setEditingAssessment(null);
+        setShowAddForm(false);
+      }
+    } else if (editingSymptom !== null) {
+      if (newSymptomName.trim()) {
+        const index = parseInt(editingSymptom);
+        removeFromSymptomList(index);
+        addToSymptomList(newSymptomName.trim());
+        setNewSymptomSeverity('mild');
+        setEditingSymptom(null);
+        setShowAddForm(false);
+      }
     } else {
-      addSymptom();
+      if (newDescription.trim() && newSince) {
+        addAssessment();
+      } else if (newSymptomName.trim()) {
+        addToSymptomList(newSymptomName.trim());
+        setNewSymptomSeverity('mild');
+        setShowAddForm(false);
+      }
     }
   };
 
   const handleCancelEdit = () => {
-    setNewSymptomIllness('');
-    setNewSymptomDescription('');
+    setNewSymptomName('');
     setNewSymptomSeverity('mild');
-    setNewSymptomSince('');
+    setNewDescription('');
+    setNewSince('');
+    setSymptoms([]);
     setEditingSymptom(null);
+    setEditingAssessment(null);
     setShowAddForm(false);
   };
 
@@ -203,14 +228,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   };
 
   const handleSpeechTranscript = (transcript: string) => {
-    setNewSymptomDescription(transcript);
+    setNewDescription(transcript);
     setIsSpeechModalOpen(false);
   };
 
   const handleClearAll = () => {
-    if (confirm('Are you sure you want to clear all health concerns?')) {
-      clearAllSymptoms();
-      setEditingSymptom(null);
+    if (confirm('Are you sure you want to clear all health assessments?')) {
+      clearAllAssessments();
+      setEditingAssessment(null);
       setShowAddForm(false);
     }
   };
@@ -315,7 +340,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     {['input', 'review', 'analysis'].map((step, index) => (
                       <div
                         key={step}
-                        className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
+                        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
                           currentStep === step
                             ? 'step-item-active'
                             : 'step-item-inactive'
@@ -396,7 +421,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
                         </div>
                         <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
-                          {editingSymptom ? 'Edit Health Assessment' : 'Add Health Assessment'}
+                          {editingAssessment ? 'Edit Health Assessment' : 'Add Health Assessment'}
                         </span>
                       </h3>
                       <button
@@ -408,6 +433,85 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     </div>
 
                     <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-600 delay-500">
+                      <div>
+                        <label className="block text-purple-200 text-sm font-medium mb-3">
+                          Symptoms
+                        </label>
+                        <div className="space-y-4">
+                          {symptoms.length > 0 && (
+                            <div className="flex flex-wrap gap-2 p-3 bg-purple-500/10 border border-purple-400/30 rounded-xl">
+                              {symptoms.map((symptom, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 border border-purple-400/50 rounded-full text-sm text-purple-200 group hover:bg-purple-500/30 transition-all duration-200"
+                                >
+                                  <span>{symptom.name}</span>
+                                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                    symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300' :
+                                    symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
+                                    'bg-red-400/30 text-red-300'
+                                  }`}>
+                                    {symptom.severity}
+                                  </span>
+                                  <button
+                                    onClick={() => removeFromSymptomList(index)}
+                                    className="p-0.5 rounded-full hover:bg-red-500/40 text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110"
+                                    title="Remove symptom"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                onClick={clearSymptomList}
+                                className="px-2 py-1 text-xs text-purple-300 hover:text-purple-200 underline transition-colors duration-200"
+                                title="Clear all symptoms"
+                              >
+                                Clear all
+                              </button>
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newSymptomName}
+                              onChange={(e) => setNewSymptomName(e.target.value)}
+                              placeholder="Add symptom (e.g., headache, nausea, fever)"
+                              className="flex-1 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newSymptomName.trim()) {
+                                  addToSymptomList(newSymptomName.trim());
+                                }
+                              }}
+                            />
+                            <select
+                              value={newSymptomSeverity}
+                              onChange={(e) => setNewSymptomSeverity(e.target.value as 'mild' | 'moderate' | 'severe')}
+                              className="p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 appearance-none cursor-pointer"
+                            >
+                              <option value="mild" className="bg-gray-800 text-white">Mild</option>
+                              <option value="moderate" className="bg-gray-800 text-white">Moderate</option>
+                              <option value="severe" className="bg-gray-800 text-white">Severe</option>
+                            </select>
+                            <button
+                              onClick={() => {
+                                if (newSymptomName.trim()) {
+                                  addToSymptomList(newSymptomName.trim());
+                                }
+                              }}
+                              disabled={!newSymptomName.trim()}
+                              className="p-4 bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-200 disabled:text-gray-400 rounded-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                              title="Add symptom"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                          <p className="text-purple-300 text-xs">
+                            Add symptoms with their severity levels. Press Enter or click + to add each symptom.
+                          </p>
+                        </div>
+                      </div>
+
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <label className="block text-purple-200 text-sm font-medium">
@@ -425,16 +529,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           </button>
                         </div>
                         <textarea
-                          value={newSymptomDescription}
-                          onChange={(e) =>
-                            setNewSymptomDescription(e.target.value)
-                          }
-                          placeholder="Describe your health concern in detail... e.g., 'I have been experiencing sharp pain in my lower back when standing, along with stiffness in the morning'"
+                          value={newDescription}
+                          onChange={(e) => setNewDescription(e.target.value)}
+                          placeholder="Describe your health concerns in detail..."
                           className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm resize-none text-lg leading-relaxed transition-all duration-300 focus:scale-[1.01]"
                           rows={6}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && e.ctrlKey) {
-                              addSymptom();
+                              addAssessment();
                             }
                           }}
                         />
@@ -442,121 +544,29 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
                       <div>
                         <label className="block text-purple-200 text-sm font-medium mb-3">
-                          Symptoms
+                          Since When
                         </label>
-                        <div className="space-y-3">
-                          {symptoms.length === 0 ? (
-                            <p className="text-purple-300 text-sm italic">No symptoms added yet. Add symptoms from your description.</p>
-                          ) : (
-                            <div className="flex flex-wrap gap-2">
-                              {symptoms.map((symptom, index) => (
-                                <div
-                                  key={symptom.id}
-                                  className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 border border-purple-400/50 rounded-full text-sm text-purple-200"
-                                >
-                                  <span>{symptom.illness}</span>
-                                  <button
-                                    onClick={() => removeSymptom(symptom.id)}
-                                    className="p-1 rounded-full hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200"
-                                    title="Remove symptom"
-                                  >
-                                    <X size={12} />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={newSymptomIllness}
-                              onChange={(e) => setNewSymptomIllness(e.target.value)}
-                              placeholder="Add a symptom (e.g., headache, back pain, fever)"
-                              className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && newSymptomIllness.trim()) {
-                                  const symptom: ISymptom = {
-                                    id: uuidv4(),
-                                    illness: newSymptomIllness.trim(),
-                                    description: '',
-                                    severity: newSymptomSeverity,
-                                  };
-                                  setSymptoms(prev => [...prev, symptom]);
-                                  setNewSymptomIllness('');
-                                }
-                              }}
-                            />
-                            <button
-                              onClick={() => {
-                                if (newSymptomIllness.trim()) {
-                                  const symptom: ISymptom = {
-                                    id: uuidv4(),
-                                    illness: newSymptomIllness.trim(),
-                                    description: '',
-                                    severity: newSymptomSeverity,
-                                  };
-                                  setSymptoms(prev => [...prev, symptom]);
-                                  setNewSymptomIllness('');
-                                }
-                              }}
-                              disabled={!newSymptomIllness.trim()}
-                              className="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-200 disabled:text-gray-400 rounded-lg transition-all duration-300 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
-                            >
-                              <Plus size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-purple-200 text-sm font-medium mb-3">
-                            Severity Level
-                          </label>
-                          <div className="relative">
-                            <select
-                              value={newSymptomSeverity}
-                              onChange={(e) => setNewSymptomSeverity(e.target.value as 'mild' | 'moderate' | 'severe')}
-                              className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] appearance-none cursor-pointer"
-                            >
-                              <option value="mild" className="bg-gray-800 text-white">Mild</option>
-                              <option value="moderate" className="bg-gray-800 text-white">Moderate</option>
-                              <option value="severe" className="bg-gray-800 text-white">Severe</option>
-                            </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                              <div className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                                newSymptomSeverity === 'mild' ? 'bg-green-400' :
-                                newSymptomSeverity === 'moderate' ? 'bg-amber-400' : 'bg-red-400'
-                              }`}></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-purple-200 text-sm font-medium mb-3">
-                            Since (Date)
-                          </label>
-                          <input
-                            type="date"
-                            value={newSymptomSince}
-                            onChange={(e) => setNewSymptomSince(e.target.value)}
-                            className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
-                          />
-                        </div>
+                        <input
+                          type="date"
+                          value={newSince}
+                          onChange={(e) => setNewSince(e.target.value)}
+                          className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
+                          required
+                        />
                       </div>
 
                       <div className="flex gap-3">
                         <button
                           onClick={handleSaveEdit}
-                          disabled={!newSymptomDescription.trim()}
+                          disabled={!newDescription.trim() || !newSince}
                           className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
                         >
-                          {editingSymptom ? (
+                          {editingAssessment ? (
                             <Edit className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
                           ) : (
                             <Plus className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
                           )}
-                          <span>{editingSymptom ? 'Update Health Assessment' : 'Add Health Assessment'}</span>
+                          <span>{editingAssessment ? 'Update Assessment' : 'Add Assessment'}</span>
                         </button>
                         <button
                           onClick={handleCancelEdit}
@@ -577,22 +587,22 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-white font-semibold flex items-center gap-2">
                       <Stethoscope className="text-purple-300" size={20} />
-                      Health Assessments ({symptoms.length})
+                      Health Assessments ({assessments.length})
                     </h4>
                     <div className="flex items-center gap-2">
-                      {symptoms.length >= 2 && (
+                      {assessments.length >= 1 && (
                         <button
                           onClick={handleStartDiagnostic}
-                          className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
+                          className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
                         >
                           <Play size={12} />
                           Start
                         </button>
                       )}
-                      {symptoms.length > 0 && (
+                      {assessments.length > 0 && (
                         <button
-                          onClick={handleClearAll}
-                          className="px-2 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-xs font-medium rounded-lg transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+                          onClick={clearAllAssessments}
+                          className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400/50"
                         >
                           <RefreshCw size={10} />
                           Clear
@@ -601,7 +611,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {symptoms.length === 0 ? (
+                    {assessments.length === 0 ? (
                       <div className="text-center py-6">
                         <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-full flex items-center justify-center">
                           <Plus className="text-purple-300" size={20} />
@@ -614,60 +624,65 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         </p>
                       </div>
                     ) : (
-                      symptoms.map((symptom, index) => (
+                      assessments.map((assessment, index) => (
                         <div
-                          key={symptom.id}
-                          className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                          key={assessment.id}
+                          className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300 group"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <Heart className="w-3 h-3 text-purple-400" />
                                 <h5 className="text-white text-sm font-medium">
-                                  {symptom.illness}
+                                  Assessment #{index + 1}
                                 </h5>
                               </div>
                               <p className="text-purple-200 text-xs leading-relaxed mb-2 pl-5">
-                                {symptom.description.length > 45 
-                                  ? `${symptom.description.substring(0, 45)}...` 
-                                  : symptom.description}
+                                {assessment.description.length > 45 
+                                  ? `${assessment.description.substring(0, 45)}...` 
+                                  : assessment.description}
                               </p>
-                              <div className="flex items-center gap-1.5 pl-5">
-                                {symptom.severity && (
-                                  <span className={`text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1 ${
-                                    symptom.severity === 'mild' ? 'bg-green-400/20 text-green-400' :
-                                    symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-400' :
-                                    'bg-red-400/20 text-red-400'
-                                  }`}>
-                                    {symptom.severity === 'mild' ? (
-                                      <Shield className="w-2.5 h-2.5" />
-                                    ) : symptom.severity === 'moderate' ? (
-                                      <AlertCircle className="w-2.5 h-2.5" />
-                                    ) : (
-                                      <Zap className="w-2.5 h-2.5" />
+                              {assessment.symptoms && assessment.symptoms.length > 0 && (
+                                <div className="pl-5 mb-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {assessment.symptoms.slice(0, 3).map((symptom, i) => (
+                                      <span
+                                        key={i}
+                                        className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                          symptom.severity === 'mild' ? 'bg-green-400/20 text-green-300' :
+                                          symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-300' :
+                                          'bg-red-400/20 text-red-300'
+                                        }`}
+                                      >
+                                        {symptom.name}
+                                      </span>
+                                    ))}
+                                    {assessment.symptoms.length > 3 && (
+                                      <span className="text-xs px-1.5 py-0.5 bg-indigo-400/20 text-indigo-300 rounded-full">
+                                        +{assessment.symptoms.length - 3} more
+                                      </span>
                                     )}
-                                    {symptom.severity}
-                                  </span>
-                                )}
-                                {symptom.since && (
-                                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
-                                    <Clock className="w-2.5 h-2.5" />
-                                    Since {new Date(symptom.since).toLocaleDateString()}
-                                  </span>
-                                )}
+                                  </div>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1.5 pl-5">
+                                <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  Since {new Date(assessment.since).toLocaleDateString()}
+                                </span>
                               </div>
                             </div>
                             <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <button
-                                onClick={() => handleEditSymptom(symptom.id)}
-                                className="p-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-blue-400/50"
+                                onClick={() => handleEditAssessment(assessment.id)}
+                                className="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-blue-400/50"
                                 title="Edit"
                               >
                                 <Edit size={12} />
                               </button>
                               <button
-                                onClick={() => removeSymptom(symptom.id)}
-                                className="p-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-red-400/50"
+                                onClick={() => removeAssessment(assessment.id)}
+                                className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-red-400/50"
                                 title="Remove"
                               >
                                 <Trash2 size={12} />

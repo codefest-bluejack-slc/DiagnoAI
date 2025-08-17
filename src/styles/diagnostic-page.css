@@ -576,14 +576,40 @@
 }
 
 .gradient-text-glow {
-  background: linear-gradient(135deg, #c084fc 0%, #a78bfa 25%, #e879f9 50%, #f0abfc 75%, #ddd6fe 100%);
+  background: linear-gradient(45deg, #8b5cf6, #a855f7, #c084fc, #e879f9, #f0abfc);
+  background-size: 300% 300%;
   background-clip: text;
   -webkit-background-clip: text;
-  -moz-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)) drop-shadow(0 0 20px rgba(167, 139, 250, 0.6)) drop-shadow(0 0 30px rgba(232, 121, 249, 0.4));
-  -webkit-filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)) drop-shadow(0 0 20px rgba(167, 139, 250, 0.6)) drop-shadow(0 0 30px rgba(232, 121, 249, 0.4));
+  animation: shimmer 3s ease-in-out infinite;
+  position: relative;
+}
+
+.gradient-text-glow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.2) 30%, rgba(192, 132, 252, 0.1) 60%, transparent 100%);
+  border-radius: 8px;
+  z-index: -1;
+  filter: blur(20px);
+  transform: scale(1.1);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes modalFadeIn {

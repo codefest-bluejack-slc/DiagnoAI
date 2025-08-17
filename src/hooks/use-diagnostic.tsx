@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { ISymptom } from '../interfaces/IDiagnostic';
+import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
 import { useService } from './use-service';
 import { useMutation } from './use-mutation';
 import { Symptom } from '../declarations/symptom/symptom.did';
-import { v4 as uuidv4 } from 'uuid';
 
-const SYMPTOMS_STORAGE_KEY = 'diagnoai_symptoms';
+const ASSESSMENTS_STORAGE_KEY = 'diagnoai_assessments';
 const HISTORY_STORAGE_KEY = 'diagnoai_history';
 
 export interface IHistoryItem {
@@ -19,12 +18,13 @@ export interface IHistoryItem {
 }
 
 export const useDiagnostic = () => {
-  const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
+  const [assessments, setAssessments] = useState<IHealthAssessment[]>([]);
   const [history, setHistory] = useState<IHistoryItem[]>([]);
-  const [newSymptomIllness, setNewSymptomIllness] = useState('');
-  const [newSymptomDescription, setNewSymptomDescription] = useState('');
+  const [newSymptomName, setNewSymptomName] = useState('');
   const [newSymptomSeverity, setNewSymptomSeverity] = useState<'mild' | 'moderate' | 'severe'>('mild');
-  const [newSymptomSince, setNewSymptomSince] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newSince, setNewSince] = useState('');
+  const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [currentStep, setCurrentStep] = useState<
     'input' | 'review' | 'analysis'
@@ -32,14 +32,14 @@ export const useDiagnostic = () => {
   const { symptomService, historyService } = useService();
 
   useEffect(() => {
-    const savedSymptoms = localStorage.getItem(SYMPTOMS_STORAGE_KEY);
-    if (savedSymptoms) {
+    const savedAssessments = localStorage.getItem(ASSESSMENTS_STORAGE_KEY);
+    if (savedAssessments) {
       try {
-        const parsedSymptoms = JSON.parse(savedSymptoms);
-        setSymptoms(parsedSymptoms);
+        const parsedAssessments = JSON.parse(savedAssessments);
+        setAssessments(parsedAssessments);
       } catch (error) {
-        console.error('Error parsing saved symptoms:', error);
-        localStorage.removeItem(SYMPTOMS_STORAGE_KEY);
+        console.error('Error parsing saved assessments:', error);
+        localStorage.removeItem(ASSESSMENTS_STORAGE_KEY);
       }
     }
 
@@ -151,8 +151,8 @@ export const useDiagnostic = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(SYMPTOMS_STORAGE_KEY, JSON.stringify(symptoms));
-  }, [symptoms]);
+    localStorage.setItem(ASSESSMENTS_STORAGE_KEY, JSON.stringify(assessments));
+  }, [assessments]);
 
   useEffect(() => {
     localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
@@ -183,53 +183,71 @@ export const useDiagnostic = () => {
     }
   });
 
-  const addSymptom = () => {
-    if (newSymptomDescription.trim()) {
-      const symptom: ISymptom = {
-        id: Date.now().toString(),
-        illness: 'General Assessment',
-        description: newSymptomDescription.trim(),
+  const addToSymptomList = (name: string) => {
+    if (name.trim()) {
+      const newSymptom: ISymptom = {
+        name: name.trim(),
         severity: newSymptomSeverity,
-        since: newSymptomSince.trim() || undefined,
+      };
+      setSymptoms((prev) => [...prev, newSymptom]);
+      setNewSymptomName('');
+    }
+  };
+
+  const removeFromSymptomList = (index: number) => {
+    setSymptoms((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const clearSymptomList = () => {
+    setSymptoms([]);
+  };
+
+  const addAssessment = () => {
+    if (newDescription.trim() && newSince) {
+      const assessment: IHealthAssessment = {
+        id: Date.now().toString(),
+        description: newDescription.trim(),
+        symptoms: [...symptoms],
+        since: newSince,
       };
 
-      setSymptoms((prev) => [...prev, symptom]);
-      setNewSymptomIllness('');
-      setNewSymptomDescription('');
-      setNewSymptomSeverity('mild');
-      setNewSymptomSince('');
+      setAssessments((prev) => [...prev, assessment]);
+      setNewDescription('');
+      setNewSince('');
+      setSymptoms([]);
       setShowAddForm(false);
     }
   };
 
-  const removeSymptom = (id: string) => {
-    setSymptoms((prev) => prev.filter((symptom) => symptom.id !== id));
+  const removeAssessment = (id: string) => {
+    setAssessments((prev) => prev.filter((assessment) => assessment.id !== id));
   };
 
-  const updateSymptom = (id: string, updatedSymptom: Partial<ISymptom>) => {
-    setSymptoms((prev) => prev.map(symptom => 
-      symptom.id === id ? { ...symptom, ...updatedSymptom } : symptom
+  const updateAssessment = (id: string, updatedAssessment: Partial<IHealthAssessment>) => {
+    setAssessments((prev) => prev.map(assessment => 
+      assessment.id === id ? { ...assessment, ...updatedAssessment } : assessment
     ));
   };
 
-  const clearAllSymptoms = () => {
+  const clearAllAssessments = () => {
+    setAssessments([]);
     setSymptoms([]);
-    localStorage.removeItem(SYMPTOMS_STORAGE_KEY);
+    localStorage.removeItem(ASSESSMENTS_STORAGE_KEY);
   };
 
   const getProgressPercentage = () => {
-    return Math.min(symptoms.length * 12.5, 100);
+    return Math.min(assessments.length * 12.5, 100);
   };
 
   const addToHistory = (title: string, diagnosis: string) => {
     const newHistoryItem: IHistoryItem = {
-      id: uuidv4(),
+      id: Date.now().toString(),
       date: new Date().toISOString().split('T')[0],
       title,
-      symptoms: symptoms.map(s => s.illness),
+      symptoms: symptoms.map(s => s.name),
       diagnosis,
       status: 'completed',
-      severity: symptoms.length > 0 ? symptoms[0].severity || 'mild' : 'mild'
+      severity: symptoms.length > 0 ? symptoms[0].severity : 'mild'
     };
     
     setHistory(prev => [newHistoryItem, ...prev]);
@@ -241,25 +259,30 @@ export const useDiagnostic = () => {
   };
 
   return {
-    symptoms,
-    setSymptoms,
+    assessments,
+    setAssessments,
     history,
-    newSymptomIllness,
-    setNewSymptomIllness,
-    newSymptomDescription,
-    setNewSymptomDescription,
+    newSymptomName,
+    setNewSymptomName,
     newSymptomSeverity,
     setNewSymptomSeverity,
-    newSymptomSince,
-    setNewSymptomSince,
+    newDescription,
+    setNewDescription,
+    newSince,
+    setNewSince,
+    symptoms,
+    setSymptoms,
     showAddForm,
     setShowAddForm,
     currentStep,
     setCurrentStep,
-    addSymptom,
-    removeSymptom,
-    updateSymptom,
-    clearAllSymptoms,
+    addAssessment,
+    removeAssessment,
+    updateAssessment,
+    addToSymptomList,
+    removeFromSymptomList,
+    clearSymptomList,
+    clearAllAssessments,
     getProgressPercentage,
     addToHistory,
     clearHistory,

@@ -10,7 +10,6 @@ export function Loading() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <g className="network">
-          {/* Connecting Lines (yang bagian luar)*/}
           {/* Nodes (buletannya) */}
           <circle className="node" cx="20" cy="20" r="4" />
           <circle className="node" cx="50" cy="10" r="5" />

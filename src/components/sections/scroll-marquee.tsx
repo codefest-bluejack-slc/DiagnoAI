@@ -46,11 +46,11 @@ export default function ScrollMarquee() {
   return (
     <section 
       ref={sectionRef}
-      className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-900/5 to-transparent"
+      className="relative min-h-screen flex items-start justify-center pt-8 bg-gradient-to-b from-purple-900/5 to-transparent"
     >
       <div className="w-full max-w-[98vw] px-2 flex items-center justify-center overflow-hidden">
         <h1 
-          className={`text-[8vw] md:text-[6vw] lg:text-[4vw] font-bold text-center relative group transition-all duration-1000 whitespace-nowrap ${
+          className={`text-[12vw] md:text-[10vw] lg:text-[8vw] xl:text-[6vw] font-bold text-center relative group transition-all duration-1000 whitespace-nowrap ${
             isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
           }`}
           style={{
