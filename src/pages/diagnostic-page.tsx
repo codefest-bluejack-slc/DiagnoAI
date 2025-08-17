@@ -28,8 +28,10 @@ import Tooltip from '../components/common/tooltip';
 import { SpeechModal } from '../components/modals/speech-modal';
 import { HistoryModal } from '../components/modals/history-modal';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
+import { ISymptom } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
+import { v4 as uuidv4 } from 'uuid';
 import {
   getSeverityColor,
   getStepIcon,
@@ -56,6 +58,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const {
     symptoms,
+    setSymptoms,
     history,
     newSymptomIllness,
     setNewSymptomIllness,
@@ -63,8 +66,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setNewSymptomDescription,
     newSymptomSeverity,
     setNewSymptomSeverity,
-    newSymptomDuration,
-    setNewSymptomDuration,
+    newSymptomSince,
+    setNewSymptomSince,
     showAddForm,
     setShowAddForm,
     currentStep,
@@ -156,7 +159,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       setNewSymptomIllness(symptom.illness);
       setNewSymptomDescription(symptom.description);
       setNewSymptomSeverity(symptom.severity || 'mild');
-      setNewSymptomDuration(symptom.duration || '');
+      setNewSymptomSince(symptom.since || '');
       setEditingSymptom(symptomId);
       setShowAddForm(true);
     }
@@ -168,13 +171,13 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         illness: newSymptomIllness.trim(),
         description: newSymptomDescription.trim(),
         severity: newSymptomSeverity,
-        duration: newSymptomDuration.trim() || undefined,
+        since: newSymptomSince.trim() || undefined,
       });
       
       setNewSymptomIllness('');
       setNewSymptomDescription('');
       setNewSymptomSeverity('mild');
-      setNewSymptomDuration('');
+      setNewSymptomSince('');
       setEditingSymptom(null);
       setShowAddForm(false);
     } else {
@@ -186,7 +189,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setNewSymptomIllness('');
     setNewSymptomDescription('');
     setNewSymptomSeverity('mild');
-    setNewSymptomDuration('');
+    setNewSymptomSince('');
     setEditingSymptom(null);
     setShowAddForm(false);
   };
@@ -372,10 +375,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         />
                       </div>
                       <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-purple-200 transition-colors duration-300">
-                        Add New Illness
+                        Add Health Assessment
                       </h3>
                       <p className="text-purple-200 mb-6 transform transition-all duration-300 group-hover:scale-105">
-                        Tell us about your health concern and symptoms
+                        Describe your health concerns and symptoms
                       </p>
                       <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
                         <span>Start your health assessment</span>
@@ -393,7 +396,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
                         </div>
                         <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
-                          {editingSymptom ? 'Edit Health Concern' : 'Add Health Concern'}
+                          {editingSymptom ? 'Edit Health Assessment' : 'Add Health Assessment'}
                         </span>
                       </h3>
                       <button
@@ -406,22 +409,9 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
                     <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-600 delay-500">
                       <div>
-                        <label className="block text-purple-200 text-sm font-medium mb-3">
-                          Illness/Condition Name
-                        </label>
-                        <input
-                          type="text"
-                          value={newSymptomIllness}
-                          onChange={(e) => setNewSymptomIllness(e.target.value)}
-                          placeholder="e.g., Headache, Back Pain, Fever, etc."
-                          className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
-                        />
-                      </div>
-
-                      <div>
                         <div className="flex items-center justify-between mb-3">
                           <label className="block text-purple-200 text-sm font-medium">
-                            Detailed Description
+                            Description
                           </label>
                           <button
                             onClick={toggleSpeechModal}
@@ -439,15 +429,83 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           onChange={(e) =>
                             setNewSymptomDescription(e.target.value)
                           }
-                          placeholder="Describe your symptom in detail... e.g., 'Sharp pain in lower back when standing'"
+                          placeholder="Describe your health concern in detail... e.g., 'I have been experiencing sharp pain in my lower back when standing, along with stiffness in the morning'"
                           className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm resize-none text-lg leading-relaxed transition-all duration-300 focus:scale-[1.01]"
-                          rows={4}
+                          rows={6}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && e.ctrlKey) {
                               addSymptom();
                             }
                           }}
                         />
+                      </div>
+
+                      <div>
+                        <label className="block text-purple-200 text-sm font-medium mb-3">
+                          Symptoms
+                        </label>
+                        <div className="space-y-3">
+                          {symptoms.length === 0 ? (
+                            <p className="text-purple-300 text-sm italic">No symptoms added yet. Add symptoms from your description.</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {symptoms.map((symptom, index) => (
+                                <div
+                                  key={symptom.id}
+                                  className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 border border-purple-400/50 rounded-full text-sm text-purple-200"
+                                >
+                                  <span>{symptom.illness}</span>
+                                  <button
+                                    onClick={() => removeSymptom(symptom.id)}
+                                    className="p-1 rounded-full hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200"
+                                    title="Remove symptom"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newSymptomIllness}
+                              onChange={(e) => setNewSymptomIllness(e.target.value)}
+                              placeholder="Add a symptom (e.g., headache, back pain, fever)"
+                              className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newSymptomIllness.trim()) {
+                                  const symptom: ISymptom = {
+                                    id: uuidv4(),
+                                    illness: newSymptomIllness.trim(),
+                                    description: '',
+                                    severity: newSymptomSeverity,
+                                  };
+                                  setSymptoms(prev => [...prev, symptom]);
+                                  setNewSymptomIllness('');
+                                }
+                              }}
+                            />
+                            <button
+                              onClick={() => {
+                                if (newSymptomIllness.trim()) {
+                                  const symptom: ISymptom = {
+                                    id: uuidv4(),
+                                    illness: newSymptomIllness.trim(),
+                                    description: '',
+                                    severity: newSymptomSeverity,
+                                  };
+                                  setSymptoms(prev => [...prev, symptom]);
+                                  setNewSymptomIllness('');
+                                }
+                              }}
+                              disabled={!newSymptomIllness.trim()}
+                              className="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-200 disabled:text-gray-400 rounded-lg transition-all duration-300 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -476,14 +534,13 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
                         <div>
                           <label className="block text-purple-200 text-sm font-medium mb-3">
-                            Duration
+                            Since (Date)
                           </label>
                           <input
-                            type="text"
-                            value={newSymptomDuration}
-                            onChange={(e) => setNewSymptomDuration(e.target.value)}
-                            placeholder="tunggu dari ko lm"
-                            className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
+                            type="date"
+                            value={newSymptomSince}
+                            onChange={(e) => setNewSymptomSince(e.target.value)}
+                            className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
                           />
                         </div>
                       </div>
@@ -491,7 +548,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       <div className="flex gap-3">
                         <button
                           onClick={handleSaveEdit}
-                          disabled={!newSymptomIllness.trim() || !newSymptomDescription.trim()}
+                          disabled={!newSymptomDescription.trim()}
                           className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
                         >
                           {editingSymptom ? (
@@ -499,7 +556,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           ) : (
                             <Plus className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
                           )}
-                          <span>{editingSymptom ? 'Update Health Concern' : 'Add Health Concern'}</span>
+                          <span>{editingSymptom ? 'Update Health Assessment' : 'Add Health Assessment'}</span>
                         </button>
                         <button
                           onClick={handleCancelEdit}
@@ -520,7 +577,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-white font-semibold flex items-center gap-2">
                       <Stethoscope className="text-purple-300" size={20} />
-                      Health Concerns ({symptoms.length})
+                      Health Assessments ({symptoms.length})
                     </h4>
                     <div className="flex items-center gap-2">
                       {symptoms.length >= 2 && (
@@ -550,10 +607,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           <Plus className="text-purple-300" size={20} />
                         </div>
                         <p className="text-purple-200 text-sm">
-                          No health concerns added yet
+                          No health assessments added yet
                         </p>
                         <p className="text-purple-300 text-xs mt-1">
-                          Click "Add New Illness" to start
+                          Click "Add Health Assessment" to start
                         </p>
                       </div>
                     ) : (
@@ -592,10 +649,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                                     {symptom.severity}
                                   </span>
                                 )}
-                                {symptom.duration && (
+                                {symptom.since && (
                                   <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
-                                    <Timer className="w-2.5 h-2.5" />
-                                    {symptom.duration}
+                                    <Clock className="w-2.5 h-2.5" />
+                                    Since {new Date(symptom.since).toLocaleDateString()}
                                   </span>
                                 )}
                               </div>

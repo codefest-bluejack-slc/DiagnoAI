@@ -24,7 +24,7 @@ export const useDiagnostic = () => {
   const [newSymptomIllness, setNewSymptomIllness] = useState('');
   const [newSymptomDescription, setNewSymptomDescription] = useState('');
   const [newSymptomSeverity, setNewSymptomSeverity] = useState<'mild' | 'moderate' | 'severe'>('mild');
-  const [newSymptomDuration, setNewSymptomDuration] = useState('');
+  const [newSymptomSince, setNewSymptomSince] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [currentStep, setCurrentStep] = useState<
     'input' | 'review' | 'analysis'
@@ -184,20 +184,20 @@ export const useDiagnostic = () => {
   });
 
   const addSymptom = () => {
-    if (newSymptomIllness.trim() && newSymptomDescription.trim()) {
+    if (newSymptomDescription.trim()) {
       const symptom: ISymptom = {
         id: Date.now().toString(),
-        illness: newSymptomIllness.trim(),
+        illness: 'General Assessment',
         description: newSymptomDescription.trim(),
         severity: newSymptomSeverity,
-        duration: newSymptomDuration.trim() || undefined,
+        since: newSymptomSince.trim() || undefined,
       };
 
       setSymptoms((prev) => [...prev, symptom]);
       setNewSymptomIllness('');
       setNewSymptomDescription('');
       setNewSymptomSeverity('mild');
-      setNewSymptomDuration('');
+      setNewSymptomSince('');
       setShowAddForm(false);
     }
   };
@@ -242,6 +242,7 @@ export const useDiagnostic = () => {
 
   return {
     symptoms,
+    setSymptoms,
     history,
     newSymptomIllness,
     setNewSymptomIllness,
@@ -249,8 +250,8 @@ export const useDiagnostic = () => {
     setNewSymptomDescription,
     newSymptomSeverity,
     setNewSymptomSeverity,
-    newSymptomDuration,
-    setNewSymptomDuration,
+    newSymptomSince,
+    setNewSymptomSince,
     showAddForm,
     setShowAddForm,
     currentStep,

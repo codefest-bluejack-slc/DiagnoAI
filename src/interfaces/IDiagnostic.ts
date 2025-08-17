@@ -3,7 +3,7 @@ export interface ISymptom {
   illness: string;
   description: string;
   severity?: 'mild' | 'moderate' | 'severe';
-  duration?: string;
+  since?: string;
 }
 
 export interface IDiagnosticPageProps {}

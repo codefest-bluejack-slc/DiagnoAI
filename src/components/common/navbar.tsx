@@ -13,7 +13,7 @@ export default function Navbar({}: NavbarProps) {
   const { navigateTo } = useTransition();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { login, me, getCurrentUser } = useAuth();
+  const { login, me, isAuthenticated, getCurrentUser } = useAuth();
 
 
   const {
@@ -165,14 +165,16 @@ export default function Navbar({}: NavbarProps) {
             </button>
           </Tooltip>
 
-          <Tooltip content="Login" position="bottom">
-            <button
-              onClick={handleLoginClick}
-              className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
-            >
-              <LogIn size={20} />
-            </button>
-          </Tooltip>
+          {isAuthenticated ? null : (
+            <Tooltip content="Login" position="bottom">
+              <button
+                onClick={handleLoginClick}
+                className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+              >
+                <LogIn size={20} />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </div>
 
