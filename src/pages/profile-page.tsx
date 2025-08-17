@@ -36,6 +36,7 @@ export default function ProfilePage() {
     mutationFn: () => userService.updateUser(profileData),
     onSuccess: (data) => {
       console.log("Profile updated successfully:", data);
+      window.location.reload();
     },
     onError: (error) => {
       console.error("Failed to update profile:", error);

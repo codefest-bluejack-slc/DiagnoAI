@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Search, Activity, Store, Settings, LogIn, User } from 'lucide-react';
+import { Home, Search, Activity, Store, LogIn, User } from 'lucide-react';
 import diagnoaiLogo from '../../assets/diagnoai_logo.png';
 import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
@@ -157,19 +157,10 @@ export default function Navbar({}: NavbarProps) {
             </button>
           </Tooltip>
 
-          <Tooltip content="Settings" position="bottom">
-            <button
-              onClick={handleSettingsClick}
-              className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
-            >
-              <Settings size={20} />
-            </button>
-          </Tooltip>
-
           {isAuthenticated ? (
             <Tooltip content={me?.name || "Profile"} position="bottom">
               <div 
-                className="flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 ml-2"
+                className="flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 ml-6"
                 onClick={handleSettingsClick}
               >
                 <span className="text-white text-sm font-medium hidden sm:block max-w-[100px] truncate">
@@ -192,7 +183,7 @@ export default function Navbar({}: NavbarProps) {
             <Tooltip content="Login" position="bottom">
               <button
                 onClick={handleLoginClick}
-                className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+                className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50 ml-6"
               >
                 <LogIn size={20} />
               </button>

@@ -48,7 +48,7 @@ export class UserService extends BaseService<UserCanisterService> {
                             id: identity.getPrincipal(),
                             name: "MIAW MIAW WOMP",
                             email: "amengameng@gmail.com",
-                            bio: "CAONIMA",
+                            bio: "WWWIWIWIWWIWWI AWIDJAWDIAWJAWDAWAJDWIADJIAWAW DAWDASHDUIASHDUASHDSUIA",
                             profilePicture: []
                         }
                         const response = await this.addUser(user)
