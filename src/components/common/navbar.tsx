@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Search, Activity, Store, Settings, LogIn } from 'lucide-react';
+import { Home, Search, Activity, Store, Settings, LogIn, User } from 'lucide-react';
 import diagnoaiLogo from '../../assets/diagnoai_logo.png';
 import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
 import { useModal } from '../../hooks/use-modal';
 import { useTransition } from '../../hooks/use-transition';
 import { useAuth } from '../../hooks/use-auth';
+import { deserializeImage } from '../../utils/image-utils';
 
 interface NavbarProps {}
 
@@ -165,7 +166,29 @@ export default function Navbar({}: NavbarProps) {
             </button>
           </Tooltip>
 
-          {isAuthenticated ? null : (
+          {isAuthenticated ? (
+            <Tooltip content={me?.name || "Profile"} position="bottom">
+              <div 
+                className="flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 ml-2"
+                onClick={handleSettingsClick}
+              >
+                <span className="text-white text-sm font-medium hidden sm:block max-w-[100px] truncate">
+                  {me?.name || "User"}
+                </span>
+                <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden">
+                  {me?.profilePicture && me.profilePicture.length > 0 ? (
+                    <img
+                      src={deserializeImage(me.profilePicture)}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="text-purple-300" size={16} />
+                  )}
+                </div>
+              </div>
+            </Tooltip>
+          ) : (
             <Tooltip content="Login" position="bottom">
               <button
                 onClick={handleLoginClick}
