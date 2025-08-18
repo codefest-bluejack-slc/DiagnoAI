@@ -1,5 +1,7 @@
 :root {
-  --color-blue: var(--info-blue);
+  --color-purple: var(--primary-purple);
+  --color-purple-light: var(--primary-purple-light);
+  --color-purple-dark: var(--primary-purple-dark);
 }
 
 .loader-background {
@@ -36,7 +38,7 @@
 }
 
 .diagnoai-loader .plus {
-  stroke: var(--color-blue);
+  stroke: var(--color-purple);
   stroke-width: 12;
   fill: none;
   animation: heartbeat 2.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
@@ -44,7 +46,7 @@
 }
 
 .diagnoai-loader .line {
-  stroke: var(--color-blue);
+  stroke: var(--color-purple-light);
   stroke-opacity: 0.6;
   stroke-width: 2;
   fill: none;
@@ -54,7 +56,7 @@
 }
 
 .diagnoai-loader .node {
-  fill: var(--color-blue);
+  fill: var(--color-purple);
   stroke: none;
   animation: pulse-nodes 2.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   transform-origin: center;

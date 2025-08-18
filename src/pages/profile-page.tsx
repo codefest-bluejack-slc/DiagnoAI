@@ -8,11 +8,13 @@ import { deserializeImage, serializeImage } from "../utils/image-utils";
 import { useService } from "../hooks/use-service";
 import { useMutation } from "../hooks/use-mutation";
 import { Principal } from "@dfinity/principal";
+import { useToastContext } from "../contexts/toast-context";
 
 export default function ProfilePage() {
   const mousePosition = useMouseTracking();
   const { me, logout, setUser } = useAuth();
   const { userService } = useService();
+  const { addToast } = useToastContext();
   const [particles] = useState(() =>
       Array.from({ length: 50 }, (_, i) => ({
           id: i,
@@ -35,11 +37,19 @@ export default function ProfilePage() {
   const profileMutation = useMutation({
     mutationFn: () => userService.updateUser(profileData),
     onSuccess: (data) => {
-      console.log("Profile updated successfully:", data);
       setUser(profileData);
+      addToast("Profile updated successfully!", {
+        type: "success",
+        title: "Success",
+        duration: 4000
+      });
     },
     onError: (error) => {
-      console.error("Failed to update profile:", error);
+      addToast(`Failed to update profile: ${error}`, {
+        type: "error",
+        title: "Error",
+        duration: 5000
+      });
     }
   });
 
@@ -175,7 +185,6 @@ export default function ProfilePage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    console.log("Profile saved:", profileData)
                     profileMutation.mutate();
                   }}
                   className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25"
