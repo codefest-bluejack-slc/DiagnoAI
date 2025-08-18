@@ -8,7 +8,8 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
   isOpen, 
   onClose, 
   historyData,
-  onClearHistory 
+  onClearHistory,
+  isLoading = false
 }) => {
 
   if (!isOpen) return null;
@@ -22,10 +23,13 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
     });
   };
 
-  const handleClearHistory = () => {
+  const handleClearHistory = async () => {
     if (confirm('Are you sure you want to clear all history?')) {
-      onClearHistory();
-      window.location.reload();
+      try {
+        await onClearHistory();
+      } catch (error) {
+        console.error('Error clearing history:', error);
+      }
     }
   };
 
@@ -88,7 +92,19 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
           </div>
 
           <div className="max-h-[calc(80vh-120px)] overflow-y-auto p-6 bg-slate-900/95">
-            {historyData.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-purple-500/20 border border-purple-500/30">
+                  <RefreshCw className="text-purple-400 animate-spin" size={32} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-purple-200">
+                  Loading History...
+                </h3>
+                <p className="text-sm max-w-md mx-auto text-purple-300/80">
+                  Fetching your health assessments from the backend.
+                </p>
+              </div>
+            ) : historyData.length === 0 ? (
               <div className="text-center py-16">
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-purple-500/20 border border-purple-500/30">
                   <History className="text-purple-400" size={32} />
@@ -111,11 +127,11 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg mb-2 transition-colors group-hover:text-purple-300 text-purple-100">
-                          {item.title}
+                          {item.description || item.title}
                         </h3>
                         <div className="flex items-center gap-2 text-sm mb-3 text-purple-300">
                           <Calendar className="w-4 h-4" />
-                          <span>{formatDate(item.date)}</span>
+                          <span>{formatDate(item.since || item.date)}</span>
                         </div>
                       </div>
                       <div 
@@ -137,26 +153,34 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {item.symptoms.slice(0, 3).map((symptom, idx) => (
+                        {(item.symptoms || []).slice(0, 3).map((symptom, idx) => (
                           <Tooltip
                             key={idx}
-                            content={`Symptom: ${symptom} - Reported during assessment on ${formatDate(item.date)}`}
+                            content={`Symptom: ${typeof symptom === 'string' ? symptom : symptom.name} - Severity: ${typeof symptom === 'string' ? 'Unknown' : symptom.severity} - Reported on ${formatDate(item.since || item.date)}`}
                             position="top"
                           >
                             <span
-                              className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105 bg-purple-500/20 text-purple-300 border border-purple-400/50"
+                              className={`px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105 ${
+                                typeof symptom === 'string' 
+                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-400/50'
+                                  : symptom.severity === 'mild' 
+                                    ? 'bg-green-500/20 text-green-300 border border-green-400/50'
+                                    : symptom.severity === 'moderate'
+                                      ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
+                                      : 'bg-red-500/20 text-red-300 border border-red-400/50'
+                              }`}
                             >
-                              {symptom}
+                              {typeof symptom === 'string' ? symptom : symptom.name}
                             </span>
                           </Tooltip>
                         ))}
-                        {item.symptoms.length > 3 && (
+                        {(item.symptoms || []).length > 3 && (
                           <Tooltip
-                            content={`Additional symptoms: ${item.symptoms.slice(3).join(', ')}`}
+                            content={`Additional symptoms: ${(item.symptoms || []).slice(3).map(s => typeof s === 'string' ? s : s.name).join(', ')}`}
                             position="top"
                           >
                             <span className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105 bg-slate-700/70 text-purple-200 border border-slate-600/50">
-                              +{item.symptoms.length - 3} more
+                              +{(item.symptoms || []).length - 3} more
                             </span>
                           </Tooltip>
                         )}
@@ -172,11 +196,11 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                           }`}
                         ></span>
                         <Tooltip
-                          content={`Diagnosis: ${item.diagnosis} - Severity: ${item.severity.charAt(0).toUpperCase() + item.severity.slice(1)}`}
+                          content={`Assessment: ${item.description || item.diagnosis || 'No diagnosis'} - Overall Severity: ${item.severity.charAt(0).toUpperCase() + item.severity.slice(1)}`}
                           position="top"
                         >
                           <span className="text-sm font-medium cursor-help text-purple-200">
-                            {item.diagnosis}
+                            {item.diagnosis || 'Assessment'}
                           </span>
                         </Tooltip>
                       </div>

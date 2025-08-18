@@ -28,9 +28,12 @@ persistent actor History{
                 let response: Type.HistoryResponse = {
                     id = history.id;
                     userId = history.userId;
-                    title = history.title;
-                    result = history.result;
-                    symptomps = symptomList;
+                    description = history.description;
+                    since = history.since;
+                    status = history.status;
+                    severity = history.severity;
+                    diagnosis = history.diagnosis;
+                    symptoms = symptomList;
                 };
                 #ok(response)
              };

@@ -1,12 +1,10 @@
 import Text "mo:base/Text";
-import Int "mo:base/Int";
 
 module {
     public type Symptom = {
         id: Text;
         historyId: Text;
-        description: Text;
+        name: Text;
         severity: Text;
-        duration: Int;
     };
 }

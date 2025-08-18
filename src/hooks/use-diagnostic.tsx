@@ -1,21 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
+import { IHistoryItem } from '../interfaces/IHistoryModal';
 import { useService } from './use-service';
 import { useMutation } from './use-mutation';
 import { Symptom } from '../declarations/symptom/symptom.did';
-
-const ASSESSMENTS_STORAGE_KEY = 'diagnoai_assessments';
-const HISTORY_STORAGE_KEY = 'diagnoai_history';
-
-export interface IHistoryItem {
-  id: string;
-  date: string;
-  title: string;
-  symptoms: string[];
-  diagnosis: string;
-  status: 'completed' | 'in-progress';
-  severity: 'mild' | 'moderate' | 'severe';
-}
 
 export const useDiagnostic = () => {
   const [assessments, setAssessments] = useState<IHealthAssessment[]>([]);
@@ -29,141 +17,40 @@ export const useDiagnostic = () => {
   const [currentStep, setCurrentStep] = useState<
     'input' | 'review' | 'analysis'
   >('input');
+  const [isLoading, setIsLoading] = useState(false);
   const { symptomService, historyService } = useService();
 
   useEffect(() => {
-    const savedAssessments = localStorage.getItem(ASSESSMENTS_STORAGE_KEY);
-    if (savedAssessments) {
-      try {
-        const parsedAssessments = JSON.parse(savedAssessments);
-        setAssessments(parsedAssessments);
-      } catch (error) {
-        console.error('Error parsing saved assessments:', error);
-        localStorage.removeItem(ASSESSMENTS_STORAGE_KEY);
-      }
-    }
-
-    const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
-    if (savedHistory) {
-      try {
-        const parsedHistory = JSON.parse(savedHistory);
-        setHistory(parsedHistory);
-      } catch (error) {
-        console.error('Error parsing saved history:', error);
-        localStorage.removeItem(HISTORY_STORAGE_KEY);
-        setHistory([
-          {
-            id: '1',
-            date: '2024-12-15',
-            title: 'Headache Analysis',
-            symptoms: ['Migraine', 'Nausea'],
-            diagnosis: 'Tension Headache',
-            status: 'completed',
-            severity: 'moderate'
-          },
-          {
-            id: '2',
-            date: '2024-12-10',
-            title: 'Back Pain Assessment',
-            symptoms: ['Lower Back Pain', 'Stiffness'],
-            diagnosis: 'Muscle Strain',
-            status: 'completed',
-            severity: 'mild'
-          },
-          {
-            id: '3',
-            date: '2024-12-08',
-            title: 'Fever Symptoms',
-            symptoms: ['High Temperature', 'Chills', 'Fatigue'],
-            diagnosis: 'Viral Infection',
-            status: 'completed',
-            severity: 'severe'
-          },
-          {
-            id: '4',
-            date: '2024-12-05',
-            title: 'Stomach Issues',
-            symptoms: ['Abdominal Pain', 'Bloating'],
-            diagnosis: 'Indigestion',
-            status: 'completed',
-            severity: 'mild'
-          },
-          {
-            id: '5',
-            date: '2024-12-01',
-            title: 'Sleep Problems',
-            symptoms: ['Insomnia', 'Restlessness'],
-            diagnosis: 'Sleep Disorder',
-            status: 'in-progress',
-            severity: 'moderate'
-          }
-        ]);
-      }
-    } else {
-      setHistory([
-        {
-          id: '1',
-          date: '2024-12-15',
-          title: 'Headache Analysis',
-          symptoms: ['Migraine', 'Nausea'],
-          diagnosis: 'Tension Headache',
-          status: 'completed',
-          severity: 'moderate'
-        },
-        {
-          id: '2',
-          date: '2024-12-10',
-          title: 'Back Pain Assessment',
-          symptoms: ['Lower Back Pain', 'Stiffness'],
-          diagnosis: 'Muscle Strain',
-          status: 'completed',
-          severity: 'mild'
-        },
-        {
-          id: '3',
-          date: '2024-12-08',
-          title: 'Fever Symptoms',
-          symptoms: ['High Temperature', 'Chills', 'Fatigue'],
-          diagnosis: 'Viral Infection',
-          status: 'completed',
-          severity: 'severe'
-        },
-        {
-          id: '4',
-          date: '2024-12-05',
-          title: 'Stomach Issues',
-          symptoms: ['Abdominal Pain', 'Bloating'],
-          diagnosis: 'Indigestion',
-          status: 'completed',
-          severity: 'mild'
-        },
-        {
-          id: '5',
-          date: '2024-12-01',
-          title: 'Sleep Problems',
-          symptoms: ['Insomnia', 'Restlessness'],
-          diagnosis: 'Sleep Disorder',
-          status: 'in-progress',
-          severity: 'moderate'
-        }
-      ]);
-    }
+    loadHistoryFromBackend();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem(ASSESSMENTS_STORAGE_KEY, JSON.stringify(assessments));
-  }, [assessments]);
-
-  useEffect(() => {
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
-  }, [history]);
+  const loadHistoryFromBackend = async () => {
+    try {
+      setIsLoading(true);
+      const historyData = await historyService.getMyHistories();
+      setHistory(historyData);
+    } catch (error) {
+      console.error('Error loading history from backend:', error);
+      setHistory([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const addSymptomMutation = useMutation({
-    mutationFn: (symptom: Symptom) => symptomService.addSymptom(symptom),
+    mutationFn: async (symptom: { name: string; severity: string; historyId: string }) => {
+      const symptomData: Symptom = {
+        id: Date.now().toString(),
+        historyId: symptom.historyId,
+        name: symptom.name,
+        severity: symptom.severity,
+      };
+      return symptomService.addSymptom(symptomData);
+    },
     onSuccess: (data) => {
       console.log('Symptom added successfully:', data);
       if (!data) return;
-      setNewSymptomDescription('');
+      setNewSymptomName('');
       setShowAddForm(false);
     },
     onError: (error) => {
@@ -175,11 +62,49 @@ export const useDiagnostic = () => {
     mutationFn: () => historyService.getMyHistories(),
     onSuccess: (data) => {
       console.log('History fetched successfully:', data);
-      // if (!data) return;
-      // setSymptoms((prev) => [...prev, data]);
+      if (data) {
+        setHistory(data);
+      }
     },
     onError: (error) => {
-      console.error('Error fetching symptom:', error);
+      console.error('Error fetching history:', error);
+      setHistory([]);
+    }
+  });
+
+  const addHistoryMutation = useMutation({
+    mutationFn: (assessment: IHealthAssessment) => historyService.addHistory(assessment),
+    onSuccess: (data) => {
+      console.log('History added successfully:', data);
+      loadHistoryFromBackend();
+    },
+    onError: (error) => {
+      console.error('Error adding history:', error);
+    }
+  });
+
+  const deleteHistoryMutation = useMutation({
+    mutationFn: (historyId: string) => historyService.deleteHistory(historyId),
+    onSuccess: () => {
+      console.log('History deleted successfully');
+      loadHistoryFromBackend();
+    },
+    onError: (error) => {
+      console.error('Error deleting history:', error);
+    }
+  });
+
+  const clearAllHistoryMutation = useMutation({
+    mutationFn: async () => {
+      const deletePromises = history.map(item => historyService.deleteHistory(item.id));
+      await Promise.all(deletePromises);
+    },
+    onSuccess: () => {
+      console.log('All history cleared successfully');
+      setHistory([]);
+    },
+    onError: (error) => {
+      console.error('Error clearing all history:', error);
     }
   });
 
@@ -212,6 +137,17 @@ export const useDiagnostic = () => {
       };
 
       setAssessments((prev) => [...prev, assessment]);
+      
+      addHistoryMutation.mutate(assessment);
+      
+      symptoms.forEach((symptom) => {
+        addSymptomMutation.mutate({
+          name: symptom.name,
+          severity: symptom.severity,
+          historyId: assessment.id
+        });
+      });
+
       setNewDescription('');
       setNewSince('');
       setSymptoms([]);
@@ -220,10 +156,16 @@ export const useDiagnostic = () => {
   };
 
   const removeAssessment = (id: string) => {
+    deleteHistoryMutation.mutate(id);
     setAssessments((prev) => prev.filter((assessment) => assessment.id !== id));
   };
 
   const updateAssessment = (id: string, updatedAssessment: Partial<IHealthAssessment>) => {
+    historyService.updateHistory(id, updatedAssessment).then(() => {
+      loadHistoryFromBackend();
+    }).catch((error) => {
+      console.error('Error updating assessment:', error);
+    });
     setAssessments((prev) => prev.map(assessment => 
       assessment.id === id ? { ...assessment, ...updatedAssessment } : assessment
     ));
@@ -232,30 +174,35 @@ export const useDiagnostic = () => {
   const clearAllAssessments = () => {
     setAssessments([]);
     setSymptoms([]);
-    localStorage.removeItem(ASSESSMENTS_STORAGE_KEY);
   };
 
   const getProgressPercentage = () => {
     return Math.min(assessments.length * 12.5, 100);
   };
 
-  const addToHistory = (title: string, diagnosis: string) => {
+  const addToHistory = (description: string, diagnosis: string) => {
     const newHistoryItem: IHistoryItem = {
       id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
-      title,
-      symptoms: symptoms.map(s => s.name),
+      since: new Date().toISOString().split('T')[0],
+      description,
+      symptoms: symptoms,
       diagnosis,
       status: 'completed',
       severity: symptoms.length > 0 ? symptoms[0].severity : 'mild'
     };
     
-    setHistory(prev => [newHistoryItem, ...prev]);
+    const assessment: IHealthAssessment = {
+      id: newHistoryItem.id,
+      description: newHistoryItem.description,
+      symptoms: symptoms,
+      since: newHistoryItem.since
+    };
+    
+    addHistoryMutation.mutate(assessment);
   };
 
-  const clearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem(HISTORY_STORAGE_KEY);
+  const clearHistory = async () => {
+    await clearAllHistoryMutation.mutate();
   };
 
   return {
@@ -276,6 +223,7 @@ export const useDiagnostic = () => {
     setShowAddForm,
     currentStep,
     setCurrentStep,
+    isLoading,
     addAssessment,
     removeAssessment,
     updateAssessment,
@@ -286,5 +234,11 @@ export const useDiagnostic = () => {
     getProgressPercentage,
     addToHistory,
     clearHistory,
+    loadHistoryFromBackend,
+    addSymptomMutation,
+    getHistoryMutation,
+    addHistoryMutation,
+    deleteHistoryMutation,
+    clearAllHistoryMutation,
   };
 };

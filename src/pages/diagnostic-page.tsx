@@ -81,64 +81,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     getProgressPercentage,
     addToHistory,
     clearHistory,
+    isLoading,
   } = useDiagnostic();
-
-  const mockHistoryData = history.length > 0 ? history : [
-    {
-      id: '1',
-      date: '2024-12-15',
-      title: 'Headache Analysis',
-      symptoms: ['Migraine', 'Nausea', 'Light Sensitivity'],
-      diagnosis: 'Tension Headache',
-      status: 'completed' as const,
-      severity: 'moderate' as const
-    },
-    {
-      id: '2',
-      date: '2024-12-10',
-      title: 'Back Pain Assessment',
-      symptoms: ['Lower Back Pain', 'Stiffness', 'Muscle Spasm'],
-      diagnosis: 'Muscle Strain',
-      status: 'completed' as const,
-      severity: 'mild' as const
-    },
-    {
-      id: '3',
-      date: '2024-12-08',
-      title: 'Fever Symptoms',
-      symptoms: ['High Temperature', 'Chills', 'Fatigue', 'Body Aches'],
-      diagnosis: 'Viral Infection',
-      status: 'completed' as const,
-      severity: 'severe' as const
-    },
-    {
-      id: '4',
-      date: '2024-12-05',
-      title: 'Stomach Issues',
-      symptoms: ['Abdominal Pain', 'Bloating', 'Nausea'],
-      diagnosis: 'Indigestion',
-      status: 'completed' as const,
-      severity: 'mild' as const
-    },
-    {
-      id: '5',
-      date: '2024-12-01',
-      title: 'Sleep Problems',
-      symptoms: ['Insomnia', 'Restlessness', 'Anxiety', 'Racing Thoughts'],
-      diagnosis: 'Sleep Disorder',
-      status: 'in-progress' as const,
-      severity: 'moderate' as const
-    },
-    {
-      id: '6',
-      date: '2024-11-28',
-      title: 'Respiratory Issues',
-      symptoms: ['Cough', 'Shortness of Breath', 'Chest Tightness'],
-      diagnosis: 'Bronchitis',
-      status: 'completed' as const,
-      severity: 'moderate' as const
-    }
-  ];
 
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
@@ -290,8 +234,9 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       <HistoryModal
         isOpen={isHistoryModalOpen}
         onClose={toggleHistoryModal}
-        historyData={mockHistoryData}
+        historyData={history}
         onClearHistory={clearHistory}
+        isLoading={isLoading}
       />
 
       <button
@@ -306,10 +251,17 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
           e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)';
         }}
       >
-        <History 
-          className="group-hover:rotate-12 transition-transform duration-300 text-purple-300" 
-          size={20} 
-        />
+        {isLoading ? (
+          <RefreshCw 
+            className="animate-spin transition-transform duration-300 text-purple-300" 
+            size={20} 
+          />
+        ) : (
+          <History 
+            className="group-hover:rotate-12 transition-transform duration-300 text-purple-300" 
+            size={20} 
+          />
+        )}
       </button>
 
       <main className="main-content pt-20">
