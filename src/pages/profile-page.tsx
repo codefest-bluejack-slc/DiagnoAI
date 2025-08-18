@@ -11,7 +11,7 @@ import { Principal } from "@dfinity/principal";
 
 export default function ProfilePage() {
   const mousePosition = useMouseTracking();
-  const { me, logout } = useAuth();
+  const { me, logout, setUser } = useAuth();
   const { userService } = useService();
   const [particles] = useState(() =>
       Array.from({ length: 50 }, (_, i) => ({
@@ -36,7 +36,7 @@ export default function ProfilePage() {
     mutationFn: () => userService.updateUser(profileData),
     onSuccess: (data) => {
       console.log("Profile updated successfully:", data);
-      window.location.reload();
+      setUser(profileData);
     },
     onError: (error) => {
       console.error("Failed to update profile:", error);

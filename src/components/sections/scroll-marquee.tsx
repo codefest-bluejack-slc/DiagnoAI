@@ -3,59 +3,58 @@ import React, { useEffect, useState, useRef } from 'react';
 const titleSentence = "WELCOME TO THE FUTURE OF DIAGNOSTICS • REVOLUTIONIZING HEALTHCARE WITH AI TECHNOLOGY • DIAGNOAI LEADS THE WAY";
 
 export default function ScrollMarquee() {
-  const [sectionProgress, setSectionProgress] = useState(0);
-  const [isInView, setIsInView] = useState(false);
+  const [translateX, setTranslateX] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!isInView) return;
+    let ticking = false;
 
     const handleScroll = () => {
-      if (!sectionRef.current) return;
-
-      const rect = sectionRef.current.getBoundingClientRect();
-      const sectionTop = rect.top;
-      const sectionHeight = rect.height;
-      const windowHeight = window.innerHeight;
-
-      const progress = Math.max(0, Math.min(1, (windowHeight - sectionTop) / (windowHeight + sectionHeight)));
-      setSectionProgress(progress);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const scrollDelta = currentScrollY - lastScrollY.current;
+          
+          setTranslateX(prev => {
+            const movement = scrollDelta * 0.02;
+            let newX = prev + movement;
+            
+            if (newX > 100) {
+              newX = -100;
+            } else if (newX < -100) {
+              newX = 100;
+            }
+            
+            return newX;
+          });
+          
+          lastScrollY.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
+    const throttledScroll = () => handleScroll();
     
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isInView]);
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+    
+    return () => window.removeEventListener('scroll', throttledScroll);
+  }, []);
 
   return (
     <section 
       ref={sectionRef}
       className="relative min-h-screen flex items-start justify-center pt-8 bg-gradient-to-b from-purple-900/5 to-transparent"
     >
-      <div className="w-full max-w-[98vw] px-2 flex items-center justify-center overflow-hidden">
+      <div className="w-full px-2 flex items-center justify-center overflow-hidden">
         <h1 
-          className={`text-[12vw] md:text-[10vw] lg:text-[8vw] xl:text-[6vw] font-bold text-center relative group transition-all duration-1000 whitespace-nowrap ${
-            isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
-          }`}
+          className="font-bold text-center relative group transition-all duration-300 whitespace-nowrap opacity-100 scale-100"
           style={{
-            transform: `translateX(${isInView ? (sectionProgress - 0.5) * 100 : -50}%)`,
-            willChange: 'transform, opacity',
+            fontSize: 'clamp(2.5rem, 8vw, 6rem)',
+            transform: `translateX(${translateX}%)`,
+            willChange: 'transform',
             fontFamily: 'system-ui, -apple-system, sans-serif',
             textTransform: 'uppercase',
             letterSpacing: '0.1em',

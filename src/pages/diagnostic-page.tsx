@@ -666,8 +666,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                                 </div>
                               )}
                               <div className="flex items-center gap-1.5 pl-5">
-                                <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-400/20 text-blue-400 flex items-center gap-1">
-                                  <Clock className="w-2.5 h-2.5" />
+                                <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-400/20 text-purple-400 flex items-center gap-1">
+                                  <Clock className="w-2.5 h-2.5 text-white" />
                                   Since {new Date(assessment.since).toLocaleDateString()}
                                 </span>
                               </div>
@@ -675,7 +675,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <button
                                 onClick={() => handleEditAssessment(assessment.id)}
-                                className="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-blue-400/50"
+                                className="p-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 hover:text-purple-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-purple-400/50"
                                 title="Edit"
                               >
                                 <Edit size={12} />
