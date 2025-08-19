@@ -125,74 +125,34 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const handleSaveEdit = () => {
     if (editingAssessment) {
-      if (!newDescription.trim()) {
-        addToast('Description is required', { type: 'warning', title: 'Validation Error' });
-        return;
+      if (newDescription.trim() && newSince && symptoms.length > 0) {
+        updateAssessment(editingAssessment, {
+          description: newDescription.trim(),
+          symptoms: [...symptoms],
+          since: newSince,
+        });
+        setNewDescription('');
+        setNewSince('');
+        setSymptoms([]);
+        setEditingAssessment(null);
+        setShowAddForm(false);
       }
-      if (newDescription.trim().length < 10) {
-        addToast('Description must be at least 10 characters long', { type: 'warning', title: 'Validation Error' });
-        return;
-      }
-      if (!newSince) {
-        addToast('Date is required', { type: 'warning', title: 'Validation Error' });
-        return;
-      }
-      if (symptoms.length === 0) {
-        addToast('At least one symptom is required', { type: 'warning', title: 'Validation Error' });
-        return;
-      }
-      updateAssessment(editingAssessment, {
-        description: newDescription.trim(),
-        symptoms: [...symptoms],
-        since: newSince,
-      });
-      setNewDescription('');
-      setNewSince('');
-      setSymptoms([]);
-      setEditingAssessment(null);
-      setShowAddForm(false);
     } else if (editingSymptom !== null) {
-      if (!newSymptomName.trim()) {
-        addToast('Symptom name is required', { type: 'warning', title: 'Validation Error' });
-        return;
+      if (newSymptomName.trim()) {
+        const index = parseInt(editingSymptom);
+        removeFromSymptomList(index);
+        addToSymptomList(newSymptomName.trim());
+        setNewSymptomSeverity('mild');
+        setEditingSymptom(null);
+        setShowAddForm(false);
       }
-      if (newSymptomName.trim().length < 2) {
-        addToast('Symptom name must be at least 2 characters long', { type: 'warning', title: 'Validation Error' });
-        return;
-      }
-      const index = parseInt(editingSymptom);
-      removeFromSymptomList(index);
-      addToSymptomList(newSymptomName.trim());
-      setNewSymptomSeverity('mild');
-      setEditingSymptom(null);
-      setShowAddForm(false);
     } else {
-      if (newDescription.trim() && newSince) {
-        if (newDescription.trim().length < 10) {
-          addToast('Description must be at least 10 characters long', { type: 'warning', title: 'Validation Error' });
-          return;
-        }
-        if (symptoms.length === 0) {
-          addToast('At least one symptom is required', { type: 'warning', title: 'Validation Error' });
-          return;
-        }
+      if (newDescription.trim() && newSince && symptoms.length > 0) {
         addAssessment();
       } else if (newSymptomName.trim()) {
-        if (newSymptomName.trim().length < 2) {
-          addToast('Symptom name must be at least 2 characters long', { type: 'warning', title: 'Validation Error' });
-          return;
-        }
         addToSymptomList(newSymptomName.trim());
         setNewSymptomSeverity('mild');
         setShowAddForm(false);
-      } else {
-        if (!newDescription.trim() && !newSymptomName.trim()) {
-          addToast('Please fill in required fields', { type: 'warning', title: 'Validation Error' });
-        } else if (!newDescription.trim()) {
-          addToast('Description is required', { type: 'warning', title: 'Validation Error' });
-        } else if (!newSince) {
-          addToast('Date is required', { type: 'warning', title: 'Validation Error' });
-        }
       }
     }
   };
@@ -483,11 +443,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                               }}
                               placeholder="Add symptom (e.g., headache, nausea, fever)"
                               maxLength={50}
-                              className={`flex-1 p-4 bg-white/10 border rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] ${
-                                newSymptomName.length > 45 ? 'border-amber-400/50 focus:border-amber-300/50' : 
-                                newSymptomName.trim().length > 0 && newSymptomName.trim().length < 2 ? 'border-red-400/50 focus:border-red-300/50' : 
-                                'border-white/20 focus:border-purple-300/50'
-                              }`}
+                              className="flex-1 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter' && newSymptomName.trim()) {
                                   addToSymptomList(newSymptomName.trim());
@@ -509,7 +465,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                                   addToSymptomList(newSymptomName.trim());
                                 }
                               }}
-                              disabled={!newSymptomName.trim() || newSymptomName.trim().length < 2}
+                              disabled={!newSymptomName.trim()}
                               className="p-4 bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-200 disabled:text-gray-400 rounded-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
                               title="Add symptom"
                             >
@@ -517,32 +473,13 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             </button>
                           </div>
                           <div className="flex justify-between items-center mt-2">
-                            <p className={`text-xs ${
-                              newSymptomName.trim().length > 0 && newSymptomName.trim().length < 2 ? 'text-red-300' :
-                              newSymptomName.length > 45 ? 'text-amber-300' :
-                              'text-purple-300'
-                            }`}>
-                              {newSymptomName.trim().length > 0 && newSymptomName.trim().length < 2 
-                                ? `Minimum 2 characters required (${newSymptomName.trim().length}/2)`
-                                : newSymptomName.length > 45
-                                ? `Character limit approaching (${newSymptomName.length}/50)`
-                                : 'Add symptoms with their severity levels. Press Enter or click + to add.'
-                              }
+                            <p className="text-purple-300 text-xs">
+                              Add symptoms with their severity levels. Press Enter or click + to add.
                             </p>
                             <p className="text-purple-300 text-xs">
                               {symptoms.length}/20 symptoms
                             </p>
                           </div>
-                          {symptoms.length === 0 && (
-                            <p className="text-amber-300 text-xs mt-1">
-                              At least one symptom is required for assessment.
-                            </p>
-                          )}
-                          {symptoms.length >= 20 && (
-                            <p className="text-red-300 text-xs mt-1">
-                              Maximum 20 symptoms allowed.
-                            </p>
-                          )}
                         </div>
                       </div>
 
@@ -574,11 +511,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           }}
                           placeholder="Describe your health concerns in detail..."
                           maxLength={500}
-                          className={`w-full p-4 bg-white/10 border rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 backdrop-blur-sm resize-none text-lg leading-relaxed transition-all duration-300 focus:scale-[1.01] ${
-                            newDescription.length > 450 ? 'border-amber-400/50 focus:border-amber-300/50' :
-                            newDescription.trim().length > 0 && newDescription.trim().length < 10 ? 'border-red-400/50 focus:border-red-300/50' :
-                            !newDescription.trim() ? 'border-red-400/50 focus:border-red-300/50' : 'border-white/20 focus:border-purple-300/50'
-                          }`}
+                          className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm resize-none text-lg leading-relaxed transition-all duration-300 focus:scale-[1.01]"
                           rows={6}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && e.ctrlKey) {
@@ -587,15 +520,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           }}
                         />
                         <div className="flex justify-between items-center mt-2">
-                          <p className={`text-xs ${
-                            newDescription.trim().length < 10 ? 'text-red-300' :
-                            newDescription.length > 450 ? 'text-amber-300' :
-                            'text-purple-300'
-                          }`}>
-                            {newDescription.trim().length < 10 
-                              ? `Minimum 10 characters required (${newDescription.trim().length}/10)`
-                              : `${newDescription.length}/500 characters`
-                            }
+                          <p className="text-purple-300 text-xs">
+                            {newDescription.length}/500 characters
                           </p>
                           <p className="text-purple-300 text-xs">
                             Press Ctrl+Enter to save
@@ -611,19 +537,9 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           type="date"
                           value={newSince}
                           onChange={(e) => {
-                            const selectedDate = new Date(e.target.value);
-                            const today = new Date();
-                            if (selectedDate > today) {
-                              addToast('Date cannot be in the future', { type: 'warning', title: 'Invalid Date' });
-                              return;
-                            }
                             setNewSince(e.target.value);
                           }}
-                          max={new Date().toISOString().split('T')[0]}
-                          className={`w-full p-4 bg-white/10 border rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] ${
-                            !newSince ? 'border-red-400/50 focus:border-red-300/50' : 'border-white/20 focus:border-purple-300/50'
-                          }`}
-                          required
+                          className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
                         />
                         <p className="text-purple-300 text-xs mt-2">
                           Select when your symptoms started
@@ -635,7 +551,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           onClick={handleSaveEdit}
                           disabled={
                             !newDescription.trim() || 
-                            newDescription.trim().length < 10 || 
                             !newSince || 
                             symptoms.length === 0 || 
                             isLoading
@@ -675,8 +590,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
                 <div className="tips-card">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex ">
+                  <div className="flex flex-col items-center justify-between mb-4">
+                    <div className="flex m-2">
                       <h4 className="text-white font-semibold flex items-center gap-2">
                         <Stethoscope className="text-purple-300" size={20} />
                         Health Assessments ({assessments.length})
