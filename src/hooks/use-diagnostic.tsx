@@ -3,6 +3,7 @@ import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
 import { IHistoryItem } from '../interfaces/IHistoryModal';
 import { useService } from './use-service';
 import { useMutation } from './use-mutation';
+import { useToast } from './use-toast';
 import { Symptom } from '../declarations/symptom/symptom.did';
 
 export const useDiagnostic = () => {
@@ -18,20 +19,52 @@ export const useDiagnostic = () => {
     'input' | 'review' | 'analysis'
   >('input');
   const [isLoading, setIsLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
   const { symptomService, historyService } = useService();
+  const { addToast } = useToast();
 
   useEffect(() => {
     loadHistoryFromBackend();
   }, []);
 
+  const testConnection = async () => {
+    try {
+      setConnectionStatus('connecting');
+      await historyService.ensureInitialized();
+      await symptomService.ensureInitialized();
+      setConnectionStatus('connected');
+    } catch (error) {
+      console.error('Connection test failed:', error);
+      setConnectionStatus('disconnected');
+      addToast('Backend connection failed', { type: 'error' });
+    }
+  };
+
   const loadHistoryFromBackend = async () => {
     try {
       setIsLoading(true);
+      await testConnection();
+      
       const historyData = await historyService.getMyHistories();
       setHistory(historyData);
+      
+      const assessmentData: IHealthAssessment[] = historyData.map(item => ({
+        id: item.id,
+        description: item.description || '',
+        symptoms: Array.isArray(item.symptoms) ? item.symptoms.filter((symptom): symptom is ISymptom => 
+          typeof symptom === 'object' && 'name' in symptom && 'severity' in symptom
+        ) : [],
+        since: item.since || item.date || ''
+      }));
+      
+      setAssessments(assessmentData);
+      setConnectionStatus('connected');
     } catch (error) {
       console.error('Error loading history from backend:', error);
       setHistory([]);
+      setAssessments([]);
+      setConnectionStatus('disconnected');
+      addToast('Failed to load data from backend', { type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +73,7 @@ export const useDiagnostic = () => {
   const addSymptomMutation = useMutation({
     mutationFn: async (symptom: { name: string; severity: string; historyId: string }) => {
       const symptomData: Symptom = {
-        id: Date.now().toString(),
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         historyId: symptom.historyId,
         name: symptom.name,
         severity: symptom.severity,
@@ -49,12 +82,10 @@ export const useDiagnostic = () => {
     },
     onSuccess: (data) => {
       console.log('Symptom added successfully:', data);
-      if (!data) return;
-      setNewSymptomName('');
-      setShowAddForm(false);
     },
     onError: (error) => {
       console.error('Error adding symptom:', error);
+      addToast('Failed to add symptom to backend', { type: 'error' });
     }
   });
 
@@ -69,6 +100,7 @@ export const useDiagnostic = () => {
     onError: (error) => {
       console.error('Error fetching history:', error);
       setHistory([]);
+      addToast('Failed to load history from backend', { type: 'error' });
     }
   });
 
@@ -76,10 +108,12 @@ export const useDiagnostic = () => {
     mutationFn: (assessment: IHealthAssessment) => historyService.addHistory(assessment),
     onSuccess: (data) => {
       console.log('History added successfully:', data);
+      addToast('Assessment saved successfully!', { type: 'success' });
       loadHistoryFromBackend();
     },
     onError: (error) => {
       console.error('Error adding history:', error);
+      addToast('Failed to save assessment', { type: 'error' });
     }
   });
 
@@ -87,10 +121,12 @@ export const useDiagnostic = () => {
     mutationFn: (historyId: string) => historyService.deleteHistory(historyId),
     onSuccess: () => {
       console.log('History deleted successfully');
+      addToast('Assessment deleted successfully', { type: 'success' });
       loadHistoryFromBackend();
     },
     onError: (error) => {
       console.error('Error deleting history:', error);
+      addToast('Failed to delete assessment', { type: 'error' });
     }
   });
 
@@ -102,78 +138,215 @@ export const useDiagnostic = () => {
     onSuccess: () => {
       console.log('All history cleared successfully');
       setHistory([]);
+      addToast('All history cleared successfully', { type: 'success' });
     },
     onError: (error) => {
       console.error('Error clearing all history:', error);
+      addToast('Failed to clear history', { type: 'error' });
     }
   });
 
   const addToSymptomList = (name: string) => {
-    if (name.trim()) {
-      const newSymptom: ISymptom = {
-        name: name.trim(),
-        severity: newSymptomSeverity,
-      };
-      setSymptoms((prev) => [...prev, newSymptom]);
-      setNewSymptomName('');
+    if (!name.trim()) {
+      addToast('Symptom name is required', { type: 'warning', title: 'Validation Error' });
+      return;
     }
+    
+    if (name.trim().length < 2) {
+      addToast('Symptom name must be at least 2 characters long', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (name.trim().length > 50) {
+      addToast('Symptom name must be less than 50 characters', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+
+    const isDuplicate = symptoms.some(symptom => 
+      symptom.name.toLowerCase() === name.trim().toLowerCase()
+    );
+    
+    if (isDuplicate) {
+      addToast('This symptom has already been added', { type: 'warning', title: 'Duplicate Symptom' });
+      return;
+    }
+
+    const newSymptom: ISymptom = {
+      name: name.trim(),
+      severity: newSymptomSeverity,
+    };
+    setSymptoms((prev) => [...prev, newSymptom]);
+    setNewSymptomName('');
+    addToast(`Successfully added symptom: ${name.trim()}`, { type: 'success', duration: 2000 });
   };
 
   const removeFromSymptomList = (index: number) => {
+    const removedSymptom = symptoms[index];
     setSymptoms((prev) => prev.filter((_, i) => i !== index));
+    if (removedSymptom) {
+      addToast(`Removed symptom: ${removedSymptom.name}`, { type: 'info', duration: 2000 });
+    }
   };
 
   const clearSymptomList = () => {
-    setSymptoms([]);
+    if (symptoms.length > 0) {
+      setSymptoms([]);
+      addToast('All symptoms cleared', { type: 'info', duration: 2000 });
+    }
   };
 
-  const addAssessment = () => {
-    if (newDescription.trim() && newSince) {
-      const assessment: IHealthAssessment = {
-        id: Date.now().toString(),
-        description: newDescription.trim(),
-        symptoms: [...symptoms],
-        since: newSince,
-      };
+  const addAssessment = async () => {
+    if (!newDescription.trim()) {
+      addToast('Description is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (newDescription.trim().length < 10) {
+      addToast('Description must be at least 10 characters long', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (newDescription.trim().length > 500) {
+      addToast('Description must be less than 500 characters', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (!newSince) {
+      addToast('Date is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    const selectedDate = new Date(newSince);
+    const today = new Date();
+    if (selectedDate > today) {
+      addToast('Date cannot be in the future', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (symptoms.length === 0) {
+      addToast('At least one symptom is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (symptoms.length > 20) {
+      addToast('Maximum 20 symptoms allowed', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
 
-      setAssessments((prev) => [...prev, assessment]);
+    const assessment: IHealthAssessment = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      description: newDescription.trim(),
+      symptoms: [...symptoms],
+      since: newSince,
+    };
+
+    try {
+      setIsLoading(true);
       
-      addHistoryMutation.mutate(assessment);
+      await addHistoryMutation.mutate(assessment);
       
-      symptoms.forEach((symptom) => {
+      const symptomPromises = symptoms.map((symptom) =>
         addSymptomMutation.mutate({
           name: symptom.name,
           severity: symptom.severity,
           historyId: assessment.id
-        });
-      });
-
+        })
+      );
+      
+      await Promise.allSettled(symptomPromises);
+      
+      setAssessments((prev) => [...prev, assessment]);
       setNewDescription('');
       setNewSince('');
       setSymptoms([]);
       setShowAddForm(false);
+      
+      await loadHistoryFromBackend();
+      
+    } catch (error) {
+      console.error('Error adding assessment:', error);
+      addToast('Failed to save assessment', { type: 'error', title: 'Save Error' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const removeAssessment = (id: string) => {
-    deleteHistoryMutation.mutate(id);
-    setAssessments((prev) => prev.filter((assessment) => assessment.id !== id));
+  const removeAssessment = async (id: string) => {
+    try {
+      setIsLoading(true);
+      await deleteHistoryMutation.mutate(id);
+      setAssessments((prev) => prev.filter((assessment) => assessment.id !== id));
+    } catch (error) {
+      console.error('Error removing assessment:', error);
+      addToast('Failed to remove assessment', { type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateAssessment = (id: string, updatedAssessment: Partial<IHealthAssessment>) => {
-    historyService.updateHistory(id, updatedAssessment).then(() => {
-      loadHistoryFromBackend();
-    }).catch((error) => {
+  const updateAssessment = async (id: string, updatedAssessment: Partial<IHealthAssessment>) => {
+    if (updatedAssessment.description && updatedAssessment.description.trim().length < 10) {
+      addToast('Description must be at least 10 characters long', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (updatedAssessment.description && updatedAssessment.description.trim().length > 500) {
+      addToast('Description must be less than 500 characters', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (updatedAssessment.since) {
+      const selectedDate = new Date(updatedAssessment.since);
+      const today = new Date();
+      if (selectedDate > today) {
+        addToast('Date cannot be in the future', { type: 'warning', title: 'Validation Error' });
+        return;
+      }
+    }
+    
+    if (updatedAssessment.symptoms && updatedAssessment.symptoms.length === 0) {
+      addToast('At least one symptom is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (updatedAssessment.symptoms && updatedAssessment.symptoms.length > 20) {
+      addToast('Maximum 20 symptoms allowed', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await historyService.updateHistory(id, updatedAssessment);
+      setAssessments((prev) => prev.map(assessment => 
+        assessment.id === id ? { ...assessment, ...updatedAssessment } : assessment
+      ));
+      addToast('Assessment updated successfully', { type: 'success', title: 'Update Success' });
+      await loadHistoryFromBackend();
+    } catch (error) {
       console.error('Error updating assessment:', error);
-    });
-    setAssessments((prev) => prev.map(assessment => 
-      assessment.id === id ? { ...assessment, ...updatedAssessment } : assessment
-    ));
+      addToast('Failed to update assessment', { type: 'error', title: 'Update Error' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const clearAllAssessments = () => {
-    setAssessments([]);
-    setSymptoms([]);
+  const refreshData = async () => {
+    await loadHistoryFromBackend();
+    addToast('Data refreshed', { type: 'success', duration: 2000 });
+  };
+
+  const clearAllAssessments = async () => {
+    try {
+      setIsLoading(true);
+      await clearAllHistoryMutation.mutate();
+      setAssessments([]);
+      setSymptoms([]);
+    } catch (error) {
+      console.error('Error clearing assessments:', error);
+      addToast('Failed to clear all assessments', { type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getProgressPercentage = () => {
@@ -224,6 +397,7 @@ export const useDiagnostic = () => {
     currentStep,
     setCurrentStep,
     isLoading,
+    connectionStatus,
     addAssessment,
     removeAssessment,
     updateAssessment,
@@ -235,6 +409,8 @@ export const useDiagnostic = () => {
     addToHistory,
     clearHistory,
     loadHistoryFromBackend,
+    refreshData,
+    testConnection,
     addSymptomMutation,
     getHistoryMutation,
     addHistoryMutation,

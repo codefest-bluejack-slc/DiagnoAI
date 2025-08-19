@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/use-auth';
 import { Loading } from '../components/common/loading';
 import { useEffect, useRef } from 'react';
@@ -8,13 +8,6 @@ const AuthorizedRoute = () => {
   const { isAuthenticated, me, login } = useAuth();
   const { addToast } = useToastContext();
   const hasShownWelcomeToast = useRef(false);
-  
-  useEffect(() => {
-    if (isAuthenticated === false) {
-      login.mutate();
-      hasShownWelcomeToast.current = false;
-    }
-  }, [isAuthenticated, login]);
 
   useEffect(() => {
     if (isAuthenticated === true && me && !hasShownWelcomeToast.current) {
@@ -36,6 +29,7 @@ const AuthorizedRoute = () => {
   }
 
   if (isAuthenticated === false) {
+    login.mutate();
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <Loading />
