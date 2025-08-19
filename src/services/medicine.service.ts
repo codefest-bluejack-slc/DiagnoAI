@@ -41,7 +41,7 @@ export const searchProducts = async (
     return cachedResult;
   }
 
-  const endpoint = `${SERPAPI_BASE_URL}?engine=google_shopping&q=${encodeURIComponent(query)}&location=Indonesia&gl=id&hl=id&num=20&api_key=${apiKey}`;
+  const endpoint = `${SERPAPI_BASE_URL}?engine=google_shopping&q=${encodeURIComponent(query)}&num=20&api_key=${apiKey}`;
 
   try {
     const proxyUrl = `${CORS_PROXY}${encodeURIComponent(endpoint)}`;

@@ -65,7 +65,7 @@ export default function ScrollMarquee() {
   return (
     <section 
       ref={sectionRef}
-      className="relative min-h-screen flex items-start justify-center pt-8 bg-gradient-to-b from-purple-900/5 to-transparent overflow-hidden"
+      className="relative flex items-center justify-center py-8 bg-gradient-to-b from-purple-900/5 to-transparent overflow-hidden"
     >
       <div className="w-full flex items-center justify-center">
         <div 

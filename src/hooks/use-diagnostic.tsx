@@ -7,7 +7,6 @@ import { useToast } from './use-toast';
 import { Symptom } from '../declarations/symptom/symptom.did';
 
 export const useDiagnostic = () => {
-  const [assessments, setAssessments] = useState<IHealthAssessment[]>([]);
   const [history, setHistory] = useState<IHistoryItem[]>([]);
   const [newSymptomName, setNewSymptomName] = useState('');
   const [newSymptomSeverity, setNewSymptomSeverity] = useState<'mild' | 'moderate' | 'severe'>('mild');
@@ -48,21 +47,10 @@ export const useDiagnostic = () => {
       const historyData = await historyService.getMyHistories();
       setHistory(historyData);
       
-      const assessmentData: IHealthAssessment[] = historyData.map(item => ({
-        id: item.id,
-        description: item.description || '',
-        symptoms: Array.isArray(item.symptoms) ? item.symptoms.filter((symptom): symptom is ISymptom => 
-          typeof symptom === 'object' && 'name' in symptom && 'severity' in symptom
-        ) : [],
-        since: item.since || item.date || ''
-      }));
-      
-      setAssessments(assessmentData);
       setConnectionStatus('connected');
     } catch (error) {
       console.error('Error loading history from backend:', error);
       setHistory([]);
-      setAssessments([]);
       setConnectionStatus('disconnected');
       addToast('Failed to load data from backend', { type: 'error' });
     } finally {
@@ -195,7 +183,7 @@ export const useDiagnostic = () => {
     }
   };
 
-  const addAssessment = async () => {
+  const startDiagnostic = async (onResponseGenerated?: (response: string) => void) => {
     if (!newDescription.trim()) {
       addToast('Description is required', { type: 'warning', title: 'Validation Error' });
       return;
@@ -233,101 +221,60 @@ export const useDiagnostic = () => {
       return;
     }
 
-    const assessment: IHealthAssessment = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      description: newDescription.trim(),
-      symptoms: [...symptoms],
-      since: newSince,
-    };
-
     try {
       setIsLoading(true);
+      setCurrentStep('analysis');
+      addToast('Starting diagnostic analysis...', { type: 'success' });
       
-      await addHistoryMutation.mutate(assessment);
+      const response = generateAIResponse(newDescription, symptoms, newSince);
       
-      const symptomPromises = symptoms.map((symptom) =>
-        addSymptomMutation.mutate({
-          name: symptom.name,
-          severity: symptom.severity,
-          historyId: assessment.id
-        })
-      );
-      
-      await Promise.allSettled(symptomPromises);
-      
-      setAssessments((prev) => [...prev, assessment]);
-      setNewDescription('');
-      setNewSince('');
-      setSymptoms([]);
-      setShowAddForm(false);
-      
-      await loadHistoryFromBackend();
+      setTimeout(() => {
+        onResponseGenerated?.(response);
+        setIsLoading(false);
+      }, 2000);
       
     } catch (error) {
-      console.error('Error adding assessment:', error);
-      addToast('Failed to save assessment', { type: 'error', title: 'Save Error' });
-    } finally {
+      console.error('Error starting diagnostic:', error);
+      addToast('Failed to start diagnostic', { type: 'error', title: 'Diagnostic Error' });
       setIsLoading(false);
     }
   };
 
-  const removeAssessment = async (id: string) => {
-    try {
-      setIsLoading(true);
-      await deleteHistoryMutation.mutate(id);
-      setAssessments((prev) => prev.filter((assessment) => assessment.id !== id));
-    } catch (error) {
-      console.error('Error removing assessment:', error);
-      addToast('Failed to remove assessment', { type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateAssessment = async (id: string, updatedAssessment: Partial<IHealthAssessment>) => {
-    if (updatedAssessment.description && updatedAssessment.description.trim().length < 10) {
-      addToast('Description must be at least 10 characters long', { type: 'warning', title: 'Validation Error' });
-      return;
+  const generateAIResponse = (description: string, symptoms: ISymptom[], since: string): string => {
+    const severeCounts = symptoms.filter(s => s.severity === 'severe').length;
+    const moderateCounts = symptoms.filter(s => s.severity === 'moderate').length;
+    const mildCounts = symptoms.filter(s => s.severity === 'mild').length;
+    
+    const daysSince = Math.floor((new Date().getTime() - new Date(since).getTime()) / (1000 * 3600 * 24));
+    
+    let response = `Hello! I've analyzed your health concerns. Based on your description of "${description.substring(0, 50)}${description.length > 50 ? '...' : ''}" and the ${symptoms.length} symptom${symptoms.length > 1 ? 's' : ''} you've reported, here's my assessment:\n\n`;
+    
+    response += `📊 Symptom Analysis:\n`;
+    if (severeCounts > 0) response += `• ${severeCounts} severe symptom${severeCounts > 1 ? 's' : ''}\n`;
+    if (moderateCounts > 0) response += `• ${moderateCounts} moderate symptom${moderateCounts > 1 ? 's' : ''}\n`;
+    if (mildCounts > 0) response += `• ${mildCounts} mild symptom${mildCounts > 1 ? 's' : ''}\n`;
+    
+    response += `\n⏰ Duration: These symptoms have been present for ${daysSince} day${daysSince !== 1 ? 's' : ''}.\n\n`;
+    
+    if (severeCounts > 0) {
+      response += `🚨 Immediate Attention Recommended:\nYour severe symptoms require prompt medical evaluation. Please consider consulting a healthcare professional as soon as possible.\n\n`;
+    } else if (moderateCounts > 1) {
+      response += `⚠️ Medical Consultation Suggested:\nWith multiple moderate symptoms, it would be wise to schedule an appointment with your healthcare provider within the next few days.\n\n`;
+    } else {
+      response += `✅ Monitor and Self-Care:\nYour symptoms appear manageable. Continue monitoring and consider basic self-care measures.\n\n`;
     }
     
-    if (updatedAssessment.description && updatedAssessment.description.trim().length > 500) {
-      addToast('Description must be less than 500 characters', { type: 'warning', title: 'Validation Error' });
-      return;
+    response += `💡 Recommendations:\n`;
+    response += `• Keep a symptom diary to track changes\n`;
+    response += `• Stay hydrated and get adequate rest\n`;
+    response += `• Avoid known triggers if applicable\n`;
+    if (severeCounts > 0) {
+      response += `• Seek immediate medical attention if symptoms worsen\n`;
     }
     
-    if (updatedAssessment.since) {
-      const selectedDate = new Date(updatedAssessment.since);
-      const today = new Date();
-      if (selectedDate > today) {
-        addToast('Date cannot be in the future', { type: 'warning', title: 'Validation Error' });
-        return;
-      }
-    }
+    response += `\n⚠️ Important Disclaimer: This analysis is for informational purposes only and should not replace professional medical advice. Please consult with a qualified healthcare provider for proper diagnosis and treatment.`;
     
-    if (updatedAssessment.symptoms && updatedAssessment.symptoms.length === 0) {
-      addToast('At least one symptom is required', { type: 'warning', title: 'Validation Error' });
-      return;
-    }
-    
-    if (updatedAssessment.symptoms && updatedAssessment.symptoms.length > 20) {
-      addToast('Maximum 20 symptoms allowed', { type: 'warning', title: 'Validation Error' });
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      await historyService.updateHistory(id, updatedAssessment);
-      setAssessments((prev) => prev.map(assessment => 
-        assessment.id === id ? { ...assessment, ...updatedAssessment } : assessment
-      ));
-      addToast('Assessment updated successfully', { type: 'success', title: 'Update Success' });
-      await loadHistoryFromBackend();
-    } catch (error) {
-      console.error('Error updating assessment:', error);
-      addToast('Failed to update assessment', { type: 'error', title: 'Update Error' });
-    } finally {
-      setIsLoading(false);
-    }
+    return response;
   };
 
   const refreshData = async () => {
@@ -335,22 +282,11 @@ export const useDiagnostic = () => {
     addToast('Data refreshed', { type: 'success', duration: 2000 });
   };
 
-  const clearAllAssessments = async () => {
-    try {
-      setIsLoading(true);
-      await clearAllHistoryMutation.mutate();
-      setAssessments([]);
-      setSymptoms([]);
-    } catch (error) {
-      console.error('Error clearing assessments:', error);
-      addToast('Failed to clear all assessments', { type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const getProgressPercentage = () => {
-    return Math.min(assessments.length * 12.5, 100);
+    if (currentStep === 'input') return 0;
+    if (currentStep === 'review') return 50;
+    if (currentStep === 'analysis') return 100;
+    return 0;
   };
 
   const addToHistory = (description: string, diagnosis: string) => {
@@ -379,8 +315,6 @@ export const useDiagnostic = () => {
   };
 
   return {
-    assessments,
-    setAssessments,
     history,
     newSymptomName,
     setNewSymptomName,
@@ -398,13 +332,10 @@ export const useDiagnostic = () => {
     setCurrentStep,
     isLoading,
     connectionStatus,
-    addAssessment,
-    removeAssessment,
-    updateAssessment,
+    startDiagnostic,
     addToSymptomList,
     removeFromSymptomList,
     clearSymptomList,
-    clearAllAssessments,
     getProgressPercentage,
     addToHistory,
     clearHistory,

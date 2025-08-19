@@ -27,6 +27,8 @@ import Navbar from '../components/common/navbar';
 import Tooltip from '../components/common/tooltip';
 import { SpeechModal } from '../components/modals/speech-modal';
 import { HistoryModal } from '../components/modals/history-modal';
+import { TypingText } from '../components/diagnostics/typing-text';
+import { RecommendedProducts } from '../components/diagnostics/recommended-products';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
@@ -58,7 +60,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   );
 
   const {
-    assessments,
     history,
     newSymptomName,
     setNewSymptomName,
@@ -74,13 +75,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setShowAddForm,
     currentStep,
     setCurrentStep,
-    addAssessment,
-    removeAssessment,
-    updateAssessment,
+    startDiagnostic,
     addToSymptomList,
     removeFromSymptomList,
     clearSymptomList,
-    clearAllAssessments,
     getProgressPercentage,
     addToHistory,
     clearHistory,
@@ -91,7 +89,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
-  const [editingAssessment, setEditingAssessment] = useState<string | null>(null);
+  const [aiResponse, setAiResponse] = useState<string>('');
+  const [showProducts, setShowProducts] = useState(false);
 
   const handleShowAddForm = () => {
     setShowAddForm(true);
@@ -112,32 +111,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     }
   };
 
-  const handleEditAssessment = (assessmentId: string) => {
-    const assessment = assessments.find(a => a.id === assessmentId);
-    if (assessment) {
-      setNewDescription(assessment.description);
-      setNewSince(assessment.since);
-      setSymptoms([...assessment.symptoms]);
-      setEditingAssessment(assessmentId);
-      setShowAddForm(true);
-    }
-  };
-
   const handleSaveEdit = () => {
-    if (editingAssessment) {
-      if (newDescription.trim() && newSince && symptoms.length > 0) {
-        updateAssessment(editingAssessment, {
-          description: newDescription.trim(),
-          symptoms: [...symptoms],
-          since: newSince,
-        });
-        setNewDescription('');
-        setNewSince('');
-        setSymptoms([]);
-        setEditingAssessment(null);
-        setShowAddForm(false);
-      }
-    } else if (editingSymptom !== null) {
+    if (editingSymptom !== null) {
       if (newSymptomName.trim()) {
         const index = parseInt(editingSymptom);
         removeFromSymptomList(index);
@@ -148,7 +123,11 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       }
     } else {
       if (newDescription.trim() && newSince && symptoms.length > 0) {
-        addAssessment();
+        setAiResponse('');
+        setShowProducts(false);
+        startDiagnostic((response) => {
+          setAiResponse(response);
+        });
       } else if (newSymptomName.trim()) {
         addToSymptomList(newSymptomName.trim());
         setNewSymptomSeverity('mild');
@@ -164,12 +143,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setNewSince('');
     setSymptoms([]);
     setEditingSymptom(null);
-    setEditingAssessment(null);
     setShowAddForm(false);
-  };
-
-  const handleStartDiagnostic = () => {
-    setCurrentStep('analysis');
   };
 
   const toggleSpeechModal = () => {
@@ -182,9 +156,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   };
 
   const handleClearAll = () => {
-    if (confirm('Are you sure you want to clear all health assessments?')) {
-      clearAllAssessments();
-      setEditingAssessment(null);
+    if (confirm('Are you sure you want to clear the current form?')) {
+      setNewDescription('');
+      setNewSince('');
+      setSymptoms([]);
       setShowAddForm(false);
     }
   };
@@ -358,13 +333,13 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         />
                       </div>
                       <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-purple-200 transition-colors duration-300">
-                        Add Health Assessment
+                        Start Health Analysis
                       </h3>
                       <p className="text-purple-200 mb-6 transform transition-all duration-300 group-hover:scale-105">
                         Describe your health concerns and symptoms
                       </p>
                       <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
-                        <span>Start your health assessment</span>
+                        <span>Begin your diagnostic process</span>
                         <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
                       </div>
                     </div>
@@ -379,7 +354,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
                         </div>
                         <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
-                          {editingAssessment ? 'Edit Health Assessment' : 'Add Health Assessment'}
+                          {editingSymptom ? 'Edit Symptom' : 'Start Health Analysis'}
                         </span>
                       </h3>
                       <button
@@ -515,7 +490,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           rows={6}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && e.ctrlKey) {
-                              addAssessment();
+                              handleSaveEdit();
                             }
                           }}
                         />
@@ -524,7 +499,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             {newDescription.length}/500 characters
                           </p>
                           <p className="text-purple-300 text-xs">
-                            Press Ctrl+Enter to save
+                            Press Ctrl+Enter to start analysis
                           </p>
                         </div>
                       </div>
@@ -560,17 +535,17 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           {isLoading ? (
                             <>
                               <RefreshCw className="animate-spin" size={20} />
-                              <span>Saving...</span>
+                              <span>Starting Analysis...</span>
                             </>
-                          ) : editingAssessment ? (
+                          ) : editingSymptom ? (
                             <>
                               <Edit className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
-                              <span>Update Assessment</span>
+                              <span>Update Symptom</span>
                             </>
                           ) : (
                             <>
-                              <Plus className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
-                              <span>Add Assessment</span>
+                              <Play className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                              <span>Start Analysis</span>
                             </>
                           )}
                         </button>
@@ -584,136 +559,28 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     </div>
                   </div>
                 )}
+
+                {currentStep === 'analysis' && aiResponse && (
+                  <div className="space-y-4">
+                    <TypingText
+                      text={aiResponse}
+                      speed={25}
+                      onComplete={() => {
+                        addToast('Analysis complete!', { type: 'success' });
+                        setShowProducts(true);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
-                <div className="tips-card">
-                  <div className="flex flex-col items-center justify-between mb-4">
-                    <div className="flex m-2">
-                      <h4 className="text-white font-semibold flex items-center gap-2">
-                        <Stethoscope className="text-purple-300" size={20} />
-                        Health Assessments ({assessments.length})
-                      </h4>
-                    </div>
-                    <div className="">
-                      <div className="flex items-center gap-2">
-                        {assessments.length >= 1 && (
-                          <button
-                            onClick={handleStartDiagnostic}
-                            className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
-                          >
-                            <Play size={12} />
-                            Start
-                          </button>
-                        )}
-                        {assessments.length > 0 && (
-                          <button
-                            onClick={clearAllAssessments}
-                            className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400/50"
-                          >
-                            <RefreshCw size={10} />
-                            Clear
-                          </button>
-                        )}
-                        <button
-                          onClick={refreshData}
-                          disabled={isLoading}
-                          className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 hover:text-indigo-300 text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Refresh data from backend"
-                        >
-                          <RefreshCw size={10} className={isLoading ? 'animate-spin' : ''} />
-                          Refresh
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {assessments.length === 0 ? (
-                      <div className="text-center py-6">
-                        <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-full flex items-center justify-center">
-                          <Plus className="text-purple-300" size={20} />
-                        </div>
-                        <p className="text-purple-200 text-sm">
-                          No health assessments added yet
-                        </p>
-                        <p className="text-purple-300 text-xs mt-1">
-                          Click "Add Health Assessment" to start
-                        </p>
-                      </div>
-                    ) : (
-                      assessments.map((assessment, index) => (
-                        <div
-                          key={assessment.id}
-                          className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300 group"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Heart className="w-3 h-3 text-purple-400" />
-                                <h5 className="text-white text-sm font-medium">
-                                  Assessment #{index + 1}
-                                </h5>
-                              </div>
-                              <p className="text-purple-200 text-xs leading-relaxed mb-2 pl-5">
-                                {assessment.description.length > 45 
-                                  ? `${assessment.description.substring(0, 45)}...` 
-                                  : assessment.description}
-                              </p>
-                              {assessment.symptoms && assessment.symptoms.length > 0 && (
-                                <div className="pl-5 mb-2">
-                                  <div className="flex flex-wrap gap-1">
-                                    {assessment.symptoms.slice(0, 3).map((symptom, i) => (
-                                      <span
-                                        key={i}
-                                        className={`text-xs px-1.5 py-0.5 rounded-full ${
-                                          symptom.severity === 'mild' ? 'bg-green-400/20 text-green-300' :
-                                          symptom.severity === 'moderate' ? 'bg-amber-400/20 text-amber-300' :
-                                          'bg-red-400/20 text-red-300'
-                                        }`}
-                                      >
-                                        {symptom.name}
-                                      </span>
-                                    ))}
-                                    {assessment.symptoms.length > 3 && (
-                                      <span className="text-xs px-1.5 py-0.5 bg-indigo-400/20 text-indigo-300 rounded-full">
-                                        +{assessment.symptoms.length - 3} more
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-1.5 pl-5">
-                                <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-400/20 text-purple-400 flex items-center gap-1">
-                                  <Clock className="w-2.5 h-2.5 text-white" />
-                                  Since {new Date(assessment.since).toLocaleDateString()}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <button
-                                onClick={() => handleEditAssessment(assessment.id)}
-                                className="p-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 hover:text-purple-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-purple-400/50"
-                                title="Edit"
-                              >
-                                <Edit size={12} />
-                              </button>
-                              <button
-                                onClick={() => removeAssessment(assessment.id)}
-                                className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-red-400/50"
-                                title="Remove"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
+                <RecommendedProducts
+                  symptoms={symptoms}
+                  isVisible={showProducts}
+                />
               </div>
             </div>
           </div>

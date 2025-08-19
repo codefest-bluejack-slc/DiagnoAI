@@ -49,11 +49,17 @@ export function useDrag(elementId: string, options: UseDragProps = {}): DragHand
     const paddingTop = containerStyle ? parseFloat(containerStyle.paddingTop) || 0 : 0;
     const paddingLeft = containerStyle ? parseFloat(containerStyle.paddingLeft) || 0 : 0;
     
+    let headerOffset = 0;
+    if (container && containerSelector === '.info-section-container') {
+      const header = container.querySelector('.info-header');
+      headerOffset = header?.getBoundingClientRect().height || 0;
+    }
+    
     return {
       x: rect.left - containerRect.left - paddingLeft,
-      y: rect.top - containerRect.top - paddingTop
+      y: rect.top - containerRect.top - paddingTop - headerOffset
     };
-  }, [getContainer]);
+  }, [getContainer, containerSelector]);
 
   const constrainPosition = useCallback((position: Position, element: HTMLElement): Position => {
     if (!constrainToParent) return position;
@@ -70,16 +76,22 @@ export function useDrag(elementId: string, options: UseDragProps = {}): DragHand
     const paddingRight = parseFloat(containerStyle.paddingRight) || 0;
     const paddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
 
+    let headerOffset = 0;
+    if (containerSelector === '.info-section-container') {
+      const header = container.querySelector('.info-header');
+      headerOffset = header?.getBoundingClientRect().height || 0;
+    }
+
     const minX = paddingLeft;
     const minY = paddingTop;
     const maxX = containerRect.width - elementRect.width - paddingRight;
-    const maxY = containerRect.height - elementRect.height - paddingBottom;
+    const maxY = containerRect.height - elementRect.height - paddingBottom - headerOffset - 20;
 
     return {
       x: Math.max(minX, Math.min(maxX, position.x)),
       y: Math.max(minY, Math.min(maxY, position.y))
     };
-  }, [constrainToParent, getContainer]);
+  }, [constrainToParent, getContainer, containerSelector]);
 
   const updateElementPosition = useCallback((element: HTMLElement, position: Position) => {
     const constrainedPosition = constrainPosition(position, element);
@@ -100,11 +112,17 @@ export function useDrag(elementId: string, options: UseDragProps = {}): DragHand
     const paddingTop = parseFloat(containerStyle.paddingTop) || 0;
     const paddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
     
+    let headerOffset = 0;
+    if (containerSelector === '.info-section-container') {
+      const header = container.querySelector('.info-header');
+      headerOffset = header?.getBoundingClientRect().height || 0;
+    }
+    
     const currentPosition = getElementPosition(element);
     
     const dragOffset = {
       x: clientX - containerRect.left - paddingLeft - currentPosition.x,
-      y: clientY - containerRect.top - paddingTop - currentPosition.y
+      y: clientY - containerRect.top - paddingTop - headerOffset - currentPosition.y
     };
 
     dragStateRef.current = {
@@ -117,7 +135,7 @@ export function useDrag(elementId: string, options: UseDragProps = {}): DragHand
     element.classList.add('dragging');
     
     onDragStart?.(elementId);
-  }, [elementId, getContainer, getElementPosition, onDragStart]);
+  }, [elementId, getContainer, getElementPosition, onDragStart, containerSelector]);
 
   const handleMove = useCallback((clientX: number, clientY: number) => {
     if (!dragStateRef.current.isDragging) return;
@@ -133,14 +151,20 @@ export function useDrag(elementId: string, options: UseDragProps = {}): DragHand
     const paddingTop = parseFloat(containerStyle.paddingTop) || 0;
     const paddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
     
+    let headerOffset = 0;
+    if (containerSelector === '.info-section-container') {
+      const header = container.querySelector('.info-header');
+      headerOffset = header?.getBoundingClientRect().height || 0;
+    }
+    
     const newPosition = {
       x: clientX - containerRect.left - paddingLeft - dragStateRef.current.dragOffset.x,
-      y: clientY - containerRect.top - paddingTop - dragStateRef.current.dragOffset.y
+      y: clientY - containerRect.top - paddingTop - headerOffset - dragStateRef.current.dragOffset.y
     };
 
     const finalPosition = updateElementPosition(element, newPosition);
     onDrag?.(elementId, finalPosition);
-  }, [elementId, getContainer, updateElementPosition, onDrag]);
+  }, [elementId, getContainer, updateElementPosition, onDrag, containerSelector]);
 
   const handleEnd = useCallback(() => {
     if (!dragStateRef.current.isDragging) return;

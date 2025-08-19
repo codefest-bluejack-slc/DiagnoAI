@@ -90,39 +90,6 @@ export default function InfoSection() {
     }
   ];
 
-  const handleShuffle = () => {
-    const container = document.querySelector('.info-section-container') as HTMLElement;
-    
-    if (container) {
-      const containerRect = container.getBoundingClientRect();
-      const containerStyle = window.getComputedStyle(container);
-      const paddingTop = parseFloat(containerStyle.paddingTop) || 0;
-      const paddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
-      const paddingRight = parseFloat(containerStyle.paddingRight) || 0;
-      const paddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
-      
-      const headerHeight = document.querySelector('.info-header')?.getBoundingClientRect().height || 0;
-      const controlsHeight = document.querySelector('.info-controls')?.getBoundingClientRect().height || 0;
-      const availableHeight = containerRect.height - headerHeight - controlsHeight - paddingTop - paddingBottom - 100;
-      const availableWidth = containerRect.width - paddingLeft - paddingRight;
-      
-      features.forEach((feature, index) => {
-        const cardElement = document.getElementById(`info-card-${feature.id}`) as HTMLElement;
-        if (cardElement) {
-          const randomTop = headerHeight + paddingTop + Math.random() * (availableHeight - cardElement.offsetHeight);
-          const randomLeft = paddingLeft + Math.random() * (availableWidth - cardElement.offsetWidth);
-          const randomRotation = (Math.random() - 0.5) * 20;
-
-          cardElement.style.top = `${randomTop}px`;
-          cardElement.style.left = `${randomLeft}px`;
-          cardElement.style.transform = `rotate(${randomRotation}deg)`;
-          cardElement.style.zIndex = `${index + 1}`;
-          cardElement.style.setProperty('--rotation', `${randomRotation}deg`);
-        }
-      });
-    }
-  };
-
   return (
     <section className="info-section">
       <div className="info-section-container" id="info-section-container">
@@ -178,15 +145,6 @@ export default function InfoSection() {
               </div>
             </div>
           )})}
-        </div>
-
-        <div className="info-controls">
-          <button 
-            onClick={handleShuffle}
-            className="shuffle-button"
-          >
-            Shuffle Cards
-          </button>
         </div>
       </div>
     </section>
