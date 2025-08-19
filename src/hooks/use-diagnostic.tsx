@@ -145,8 +145,13 @@ export const useDiagnostic = () => {
       return;
     }
     
-    if (name.trim().length > 50) {
-      addToast('Symptom name must be less than 50 characters', { type: 'warning', title: 'Validation Error' });
+    if (name.trim().length > 100) {
+      addToast('Symptom name must be less than 100 characters', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+
+    if (symptoms.length >= 20) {
+      addToast('Maximum 20 symptoms allowed', { type: 'warning', title: 'Limit Reached' });
       return;
     }
 
@@ -228,7 +233,6 @@ export const useDiagnostic = () => {
     try {
       setIsLoading(true);
       
-      // Step 1: Finding illness
       setCurrentStep('finding-illness');
       addToast('Starting comprehensive symptom analysis...', { type: 'success' });
       
@@ -239,7 +243,6 @@ export const useDiagnostic = () => {
           onIllnessFound(illnessResponse);
         }
         
-        // Step 2: Finding drugs
         setTimeout(() => {
           setCurrentStep('finding-drugs');
           addToast('Searching for suitable medications...', { type: 'success' });
@@ -251,7 +254,6 @@ export const useDiagnostic = () => {
               onDrugsFound(drugsResponse);
             }
             
-            // Step 3: Finding products
             setTimeout(() => {
               setCurrentStep('finding-products');
               addToast('Locating available products in marketplace...', { type: 'success' });

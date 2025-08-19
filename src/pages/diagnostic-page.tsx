@@ -32,6 +32,7 @@ import { SpeechModal } from '../components/modals/speech-modal';
 import { HistoryModal } from '../components/modals/history-modal';
 import { TypingText } from '../components/diagnostics/typing-text';
 import { RecommendedProducts } from '../components/diagnostics/recommended-products';
+import { SymptomAutocomplete } from '../components/common/symptom-autocomplete';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
@@ -450,25 +451,16 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             </div>
                           )}
                           <div className="flex gap-2">
-                            <input
-                              type="text"
+                            <SymptomAutocomplete
                               value={newSymptomName}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (value.length <= 50) {
-                                  setNewSymptomName(value);
-                                } else {
-                                  addToast('Symptom name cannot exceed 50 characters', { type: 'warning', title: 'Character Limit' });
-                                }
-                              }}
-                              placeholder="Add symptom (e.g., headache, nausea, fever)"
-                              maxLength={50}
-                              className="flex-1 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && newSymptomName.trim()) {
+                              onChange={setNewSymptomName}
+                              onAdd={() => {
+                                if (newSymptomName.trim()) {
                                   addToSymptomList(newSymptomName.trim());
                                 }
                               }}
+                              placeholder="Add symptom (e.g., headache, nausea, fever)"
+                              disabled={symptoms.length >= 20}
                             />
                             <select
                               value={newSymptomSeverity}
@@ -479,26 +471,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                               <option value="moderate" className="bg-gray-800 text-white">Moderate</option>
                               <option value="severe" className="bg-gray-800 text-white">Severe</option>
                             </select>
-                            <button
-                              onClick={() => {
-                                if (newSymptomName.trim()) {
-                                  addToSymptomList(newSymptomName.trim());
-                                }
-                              }}
-                              disabled={!newSymptomName.trim()}
-                              className="p-4 bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-200 disabled:text-gray-400 rounded-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
-                              title="Add symptom"
-                            >
-                              <Plus size={16} />
-                            </button>
-                          </div>
-                          <div className="flex justify-between items-center mt-2">
-                            <p className="text-purple-300 text-xs">
-                              Add symptoms with their severity levels. Press Enter or click + to add.
-                            </p>
-                            <p className="text-purple-300 text-xs">
-                              {symptoms.length}/20 symptoms
-                            </p>
                           </div>
                         </div>
                       </div>
@@ -564,27 +536,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         <p className="text-purple-300 text-xs mt-2">
                           Select when your symptoms started
                         </p>
-                      </div>
-
-                      <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-4">
-                        <h4 className="text-white font-medium mb-3 flex items-center gap-2">
-                          <AlertCircle className="text-purple-300" size={16} />
-                          Ready for Analysis?
-                        </h4>
-                        <div className="space-y-2 text-sm">
-                          <div className={`flex items-center gap-2 ${symptoms.length > 0 ? 'text-green-300' : 'text-purple-300'}`}>
-                            <div className={`w-2 h-2 rounded-full ${symptoms.length > 0 ? 'bg-green-400' : 'bg-purple-400'}`}></div>
-                            <span>At least one symptom added ({symptoms.length}/20)</span>
-                          </div>
-                          <div className={`flex items-center gap-2 ${newDescription.trim() ? 'text-green-300' : 'text-purple-300'}`}>
-                            <div className={`w-2 h-2 rounded-full ${newDescription.trim() ? 'bg-green-400' : 'bg-purple-400'}`}></div>
-                            <span>Health concerns described ({newDescription.length}/500)</span>
-                          </div>
-                          <div className={`flex items-center gap-2 ${newSince ? 'text-green-300' : 'text-purple-300'}`}>
-                            <div className={`w-2 h-2 rounded-full ${newSince ? 'bg-green-400' : 'bg-purple-400'}`}></div>
-                            <span>Symptom start date selected</span>
-                          </div>
-                        </div>
                       </div>
 
                       <div className="flex gap-3">
