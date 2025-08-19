@@ -450,27 +450,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                               </button>
                             </div>
                           )}
-                          <div className="flex gap-2">
+                          <div className="w-full">
                             <SymptomAutocomplete
                               value={newSymptomName}
                               onChange={setNewSymptomName}
-                              onAdd={() => {
-                                if (newSymptomName.trim()) {
-                                  addToSymptomList(newSymptomName.trim());
+                              onAdd={(selectedValue) => {
+                                const valueToAdd = selectedValue || newSymptomName.trim();
+                                if (valueToAdd) {
+                                  addToSymptomList(valueToAdd);
                                 }
                               }}
-                              placeholder="Add symptom (e.g., headache, nausea, fever)"
+                              placeholder="Type Something... "
                               disabled={symptoms.length >= 20}
+                              severity={newSymptomSeverity}
+                              onSeverityChange={setNewSymptomSeverity}
                             />
-                            <select
-                              value={newSymptomSeverity}
-                              onChange={(e) => setNewSymptomSeverity(e.target.value as 'mild' | 'moderate' | 'severe')}
-                              className="p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 appearance-none cursor-pointer"
-                            >
-                              <option value="mild" className="bg-gray-800 text-white">Mild</option>
-                              <option value="moderate" className="bg-gray-800 text-white">Moderate</option>
-                              <option value="severe" className="bg-gray-800 text-white">Severe</option>
-                            </select>
                           </div>
                         </div>
                       </div>

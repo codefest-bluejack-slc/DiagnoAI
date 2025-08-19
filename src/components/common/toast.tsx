@@ -41,10 +41,8 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    // Entrance animation
     setTimeout(() => setIsVisible(true), 10);
 
-    // Progress bar animation
     if (toast.autoClose && toast.duration) {
       const startTime = Date.now();
       const updateProgress = () => {
@@ -58,7 +56,6 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
       };
       requestAnimationFrame(updateProgress);
 
-      // Start exit animation before removal
       const exitTimer = setTimeout(() => {
         setIsExiting(true);
         setTimeout(() => onClose(toast.id), 300);
