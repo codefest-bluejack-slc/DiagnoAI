@@ -32,6 +32,7 @@ import { SpeechModal } from '../components/modals/speech-modal';
 import { HistoryModal } from '../components/modals/history-modal';
 import { TypingText } from '../components/diagnostics/typing-text';
 import { RecommendedProducts } from '../components/diagnostics/recommended-products';
+import { AnalyzeSymptoms } from '../components/diagnostics/analyze-symtomps';
 import { SymptomAutocomplete } from '../components/common/symptom-autocomplete';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
@@ -96,6 +97,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const [illnessResponse, setIllnessResponse] = useState<string>('');
   const [drugsResponse, setDrugsResponse] = useState<string>('');
   const [showProducts, setShowProducts] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const handleShowAddForm = () => {
     setShowAddForm(true);
@@ -155,6 +157,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         setIllnessResponse('');
         setDrugsResponse('');
         setShowProducts(false);
+        setShowAnalysis(true);
         setCurrentStep('finding-illness');
         startDiagnostic(
           (illnessResp) => {
@@ -186,6 +189,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setSymptoms([]);
     setEditingSymptom(null);
     setShowAddForm(false);
+    setShowAnalysis(false);
   };
 
   const toggleSpeechModal = () => {
@@ -365,7 +369,28 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
             <div className="col-span-12 lg:col-span-6">
               <div className="space-y-6">
-                {!showAddForm && (
+                {showAnalysis ? (
+                  <AnalyzeSymptoms
+                    symptoms={symptoms}
+                    description={newDescription}
+                    since={newSince}
+                    onAnalysisComplete={(result) => {
+                      setIllnessResponse(result);
+                      setShowAnalysis(false);
+                      startDiagnostic(
+                        (illnessResp) => {
+                          setIllnessResponse(illnessResp);
+                        },
+                        (drugsResp) => {
+                          setDrugsResponse(drugsResp);
+                        },
+                        () => {
+                          setShowProducts(true);
+                        }
+                      );
+                    }}
+                  />
+                ) : !showAddForm ? (
                   <div
                     className="add-symptom-card group transition-all duration-500 ease-in-out transform hover:scale-105"
                     onClick={handleShowAddForm}
@@ -390,9 +415,36 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       </div>
                     </div>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {!showAddForm && (
+                      <div
+                        className="add-symptom-card group transition-all duration-500 ease-in-out transform hover:scale-105"
+                        onClick={handleShowAddForm}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="relative text-center transform transition-all duration-500 group-hover:scale-105">
+                          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 animate-pulse">
+                            <Plus
+                              className="text-purple-300 group-hover:rotate-90 transition-transform duration-500"
+                              size={24}
+                            />
+                          </div>
+                          <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-purple-200 transition-colors duration-300">
+                            Start Health Analysis
+                          </h3>
+                          <p className="text-purple-200 mb-6 transform transition-all duration-300 group-hover:scale-105">
+                            Describe your health concerns and symptoms
+                          </p>
+                          <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
+                            <span>Begin your diagnostic process</span>
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                {showAddForm && (
+                    {showAddForm && (
                   <div className="symptom-form-card transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-top-3">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
@@ -571,21 +623,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     </div>
                   </div>
                 )}
-
-                {currentStep === 'finding-illness' && illnessResponse && (
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      <Brain className="text-purple-300" size={20} />
-                      AI is Analyzing Your Symptoms
-                    </h3>
-                    <TypingText
-                      text={illnessResponse}
-                      speed={25}
-                      onComplete={() => {
-                        addToast('Symptom analysis completed successfully!', { type: 'success' });
-                      }}
-                    />
-                  </div>
+                  </>
                 )}
 
                 {currentStep === 'finding-drugs' && drugsResponse && (
