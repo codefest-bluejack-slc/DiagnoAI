@@ -7,6 +7,9 @@ import {
   Stethoscope,
   Target,
   TrendingUp,
+  Search,
+  ShoppingCart,
+  Pill,
 } from 'lucide-react';
 
 export const getSeverityColor = (severity?: string) => {
@@ -26,10 +29,12 @@ export const getStepIcon = (step: string) => {
   switch (step) {
     case 'input':
       return <Stethoscope className="text-purple-300" size={20} />;
-    case 'review':
-      return <Target className="text-purple-300" size={20} />;
-    case 'analysis':
-      return <TrendingUp className="text-purple-300" size={20} />;
+    case 'finding-illness':
+      return <Brain className="text-purple-300" size={20} />;
+    case 'finding-drugs':
+      return <Pill className="text-purple-300" size={20} />;
+    case 'finding-products':
+      return <ShoppingCart className="text-purple-300" size={20} />;
     default:
       return <Activity className="text-purple-300" size={20} />;
   }

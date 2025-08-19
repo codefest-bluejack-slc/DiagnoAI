@@ -1,5 +1,5 @@
 .info-section {
-  padding: 8rem 0;
+  padding: 2rem 0;
   position: relative;
   min-height: 100vh;
   background: transparent;
@@ -29,7 +29,7 @@
 
 .info-title {
   font-family: var(--font-family-title-modern);
-  font-size: var(--font-size-5xl);
+  font-size: var(--font-size-8xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin-bottom: 1rem;

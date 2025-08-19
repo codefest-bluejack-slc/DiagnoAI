@@ -15,7 +15,7 @@ export const useDiagnostic = () => {
   const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [currentStep, setCurrentStep] = useState<
-    'input' | 'review' | 'analysis'
+    'input' | 'finding-illness' | 'finding-drugs' | 'finding-products'
   >('input');
   const [isLoading, setIsLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
@@ -183,7 +183,11 @@ export const useDiagnostic = () => {
     }
   };
 
-  const startDiagnostic = async (onResponseGenerated?: (response: string) => void) => {
+  const startDiagnostic = async (
+    onIllnessFound?: (response: string) => void,
+    onDrugsFound?: (response: string) => void,
+    onProductsReady?: () => void
+  ) => {
     if (!newDescription.trim()) {
       addToast('Description is required', { type: 'warning', title: 'Validation Error' });
       return;
@@ -223,21 +227,145 @@ export const useDiagnostic = () => {
 
     try {
       setIsLoading(true);
-      setCurrentStep('analysis');
-      addToast('Starting diagnostic analysis...', { type: 'success' });
       
-      const response = generateAIResponse(newDescription, symptoms, newSince);
+      // Step 1: Finding illness
+      setCurrentStep('finding-illness');
+      addToast('Starting comprehensive symptom analysis...', { type: 'success' });
+      
+      const illnessResponse = generateIllnessResponse(newDescription, symptoms, newSince);
       
       setTimeout(() => {
-        onResponseGenerated?.(response);
-        setIsLoading(false);
+        if (onIllnessFound) {
+          onIllnessFound(illnessResponse);
+        }
+        
+        // Step 2: Finding drugs
+        setTimeout(() => {
+          setCurrentStep('finding-drugs');
+          addToast('Searching for suitable medications...', { type: 'success' });
+          
+          const drugsResponse = generateDrugsResponse(symptoms);
+          
+          setTimeout(() => {
+            if (onDrugsFound) {
+              onDrugsFound(drugsResponse);
+            }
+            
+            // Step 3: Finding products
+            setTimeout(() => {
+              setCurrentStep('finding-products');
+              addToast('Locating available products in marketplace...', { type: 'success' });
+              
+              setTimeout(() => {
+                if (onProductsReady) {
+                  onProductsReady();
+                }
+                setIsLoading(false);
+                addToast('Complete health analysis finished successfully!', { type: 'success' });
+              }, 1000);
+            }, 2000);
+          }, 2000);
+        }, 3000);
       }, 2000);
       
     } catch (error) {
       console.error('Error starting diagnostic:', error);
       addToast('Failed to start diagnostic', { type: 'error', title: 'Diagnostic Error' });
       setIsLoading(false);
+      setCurrentStep('input');
     }
+  };
+
+  const generateIllnessResponse = (description: string, symptoms: ISymptom[], since: string): string => {
+    const severeCounts = symptoms.filter(s => s.severity === 'severe').length;
+    const moderateCounts = symptoms.filter(s => s.severity === 'moderate').length;
+    const mildCounts = symptoms.filter(s => s.severity === 'mild').length;
+    
+    const daysSince = Math.floor((new Date().getTime() - new Date(since).getTime()) / (1000 * 3600 * 24));
+    
+    let response = `🔍 AI Illness Analysis Complete\n\n`;
+    response += `Based on your symptoms: ${symptoms.map(s => s.name).join(', ')}\n\n`;
+    
+    if (severeCounts > 0) {
+      response += `🚨 **Primary Concern**: Acute condition requiring immediate attention\n`;
+      response += `Your severe symptoms suggest a condition that needs prompt medical evaluation.\n\n`;
+    } else if (moderateCounts > 1) {
+      response += `⚠️ **Primary Concern**: Moderate condition requiring monitoring\n`;
+      response += `Multiple moderate symptoms indicate a developing condition that should be addressed.\n\n`;
+    } else {
+      response += `✅ **Primary Concern**: Mild condition with manageable symptoms\n`;
+      response += `Your symptoms appear to be manageable with proper care and monitoring.\n\n`;
+    }
+    
+    response += `📊 **Symptom Analysis**:\n`;
+    if (severeCounts > 0) response += `• ${severeCounts} severe symptom${severeCounts > 1 ? 's' : ''} detected\n`;
+    if (moderateCounts > 0) response += `• ${moderateCounts} moderate symptom${moderateCounts > 1 ? 's' : ''} identified\n`;
+    if (mildCounts > 0) response += `• ${mildCounts} mild symptom${mildCounts > 1 ? 's' : ''} noted\n`;
+    
+    response += `\n⏱️ **Duration**: Symptoms present for ${daysSince} day${daysSince !== 1 ? 's' : ''}\n\n`;
+    
+    response += `🎯 **Possible Conditions**:\n`;
+    if (symptoms.some(s => s.name.toLowerCase().includes('fever'))) {
+      response += `• Viral or bacterial infection\n`;
+    }
+    if (symptoms.some(s => s.name.toLowerCase().includes('headache'))) {
+      response += `• Tension headache or migraine\n`;
+    }
+    if (symptoms.some(s => s.name.toLowerCase().includes('nausea'))) {
+      response += `• Digestive system disturbance\n`;
+    }
+    response += `• General inflammatory response\n`;
+    
+    response += `\n⚠️ This is an AI analysis for informational purposes only. Please consult a healthcare professional for proper diagnosis.`;
+    
+    return response;
+  };
+
+  const generateDrugsResponse = (symptoms: ISymptom[]): string => {
+    const severeCounts = symptoms.filter(s => s.severity === 'severe').length;
+    const moderateCounts = symptoms.filter(s => s.severity === 'moderate').length;
+    
+    let response = `💊 AI Medication Recommendations\n\n`;
+    response += `Based on your symptoms, here are suitable medication categories:\n\n`;
+    
+    response += `🎯 **Recommended Medications**:\n\n`;
+    
+    if (symptoms.some(s => s.name.toLowerCase().includes('fever'))) {
+      response += `🌡️ **For Fever**:\n`;
+      response += `• Paracetamol (Acetaminophen) - 500mg every 6-8 hours\n`;
+      response += `• Ibuprofen - 200-400mg every 6-8 hours\n\n`;
+    }
+    
+    if (symptoms.some(s => s.name.toLowerCase().includes('headache'))) {
+      response += `🧠 **For Headache**:\n`;
+      response += `• Aspirin - 325-650mg every 4 hours\n`;
+      response += `• Paracetamol - 500mg every 6 hours\n\n`;
+    }
+    
+    if (symptoms.some(s => s.name.toLowerCase().includes('nausea'))) {
+      response += `🤢 **For Nausea**:\n`;
+      response += `• Domperidone - 10mg before meals\n`;
+      response += `• Ondansetron - 4-8mg as needed\n\n`;
+    }
+    
+    response += `🍯 **General Support**:\n`;
+    response += `• Vitamin C - 1000mg daily for immune support\n`;
+    response += `• Multivitamin - Daily for nutritional support\n`;
+    response += `• Probiotics - For digestive health\n\n`;
+    
+    if (severeCounts > 0) {
+      response += `🚨 **Important**: Severe symptoms require prescription medications. Please consult a doctor immediately.\n\n`;
+    }
+    
+    response += `⚠️ **Safety Guidelines**:\n`;
+    response += `• Always follow recommended dosages\n`;
+    response += `• Check for drug allergies before use\n`;
+    response += `• Consult pharmacist for drug interactions\n`;
+    response += `• Stop use if adverse reactions occur\n\n`;
+    
+    response += `📋 This is an AI recommendation. Always consult healthcare professionals before taking any medication.`;
+    
+    return response;
   };
 
   const generateAIResponse = (description: string, symptoms: ISymptom[], since: string): string => {
@@ -284,8 +412,9 @@ export const useDiagnostic = () => {
 
   const getProgressPercentage = () => {
     if (currentStep === 'input') return 0;
-    if (currentStep === 'review') return 50;
-    if (currentStep === 'analysis') return 100;
+    if (currentStep === 'finding-illness') return 25;
+    if (currentStep === 'finding-drugs') return 50;
+    if (currentStep === 'finding-products') return 100;
     return 0;
   };
 

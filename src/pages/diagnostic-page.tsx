@@ -22,6 +22,9 @@ import {
   RefreshCw,
   History,
   Mic,
+  CheckCircle,
+  Pill,
+  ShoppingCart,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import Tooltip from '../components/common/tooltip';
@@ -89,7 +92,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
-  const [aiResponse, setAiResponse] = useState<string>('');
+  const [illnessResponse, setIllnessResponse] = useState<string>('');
+  const [drugsResponse, setDrugsResponse] = useState<string>('');
   const [showProducts, setShowProducts] = useState(false);
 
   const handleShowAddForm = () => {
@@ -112,6 +116,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   };
 
   const handleSaveEdit = () => {
+    console.log('Start Analysis clicked:', {
+      editingSymptom,
+      newDescription: newDescription.trim(),
+      newSince,
+      symptomsCount: symptoms.length,
+      newSymptomName: newSymptomName.trim()
+    });
+    
     if (editingSymptom !== null) {
       if (newSymptomName.trim()) {
         const index = parseInt(editingSymptom);
@@ -122,12 +134,41 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         setShowAddForm(false);
       }
     } else {
+      if (!newDescription.trim()) {
+        addToast('Please provide a description of your health concerns', { type: 'warning', title: 'Missing Description' });
+        return;
+      }
+      
+      if (!newSince) {
+        addToast('Please select when your symptoms started', { type: 'warning', title: 'Missing Date' });
+        return;
+      }
+      
+      if (symptoms.length === 0) {
+        addToast('Please add at least one symptom to proceed', { type: 'warning', title: 'Missing Symptoms' });
+        return;
+      }
+      
       if (newDescription.trim() && newSince && symptoms.length > 0) {
-        setAiResponse('');
+        console.log('Starting diagnostic analysis...');
+        setIllnessResponse('');
+        setDrugsResponse('');
         setShowProducts(false);
-        startDiagnostic((response) => {
-          setAiResponse(response);
-        });
+        setCurrentStep('finding-illness');
+        startDiagnostic(
+          (illnessResp) => {
+            console.log('Illness response received:', illnessResp);
+            setIllnessResponse(illnessResp);
+          },
+          (drugsResp) => {
+            console.log('Drugs response received:', drugsResp);
+            setDrugsResponse(drugsResp);
+          },
+          () => {
+            console.log('Products ready');
+            setShowProducts(true);
+          }
+        );
       } else if (newSymptomName.trim()) {
         addToSymptomList(newSymptomName.trim());
         setNewSymptomSeverity('mild');
@@ -256,7 +297,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               </h1>
             </div>
             <p className="text-purple-200 text-lg max-w-2xl mx-auto">
-              Describe your symptoms and get intelligent health insights
+              Share your symptoms and receive comprehensive AI-powered health insights
             </p>
             <div className="flex items-center justify-center gap-2 mt-3">
             </div>
@@ -270,7 +311,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     Analysis Steps
                   </h3>
                   <div className="space-y-3">
-                    {['input', 'review', 'analysis'].map((step, index) => (
+                    {['input', 'finding-illness', 'finding-drugs', 'finding-products'].map((step, index) => (
                       <div
                         key={step}
                         className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
@@ -297,17 +338,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             }`}
                           >
                             {step === 'input'
-                              ? 'Input Health Concerns'
-                              : step === 'review'
-                                ? 'Review & Confirm'
-                                : 'AI Analysis'}
+                              ? 'Share Your Health Concerns'
+                              : step === 'finding-illness'
+                                ? 'AI is Analyzing Your Symptoms'
+                                : step === 'finding-drugs'
+                                  ? 'AI is Finding Your Medications'
+                                  : 'Searching Available Products'}
                           </p>
                           <p className="text-purple-300 text-xs">
                             {step === 'input'
-                              ? 'Describe health concerns'
-                              : step === 'review'
-                                ? 'Verify information'
-                                : 'Get insights'}
+                              ? 'Tell us about your symptoms'
+                              : step === 'finding-illness'
+                                ? 'Identifying potential conditions'
+                                : step === 'finding-drugs'
+                                  ? 'Recommending treatments'
+                                  : 'Finding marketplace options'}
                           </p>
                         </div>
                       </div>
@@ -521,6 +566,27 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         </p>
                       </div>
 
+                      <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-4">
+                        <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                          <AlertCircle className="text-purple-300" size={16} />
+                          Ready for Analysis?
+                        </h4>
+                        <div className="space-y-2 text-sm">
+                          <div className={`flex items-center gap-2 ${symptoms.length > 0 ? 'text-green-300' : 'text-purple-300'}`}>
+                            <div className={`w-2 h-2 rounded-full ${symptoms.length > 0 ? 'bg-green-400' : 'bg-purple-400'}`}></div>
+                            <span>At least one symptom added ({symptoms.length}/20)</span>
+                          </div>
+                          <div className={`flex items-center gap-2 ${newDescription.trim() ? 'text-green-300' : 'text-purple-300'}`}>
+                            <div className={`w-2 h-2 rounded-full ${newDescription.trim() ? 'bg-green-400' : 'bg-purple-400'}`}></div>
+                            <span>Health concerns described ({newDescription.length}/500)</span>
+                          </div>
+                          <div className={`flex items-center gap-2 ${newSince ? 'text-green-300' : 'text-purple-300'}`}>
+                            <div className={`w-2 h-2 rounded-full ${newSince ? 'bg-green-400' : 'bg-purple-400'}`}></div>
+                            <span>Symptom start date selected</span>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="flex gap-3">
                         <button
                           onClick={handleSaveEdit}
@@ -551,7 +617,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         </button>
                         <button
                           onClick={handleCancelEdit}
-                          className="py-4 px-6 bg-white/10 hover:bg-white/20 text-purple-200 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98]"
+                          disabled={isLoading}
+                          className="py-4 px-6 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-purple-200 disabled:text-purple-400 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:cursor-not-allowed"
                         >
                           Cancel
                         </button>
@@ -560,16 +627,53 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   </div>
                 )}
 
-                {currentStep === 'analysis' && aiResponse && (
+                {currentStep === 'finding-illness' && illnessResponse && (
                   <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      <Brain className="text-purple-300" size={20} />
+                      AI is Analyzing Your Symptoms
+                    </h3>
                     <TypingText
-                      text={aiResponse}
+                      text={illnessResponse}
                       speed={25}
                       onComplete={() => {
-                        addToast('Analysis complete!', { type: 'success' });
-                        setShowProducts(true);
+                        addToast('Symptom analysis completed successfully!', { type: 'success' });
                       }}
                     />
+                  </div>
+                )}
+
+                {currentStep === 'finding-drugs' && drugsResponse && (
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      <Activity className="text-purple-300" size={20} />
+                      AI is Finding Your Medications
+                    </h3>
+                    <TypingText
+                      text={drugsResponse}
+                      speed={25}
+                      onComplete={() => {
+                        addToast('Medication recommendations ready!', { type: 'success' });
+                      }}
+                    />
+                  </div>
+                )}
+
+                {currentStep === 'finding-products' && showProducts && (
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                      <Target className="text-purple-300" size={20} />
+                      Searching Available Products
+                    </h3>
+                    <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-400/30 p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="text-green-300" size={18} />
+                        <span className="text-green-200 font-medium">Products Successfully Located!</span>
+                      </div>
+                      <p className="text-green-100 text-sm">
+                        Found {6} available products that match your medication needs. All items are ready for purchase.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

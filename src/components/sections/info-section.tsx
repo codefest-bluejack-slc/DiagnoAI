@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Microscope, BarChart3, FileText, Pill } from 'lucide-react';
+import type { LucideProps } from 'lucide-react';
 import { useDrag } from '../../hooks/use-drag';
 import '../../styles/info-section.css';
 
@@ -7,13 +9,10 @@ interface FeatureCard {
   title: string;
   subtitle: string;
   description: string;
-  icon: string;
-  tags: { text: string; variant: string }[];
+  icon: React.ComponentType<LucideProps>;
   borderColor: string;
   iconBg: string;
-}
-
-export default function InfoSection() {
+}export default function InfoSection() {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [draggedCard, setDraggedCard] = useState<number | null>(null);
 
@@ -35,17 +34,13 @@ export default function InfoSection() {
     });
   };
 
-  const features: FeatureCard[] = [
+    const features: FeatureCard[] = [
     {
       id: 1,
       title: 'AI Diagnosis',
       subtitle: 'Smart Health Assessment',
       description: 'Advanced AI-powered diagnostic system for accurate health insights',
-      icon: '🔬',
-      tags: [
-        { text: 'AI Powered', variant: 'purple' },
-        { text: 'Real-time', variant: 'indigo' }
-      ],
+      icon: Microscope,
       borderColor: 'var(--primary-purple)',
       iconBg: 'var(--primary-purple-100)'
     },
@@ -54,11 +49,7 @@ export default function InfoSection() {
       title: 'Symptom Analysis',
       subtitle: 'Comprehensive Evaluation',
       description: 'Detailed symptom tracking and analysis for better health monitoring',
-      icon: '📊',
-      tags: [
-        { text: 'Detailed', variant: 'pink' },
-        { text: 'Tracking', variant: 'green' }
-      ],
+      icon: BarChart3,
       borderColor: 'var(--secondary-pink)',
       iconBg: 'var(--secondary-pink-100)'
     },
@@ -67,11 +58,7 @@ export default function InfoSection() {
       title: 'Health History',
       subtitle: 'Medical Records',
       description: 'Secure storage and management of your complete medical history',
-      icon: '📋',
-      tags: [
-        { text: 'Secure', variant: 'indigo' },
-        { text: 'Complete', variant: 'blue' }
-      ],
+      icon: FileText,
       borderColor: 'var(--tertiary-indigo)',
       iconBg: 'var(--tertiary-indigo-100)'
     },
@@ -80,11 +67,7 @@ export default function InfoSection() {
       title: 'Medicine Guide',
       subtitle: 'Treatment Recommendations',
       description: 'Personalized medicine recommendations based on your health profile',
-      icon: '💊',
-      tags: [
-        { text: 'Personalized', variant: 'green' },
-        { text: 'Expert', variant: 'yellow' }
-      ],
+      icon: Pill,
       borderColor: 'var(--success-green)',
       iconBg: 'var(--success-green-100)'
     }
@@ -93,15 +76,6 @@ export default function InfoSection() {
   return (
     <section className="info-section">
       <div className="info-section-container" id="info-section-container">
-        <div className="info-header">
-          <h2 className="info-title">
-            Discover DiagnoAI Features
-          </h2>
-          <p className="info-subtitle">
-            Advanced healthcare solutions powered by artificial intelligence
-          </p>
-        </div>
-
         <div id="info-card-container" className="info-cards-container">
           {features.map((feature) => {
             const dragHandlers = createDragHandlers(feature.id);
@@ -123,7 +97,7 @@ export default function InfoSection() {
                   className="info-card-icon"
                   style={{ backgroundColor: feature.iconBg }}
                 >
-                  {feature.icon}
+                  <feature.icon size={24} className="text-white" />
                 </div>
                 <div className="info-card-titles">
                   <div className="info-card-subtitle">{feature.subtitle}</div>
@@ -132,17 +106,6 @@ export default function InfoSection() {
               </div>
               
               <p className="info-card-description">{feature.description}</p>
-              
-              <div className="info-card-tags">
-                {feature.tags.map((tag, index) => (
-                  <span 
-                    key={index}
-                    className={`info-tag info-tag-${tag.variant}`}
-                  >
-                    {tag.text}
-                  </span>
-                ))}
-              </div>
             </div>
           )})}
         </div>
