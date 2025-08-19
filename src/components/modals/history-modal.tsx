@@ -15,6 +15,7 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
   if (!isOpen) return null;
 
   const formatDate = (dateStr: string) => {
+    if (!dateStr) return 'Unknown date';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
@@ -131,7 +132,7 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                         </h3>
                         <div className="flex items-center gap-2 text-sm mb-3 text-purple-300">
                           <Calendar className="w-4 h-4" />
-                          <span>{formatDate(item.since || item.date)}</span>
+                          <span>{formatDate(item.since || item.date || '')}</span>
                         </div>
                       </div>
                       <div 
@@ -156,7 +157,7 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                         {(item.symptoms || []).slice(0, 3).map((symptom, idx) => (
                           <Tooltip
                             key={idx}
-                            content={`Symptom: ${typeof symptom === 'string' ? symptom : symptom.name} - Severity: ${typeof symptom === 'string' ? 'Unknown' : symptom.severity} - Reported on ${formatDate(item.since || item.date)}`}
+                            content={`Symptom: ${typeof symptom === 'string' ? symptom : symptom.name} - Severity: ${typeof symptom === 'string' ? 'Unknown' : symptom.severity} - Reported on ${formatDate(item.since || item.date || '')}`}
                             position="top"
                           >
                             <span

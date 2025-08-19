@@ -69,6 +69,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     newSince,
     setNewSince,
     symptoms,
+    setSymptoms,
     showAddForm,
     setShowAddForm,
     currentStep,
@@ -323,23 +324,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               Describe your symptoms and get intelligent health insights
             </p>
             <div className="flex items-center justify-center gap-2 mt-3">
-              <div className={`w-2 h-2 rounded-full ${
-                connectionStatus === 'connected' ? 'bg-green-400' :
-                connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
-                'bg-red-400'
-              }`}></div>
-              <span className={`text-xs ${
-                connectionStatus === 'connected' ? 'text-green-300' :
-                connectionStatus === 'connecting' ? 'text-yellow-300' :
-                'text-red-300'
-              }`}>
-                {connectionStatus === 'connected' ? 'Backend Connected' :
-                 connectionStatus === 'connecting' ? 'Connecting...' :
-                 'Backend Disconnected'}
-              </span>
             </div>
           </div>
-
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
@@ -690,38 +676,42 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               <div className="sticky top-24 space-y-6">
                 <div className="tips-card">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-white font-semibold flex items-center gap-2">
-                      <Stethoscope className="text-purple-300" size={20} />
-                      Health Assessments ({assessments.length})
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      {assessments.length >= 1 && (
+                    <div className="flex ">
+                      <h4 className="text-white font-semibold flex items-center gap-2">
+                        <Stethoscope className="text-purple-300" size={20} />
+                        Health Assessments ({assessments.length})
+                      </h4>
+                    </div>
+                    <div className="">
+                      <div className="flex items-center gap-2">
+                        {assessments.length >= 1 && (
+                          <button
+                            onClick={handleStartDiagnostic}
+                            className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
+                          >
+                            <Play size={12} />
+                            Start
+                          </button>
+                        )}
+                        {assessments.length > 0 && (
+                          <button
+                            onClick={clearAllAssessments}
+                            className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+                          >
+                            <RefreshCw size={10} />
+                            Clear
+                          </button>
+                        )}
                         <button
-                          onClick={handleStartDiagnostic}
-                          className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50"
+                          onClick={refreshData}
+                          disabled={isLoading}
+                          className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 hover:text-indigo-300 text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Refresh data from backend"
                         >
-                          <Play size={12} />
-                          Start
+                          <RefreshCw size={10} className={isLoading ? 'animate-spin' : ''} />
+                          Refresh
                         </button>
-                      )}
-                      {assessments.length > 0 && (
-                        <button
-                          onClick={clearAllAssessments}
-                          className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400/50"
-                        >
-                          <RefreshCw size={10} />
-                          Clear
-                        </button>
-                      )}
-                      <button
-                        onClick={refreshData}
-                        disabled={isLoading}
-                        className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 hover:text-indigo-300 text-xs font-medium rounded-xl transition-all duration-300 flex items-center gap-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Refresh data from backend"
-                      >
-                        <RefreshCw size={10} className={isLoading ? 'animate-spin' : ''} />
-                        Refresh
-                      </button>
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-3">

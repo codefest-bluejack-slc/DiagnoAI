@@ -97,7 +97,10 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
 
             const response = await this.actor.addHistory(history);
             console.log(response);
-            return response || null;
+            if (Array.isArray(response) && response.length > 0) {
+                return response[0] || null;
+            }
+            return null;
         } catch (error) {
             console.error("error bang dari add history", error);
             throw error;

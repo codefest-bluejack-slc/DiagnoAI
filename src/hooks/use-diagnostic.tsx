@@ -357,18 +357,18 @@ export const useDiagnostic = () => {
     const newHistoryItem: IHistoryItem = {
       id: Date.now().toString(),
       since: new Date().toISOString().split('T')[0],
-      description,
+      description: description || '',
       symptoms: symptoms,
-      diagnosis,
+      diagnosis: diagnosis || '',
       status: 'completed',
       severity: symptoms.length > 0 ? symptoms[0].severity : 'mild'
     };
     
     const assessment: IHealthAssessment = {
       id: newHistoryItem.id,
-      description: newHistoryItem.description,
+      description: newHistoryItem.description || '',
       symptoms: symptoms,
-      since: newHistoryItem.since
+      since: newHistoryItem.since || ''
     };
     
     addHistoryMutation.mutate(assessment);
