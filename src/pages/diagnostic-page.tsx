@@ -664,6 +664,45 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
+                {(showAnalysis || symptoms.length > 0) && (
+                  <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-600/30 rounded-xl p-4">
+                    <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                      <Brain className="text-purple-300" size={16} />
+                      Your Symptoms
+                    </h4>
+                    {symptoms.length > 0 ? (
+                      <>
+                        <div className="space-y-2">
+                          {symptoms.map((symptom, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg">
+                              <span className="text-purple-200 text-sm">{symptom.name}</span>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300' :
+                                symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
+                                'bg-red-400/30 text-red-300'
+                              }`}>
+                                {symptom.severity}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        {showAnalysis && (
+                          <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
+                            <p className="text-purple-200 text-xs">
+                              <strong>Since:</strong> {new Date(newSince).toLocaleDateString()}
+                            </p>
+                            <p className="text-purple-200 text-xs mt-1">
+                              <strong>Description:</strong> {newDescription}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-purple-300 text-sm">No symptoms added yet</p>
+                    )}
+                  </div>
+                )}
+                
                 <RecommendedProducts
                   symptoms={symptoms}
                   isVisible={showProducts}
