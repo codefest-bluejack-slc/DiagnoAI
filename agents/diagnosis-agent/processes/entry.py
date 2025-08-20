@@ -1,11 +1,12 @@
 import json
 import re
-from models import DiagnosisFromSymptomsRequest, DiagnosisResponse, DiagonsisRawRequest, RecommendationAgentRequest, RecommendationAgentResponse
+from models import DiagnosisFromSymptomsRequest, DiagnosisResponse, DiagonsisRawRequest, RecommendationAgentRequest, RecommendationAgentResponse, Symptom
 from processes.fetch_documents import fetch_documents
 from processes.process_documents import process_documents
 from llm import gemini_llm
 from uagents.query import send_sync_message
 from helpers import env_helper
+from datetime import date
 
 def get_diagnosis(request: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
     symptom_formatted = ", ".join(symptom.name for symptom in request.symptoms)
@@ -58,7 +59,13 @@ def get_structure_from_raw_text(raw_text: str) -> DiagnosisFromSymptomsRequest:
 
         parsed = json.loads(req_json_result)
 
-        return DiagnosisFromSymptomsRequest(**parsed)
+        response = DiagnosisFromSymptomsRequest(
+            description=parsed['description'],
+            symptoms=[Symptom(**s) for s in parsed["symptoms"]],
+            since=date.fromisoformat(parsed["since"])
+        )
+
+        return response
 
     except Exception as e:
         print(f"Error parsing JSON: {e}")

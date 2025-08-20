@@ -3,7 +3,7 @@ import sys
 import traceback
 from uagents import Agent, Context
 from database import build_all_index
-from models import DiagnosisResponse, DiagnosisFromSymptomsRequest, DiagonsisRawRequest
+from models import DiagnosisResponse, DiagnosisFromSymptomsRequest, DiagonsisRawRequest, StringResponse
 from helpers import env_helper
 from processes.entry import get_diagnosis, get_diagnosis_raw, get_structure_from_raw_text
 from models.diagnosis_raw_request import DiagonsisRawRequest
@@ -40,15 +40,20 @@ async def diagnosis_from_symptoms(ctx: Context, req: DiagnosisFromSymptomsReques
     diagnosis = get_diagnosis(req)
     return diagnosis
 
-@agent.on_rest_post("/diagnosis/get_structure", request=DiagonsisRawRequest, response=DiagnosisFromSymptomsRequest)
-async def diagnosis_from_symptoms(ctx: Context, req: DiagonsisRawRequest) -> DiagnosisFromSymptomsRequest:
+@agent.on_rest_post("/diagnosis/get_structure", request=DiagonsisRawRequest, response=StringResponse)
+async def diagnosis_from_symptoms(ctx: Context, req: DiagonsisRawRequest) -> StringResponse:
     ctx.logger.info(f"Received REST request: {req}")
-    return get_structure_from_raw_text(req.text)
+    diagnosis_structured = get_structure_from_raw_text(req.text)
+
+    print(f'Diagnosis Structured : {diagnosis_structured}')
+
+    return StringResponse(result=diagnosis_structured.json())
 
 @agent.on_rest_post("/diagnosis/raw", request=DiagonsisRawRequest, response=DiagnosisResponse)
 async def diagnosis_raw(ctx: Context, req: DiagonsisRawRequest) -> DiagnosisResponse:
     ctx.logger.info(f"Received REST raw request: {req}")
     diagnosis = get_diagnosis_raw(req)
+
     return diagnosis
 
 def main():

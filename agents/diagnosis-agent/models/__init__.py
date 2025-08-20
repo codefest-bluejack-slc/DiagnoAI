@@ -6,3 +6,4 @@ from models.diagnosis_raw_request import DiagonsisRawRequest
 from models.medicine import Medicine
 from models.recommendation_agent_request import RecommendationAgentRequest
 from models.recommendation_agent_response import RecommendationAgentResponse
+from models.string_response import StringResponse
