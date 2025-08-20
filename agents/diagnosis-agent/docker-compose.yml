@@ -1,0 +1,28 @@
+﻿services:
+  elasticsearch:
+    image: elasticsearch:9.0.2
+    ports:
+      - 9201:9200
+    environment:
+      discovery.type: "single-node"
+      xpack.security.enabled: "false"
+      ELASTIC_PASSWORD: "password"
+      ES_JAVA_OPTS: "-Xmx2g -Xms2g"
+    healthcheck:
+      test: curl -s http://localhost:9200 || exit 1
+      interval: 5s
+      retries: 10
+
+  diagnosis_agent:
+    container_name: diagnosis_agent
+    build:
+      dockerfile: Dockerfile
+    environment:
+      - MEDICAL_INDEX=medical
+      - GEMINI_API_KEY=AIzaSyAMgwjltJTkN79duoAX2uNCmnVjGOrMxD4
+      - ELASTIC_HOST=http://elasticsearch:9200/
+      - SEED_SECRET=OPPA_GANGNAM_STYLE
+    depends_on:
+      - elasticsearch
+    volumes:
+      - .:/app
