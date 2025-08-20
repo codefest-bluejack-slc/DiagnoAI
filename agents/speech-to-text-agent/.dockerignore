@@ -1,0 +1,55 @@
+# Git files
+.git
+.gitignore
+
+# Python files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache
+.coverage
+htmlcov
+
+# Virtual environments
+env
+venv
+.venv
+ENV
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+*.md
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Logs
+*.log
+logs
+
+# Temporary files
+*.tmp
+*.temp
+
+# Development files
+.env.local
+.env.development
+
+# Node modules (if any)
+node_modules
+
+# Uploads directory (if not needed in image)
+uploads/*
