@@ -44,26 +44,79 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
   onAnalysisComplete
 }) => {
   const [displayedText, setDisplayedText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+
+  const words = analysisText.split(' ');
 
   useEffect(() => {
-    if (currentIndex < analysisText.length) {
+    if (currentWordIndex < words.length) {
       const timer = setTimeout(() => {
-        setDisplayedText(analysisText.substring(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
-      }, 30);
+        setDisplayedText(words.slice(0, currentWordIndex + 1).join(' '));
+        setCurrentWordIndex(currentWordIndex + 1);
+      }, 80);
       return () => clearTimeout(timer);
     } else {
       setTimeout(() => {
         onAnalysisComplete(analysisText);
       }, 1000);
     }
-  }, [currentIndex, onAnalysisComplete]);
+  }, [currentWordIndex, words, onAnalysisComplete]);
+
+  const formatTextWithAnimation = (text: string) => {
+    const lines = text.split('\n');
+    return lines.map((line, lineIndex) => {
+      if (line.trim() === '') {
+        return <div key={`empty-${lineIndex}`} className="h-2" />;
+      }
+      
+      if (line.includes('**') && !line.includes('Primary Assessment') && !line.includes('Key Observations') && !line.includes('Recommended Actions') && !line.includes('Important Note')) {
+        const cleanLine = line.replace(/\*\*/g, '');
+        return (
+          <h4 key={`header-${lineIndex}`} className="font-bold text-white mt-4 mb-2 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 100}ms`, animationFillMode: 'forwards'}}>
+            {cleanLine}
+          </h4>
+        );
+      }
+      
+      if (line.startsWith('**') && line.endsWith('**')) {
+        const cleanLine = line.replace(/\*\*/g, '');
+        return (
+          <h4 key={`section-${lineIndex}`} className="font-bold text-white mt-4 mb-2 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 100}ms`, animationFillMode: 'forwards'}}>
+            {cleanLine}
+          </h4>
+        );
+      }
+      
+      if (line.startsWith('• ')) {
+        return (
+          <div key={`bullet-${lineIndex}`} className="flex items-start gap-2 my-1 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 100}ms`, animationFillMode: 'forwards'}}>
+            <span className="text-purple-400 flex-shrink-0">•</span>
+            <span className="flex-1">{line.substring(2)}</span>
+          </div>
+        );
+      }
+      
+      if (line.match(/^\d+\./)) {
+        const parts = line.split(': ');
+        return (
+          <div key={`numbered-${lineIndex}`} className="my-2 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 100}ms`, animationFillMode: 'forwards'}}>
+            <strong className="font-bold">{parts[0]}:</strong> {parts[1] || ''}
+          </div>
+        );
+      }
+      
+      return (
+        <div key={`text-${lineIndex}`} className="my-1 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 100}ms`, animationFillMode: 'forwards'}}>
+          {line}
+        </div>
+      );
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="bg-slate-800/50 backdrop-blur-sm border border-purple-400/30 rounded-xl p-6">
-        <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50">
+        <div className="bg-slate-900/50     rounded-xl p-6 border border-slate-700/50">
           <div className="flex items-start gap-4 mb-4">
             <div className="p-2 bg-purple-500/20 rounded-full animate-bounce">
               <Brain className="text-purple-300" size={20} />
@@ -72,11 +125,27 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
               <h3 className="text-white font-semibold mb-2">
                 Processing Your Health Data
               </h3>
-              <div className="text-purple-200 text-sm leading-relaxed whitespace-pre-line">
-                {displayedText}
-                {currentIndex < analysisText.length && (
-                  <span className="inline-block w-2 h-4 bg-purple-400 ml-1 animate-pulse"></span>
-                )}
+              <div className="text-purple-200 text-sm leading-relaxed max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
+                <style dangerouslySetInnerHTML={{
+                  __html: `
+                    @keyframes slide-up {
+                      from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                      }
+                      to {
+                        opacity: 1;
+                        transform: translateY(0);
+                      }
+                    }
+                    .animate-slide-up {
+                      animation: slide-up 0.4s ease-out;
+                    }
+                  `
+                }} />
+                <div className="space-y-1">
+                  {formatTextWithAnimation(displayedText)}
+                </div>
               </div>
             </div>
           </div>

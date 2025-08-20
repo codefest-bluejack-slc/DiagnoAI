@@ -1,46 +1,46 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Mic, MicOff, Volume2, Check, RotateCcw } from 'lucide-react';
+import { X, Mic, MicOff, Volume2, Check } from 'lucide-react';
 import { ISpeechModalProps } from '../../interfaces/ISpeechRecognition';
 import { useSpeech } from '../../hooks/use-speech';
 
 export const SpeechModal: React.FC<ISpeechModalProps> = ({ 
   isOpen, 
   onClose, 
-  onTranscriptComplete 
+  onRecordingComplete 
 }) => {
   const { 
-    isListening, 
-    transcript, 
-    confidence, 
-    error, 
+    isRecording,
+    error,
+    audioUrl,
+    audioBlob,
+    isSaved,
     startListening, 
     stopListening, 
-    resetTranscript 
+    clearCurrentRecording
   } = useSpeech();
 
   useEffect(() => {
-    if (isOpen) {
-      startListening();
+    if (isOpen && !audioUrl && !isRecording) {
+      clearCurrentRecording();
     }
-  }, [isOpen, startListening]);
+  }, [isOpen, clearCurrentRecording, audioUrl, isRecording]);
 
   if (!isOpen) return null;
-  // TODO: Implementation untuk init SpeechRecognition
 
   const handleApprove = () => {
-    onTranscriptComplete(transcript);
-    resetTranscript();
     onClose();
   };
 
   const handleClose = () => {
-    resetTranscript();
+    if (isRecording) {
+      stopListening();
+    }
     onClose();
   };
 
   const handleRetry = () => {
-    resetTranscript();
+    clearCurrentRecording();
     startListening();
   };
 
@@ -76,10 +76,10 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-purple-100">
-                  Voice Input
+                  Voice Recording
                 </h2>
                 <p className="text-sm text-purple-300">
-                  Describe your symptoms by voice
+                  Record your voice message
                 </p>
               </div>
             </div>
@@ -95,13 +95,16 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
             <div className="text-center">
               <div 
                 className={`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
-                  isListening 
+                  isRecording
                     ? 'bg-red-500/20 border-red-400 shadow-lg shadow-red-500/30 animate-pulse' 
                     : 'bg-purple-500/20 border-purple-400 shadow-lg shadow-purple-500/30'
                 }`}
               >
-                {isListening ? (
-                  <MicOff className="text-red-400" size={32} />
+                {isRecording ? (
+                  <div className="relative">
+                    <MicOff className="text-red-400" size={32} />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  </div>
                 ) : (
                   <Mic className="text-purple-400" size={32} />
                 )}
@@ -109,16 +112,8 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
               
               <div className="space-y-2">
                 <p className="font-medium text-purple-100">
-                  {isListening ? 'Listening...' : 'Ready to listen'}
+                  {isRecording ? 'Recording...' : 'Ready to record'}
                 </p>
-                {confidence > 0 && (
-                  <div className="flex items-center justify-center gap-2">
-                    <Volume2 className="w-4 h-4 text-green-400" />
-                    <span className="text-sm text-green-400">
-                      {Math.round(confidence * 100)}% confidence
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -128,22 +123,36 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
               </div>
             )}
 
-            {transcript && transcript !== 'Listening...' && (
+            {audioUrl && (
               <div className="p-4 rounded-lg bg-slate-800/60 border border-purple-500/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Volume2 className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm font-medium text-purple-300">
-                    Transcript:
-                  </span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-purple-400" />
+                    <span className="text-sm font-medium text-purple-300">
+                      Audio Recording:
+                    </span>
+                  </div>
+                  {isSaved && (
+                    <div className="flex items-center gap-1 text-green-400 text-xs">
+                      <Check size={12} />
+                      <span>Saved</span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm leading-relaxed text-purple-100">
-                  {transcript}
-                </p>
+                <audio 
+                  controls 
+                  src={audioUrl} 
+                  className="w-full rounded-lg"
+                  style={{
+                    filter: 'sepia(1) hue-rotate(240deg) saturate(2)',
+                    background: 'rgba(147, 51, 234, 0.1)'
+                  }}
+                />
               </div>
             )}
 
             <div className="flex gap-3">
-              {isListening ? (
+              {isRecording ? (
                 <button
                   onClick={stopListening}
                   className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -152,38 +161,33 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                   Stop Recording
                 </button>
               ) : (
-                transcript && transcript !== 'Listening...' && (
-                  <button
-                    onClick={handleRetry}
-                    className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-purple-400"
-                  >
-                    <RotateCcw size={18} />
-                    Retry
-                  </button>
-                )
-              )}
-
-              {transcript && transcript !== 'Listening...' && (
                 <>
                   <button
-                    onClick={resetTranscript}
-                    className="py-3 px-4 bg-slate-800/70 hover:bg-slate-800 text-purple-200 font-medium rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-purple-400/50 border border-purple-500/30"
+                    onClick={startListening}
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-purple-400"
                   >
-                    <X size={16} />
-                  </button>
-                  <button
-                    onClick={handleApprove}
-                    className="py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400"
-                  >
-                    <Check size={16} />
-                    Use This
+                    <Mic size={18} />
+                    {audioBlob ? 'New Recording' : 'Start Recording'}
                   </button>
                 </>
+              )}
+
+              {audioBlob && !isRecording && (
+                <button
+                  onClick={handleApprove}
+                  className="py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400"
+                >
+                  <Check size={16} />
+                  Use Recording
+                </button>
               )}
             </div>
 
             <div className="text-center text-xs text-purple-400">
-              Web Speech API integration pending
+              {isSaved 
+                ? 'Recording saved successfully to project storage' 
+                : 'Recordings will be saved to project storage automatically'
+              }
             </div>
           </div>
         </div>

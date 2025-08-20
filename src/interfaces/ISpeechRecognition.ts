@@ -1,24 +1,30 @@
 export interface ISpeechRecognition {
-  isListening: boolean;
-  transcript: string;
-  confidence: number;
+  isRecording: boolean;
   error: string | null;
+  audioUrl?: string;
+  audioBlob?: Blob;
 }
 
 export interface ISpeechModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onTranscriptComplete: (transcript: string) => void;
+  onRecordingComplete: (audioBlob: Blob) => void;
 }
 
 export interface UseSpeechReturn {
-  isListening: boolean;
-  transcript: string;
-  confidence: number;
+  isRecording: boolean;
   error: string | null;
+  audioUrl: string | null;
+  audioBlob: Blob | null;
+  isSaved: boolean;
   startListening: () => void;
   stopListening: () => void;
-  resetTranscript: () => void;
+  resetRecording: () => void;
+  clearCurrentRecording: () => void;
+  deleteRecording: (filename: string) => Promise<void>;
+  getStoredRecordings: () => Promise<string[]>;
+  getCurrentRecordingFilename: () => string | null;
+  loadRecordingFromProject: (filename: string) => Promise<Blob | null>;
 }
 
 // TODO: interface nya yang real 

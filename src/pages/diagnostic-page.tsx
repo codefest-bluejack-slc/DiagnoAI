@@ -53,6 +53,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isSpeechModalOpen, setIsSpeechModalOpen] = useState(false);
+  const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -98,6 +100,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const [drugsResponse, setDrugsResponse] = useState<string>('');
   const [showProducts, setShowProducts] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
 
   const handleShowAddForm = () => {
     setShowAddForm(true);
@@ -105,6 +108,21 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const handleHideAddForm = () => {
     setShowAddForm(false);
+  };
+
+  const handleContinueToMedication = () => {
+    setAnalysisComplete(false);
+    startDiagnostic(
+      (illnessResp) => {
+        setIllnessResponse(illnessResp);
+      },
+      (drugsResp) => {
+        setDrugsResponse(drugsResp);
+      },
+      () => {
+        setShowProducts(true);
+      }
+    );
   };
 
 
@@ -157,6 +175,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         setIllnessResponse('');
         setDrugsResponse('');
         setShowProducts(false);
+        setAnalysisComplete(false);
         setShowAnalysis(true);
         setCurrentStep('finding-illness');
         startDiagnostic(
@@ -190,15 +209,48 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setEditingSymptom(null);
     setShowAddForm(false);
     setShowAnalysis(false);
+    setAnalysisComplete(false);
+    setIllnessResponse('');
+    setDrugsResponse('');
+    setShowProducts(false);
+    
+    if (recordedAudioUrl) {
+      URL.revokeObjectURL(recordedAudioUrl);
+    }
+    setRecordedAudio(null);
+    setRecordedAudioUrl(null);
   };
 
   const toggleSpeechModal = () => {
     setIsSpeechModalOpen(!isSpeechModalOpen);
   };
 
-  const handleSpeechTranscript = (transcript: string) => {
-    setNewDescription(transcript);
-    setIsSpeechModalOpen(false);
+  const handleSpeechRecording = async (audioBlob: Blob) => {
+    try {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      setRecordedAudio(audioBlob);
+      setRecordedAudioUrl(audioUrl);
+      
+      const recordings = JSON.parse(localStorage.getItem('voiceRecordings') || '{}');
+      const recordingCount = Object.keys(recordings).length;
+      
+      addToast(
+        `Voice recording ${recordingCount + 1} saved successfully! You can now include this in your health analysis.`, 
+        { 
+          type: 'success', 
+          title: 'Recording Saved',
+          duration: 4000
+        }
+      );
+      
+      setIsSpeechModalOpen(false);
+    } catch (error) {
+      console.error('Error handling speech recording:', error);
+      addToast('Failed to save recording. Please try again.', { 
+        type: 'error', 
+        title: 'Recording Error' 
+      });
+    }
   };
 
   const handleClearAll = () => {
@@ -207,6 +259,12 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       setNewSince('');
       setSymptoms([]);
       setShowAddForm(false);
+      
+      if (recordedAudioUrl) {
+        URL.revokeObjectURL(recordedAudioUrl);
+      }
+      setRecordedAudio(null);
+      setRecordedAudioUrl(null);
     }
   };
 
@@ -267,15 +325,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
       <button
         onClick={toggleHistoryModal}
-        className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group bg-slate-800/80 backdrop-blur-sm border border-purple-500/30 hover:bg-slate-800 hover:border-purple-400/50"
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.9)';
-          e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.5)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.8)';
-          e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)';
-        }}
+        className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group history-button backdrop-blur-sm border"
       >
         {isLoading ? (
           <RefreshCw 
@@ -316,7 +366,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     Analysis Steps
                   </h3>
                   <div className="space-y-3">
-                    {['input', 'finding-illness', 'finding-drugs', 'finding-products'].map((step, index) => (
+                    {['input', 'finding-illness', 'finding-products'].map((step, index) => (
                       <div
                         key={step}
                         className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
@@ -346,18 +396,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                               ? 'Share Your Health Concerns'
                               : step === 'finding-illness'
                                 ? 'AI is Analyzing Your Symptoms'
-                                : step === 'finding-drugs'
-                                  ? 'AI is Finding Your Medications'
-                                  : 'Searching Available Products'}
+                                : 'Searching Available Products'}
                           </p>
                           <p className="text-purple-300 text-xs">
                             {step === 'input'
                               ? 'Tell us about your symptoms'
                               : step === 'finding-illness'
                                 ? 'Identifying potential conditions'
-                                : step === 'finding-drugs'
-                                  ? 'Recommending treatments'
-                                  : 'Finding marketplace options'}
+                                : 'Finding marketplace options'}
                           </p>
                         </div>
                       </div>
@@ -377,19 +423,89 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     onAnalysisComplete={(result) => {
                       setIllnessResponse(result);
                       setShowAnalysis(false);
-                      startDiagnostic(
-                        (illnessResp) => {
-                          setIllnessResponse(illnessResp);
-                        },
-                        (drugsResp) => {
-                          setDrugsResponse(drugsResp);
-                        },
-                        () => {
-                          setShowProducts(true);
-                        }
-                      );
+                      setAnalysisComplete(true);
                     }}
                   />
+                ) : analysisComplete && illnessResponse ? (
+                  <div className="bg-slate-800-50 backdrop-blur-sm border border-purple-400-30 rounded-xl p-6">
+                    <div className="bg-slate-900-50 rounded-xl p-6 border border-slate-700-50">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="p-2 bg-green-500-20 rounded-full">
+                          <Brain className="text-green-300" size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-white font-semibold">
+                              Analysis Complete
+                            </h3>
+                            <button
+                              onClick={() => {
+                                setAnalysisComplete(false);
+                                setIllnessResponse('');
+                                setShowAddForm(true);
+                              }}
+                              className="text-purple-300 hover:text-purple-200 text-sm underline transition-colors"
+                            >
+                              Start New Analysis
+                            </button>
+                          </div>
+                          <div className="text-purple-200 text-sm leading-relaxed max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
+                            <div className="space-y-1">
+                              {illnessResponse.split('\n').map((line, index) => {
+                                if (line.trim() === '') {
+                                  return <div key={`empty-${index}`} className="h-2" />;
+                                }
+                                
+                                if (line.startsWith('**') && line.endsWith('**')) {
+                                  const cleanLine = line.replace(/\*\*/g, '');
+                                  return (
+                                    <h4 key={`section-${index}`} className="font-bold text-white mt-4 mb-2">
+                                      {cleanLine}
+                                    </h4>
+                                  );
+                                }
+                                
+                                if (line.startsWith('• ')) {
+                                  return (
+                                    <div key={`bullet-${index}`} className="flex items-start gap-2 my-1">
+                                      <span className="text-purple-400 flex-shrink-0">•</span>
+                                      <span className="flex-1">{line.substring(2)}</span>
+                                    </div>
+                                  );
+                                }
+                                
+                                if (line.match(/^\d+\./)) {
+                                  const parts = line.split(': ');
+                                  return (
+                                    <div key={`numbered-${index}`} className="my-2">
+                                      <strong className="font-bold">{parts[0]}:</strong> {parts[1] || ''}
+                                    </div>
+                                  );
+                                }
+                                
+                                return (
+                                  <div key={`text-${index}`} className="my-1">
+                                    {line}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {analysisComplete && (
+                        <div className="bg-slate-800-30 backdrop-blur-sm border border-purple-400-30 rounded-xl p-4">
+                          <button
+                            onClick={handleContinueToMedication}
+                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
+                          >
+                            <ShoppingCart size={16} />
+                            Find Products & Treatments
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ) : !showAddForm ? (
                   <div
                     className="add-symptom-card group transition-all duration-500 ease-in-out transform hover:scale-105"
@@ -470,23 +586,23 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                         </label>
                         <div className="space-y-4">
                           {symptoms.length > 0 && (
-                            <div className="flex flex-wrap gap-2 p-3 bg-purple-500/10 border border-purple-400/30 rounded-xl">
+                            <div className="flex flex-wrap gap-2 p-3 bg-purple-500-10 border border-purple-400-30 rounded-xl">
                               {symptoms.map((symptom, index) => (
                                 <div
                                   key={index}
-                                  className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 border border-purple-400/50 rounded-full text-sm text-purple-200 group hover:bg-purple-500/30 transition-all duration-200"
+                                  className="flex items-center gap-2 px-3 py-1.5 bg-purple-500-20 border border-purple-400-50 rounded-full text-sm text-purple-200 group hover-bg-purple-500-30 transition-all duration-200"
                                 >
                                   <span>{symptom.name}</span>
                                   <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                                    symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300' :
+                                    symptom.severity === 'mild' ? 'bg-green-400-30 text-green-300' :
                                     symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
-                                    'bg-red-400/30 text-red-300'
+                                    'bg-red-400-30 text-red-300'
                                   }`}>
                                     {symptom.severity}
                                   </span>
                                   <button
                                     onClick={() => removeFromSymptomList(index)}
-                                    className="p-0.5 rounded-full hover:bg-red-500/40 text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110"
+                                    className="p-0.5 rounded-full hover-bg-red-500-40 text-red-400 hover-text-red-300 transition-all duration-200 hover:scale-110"
                                     title="Remove symptom"
                                   >
                                     <X size={12} />
@@ -526,17 +642,36 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           <label className="block text-purple-200 text-sm font-medium">
                             Description
                           </label>
-                          <button
-                            onClick={toggleSpeechModal}
-                            className="p-2 rounded-full bg-white/10 hover:bg-purple-500/20 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group"
-                            title="Use voice input"
-                          >
-                            <Mic 
-                              className="text-purple-300 group-hover:text-purple-200 transition-colors duration-300" 
-                              size={16} 
-                            />
-                          </button>
                         </div>
+                        
+                        {recordedAudio && recordedAudioUrl && (
+                          <div className="mb-4 p-3 bg-slate-800-60 border border-green-400-30 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                <span className="text-sm font-medium text-green-300">Voice Recording Attached</span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  if (recordedAudioUrl) {
+                                    URL.revokeObjectURL(recordedAudioUrl);
+                                  }
+                                  setRecordedAudio(null);
+                                  setRecordedAudioUrl(null);
+                                }}
+                                className="text-red-400 hover:text-red-300 transition-colors"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                            <audio 
+                              controls 
+                              src={recordedAudioUrl} 
+                              className="w-full rounded-lg audio-player"
+                            />
+                          </div>
+                        )}
+                        
                         <textarea
                           value={newDescription}
                           onChange={(e) => {
@@ -577,7 +712,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           onChange={(e) => {
                             setNewSince(e.target.value);
                           }}
-                          className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01]"
+                          className="text-white w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] date-input"
                         />
                         <p className="text-purple-300 text-xs mt-2">
                           Select when your symptoms started
@@ -613,6 +748,17 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           )}
                         </button>
                         <button
+                          onClick={toggleSpeechModal}
+                          disabled={isLoading}
+                          className="py-4 px-4 bg-white-10 hover-bg-purple-500-20 disabled:bg-white-5 disabled:cursor-not-allowed text-purple-300 hover:text-purple-200 disabled:text-purple-400 rounded-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group disabled:hover:scale-100"
+                          title="Use voice input"
+                        >
+                          <Mic 
+                            className="transition-colors duration-300" 
+                            size={20} 
+                          />
+                        </button>
+                        <button
                           onClick={handleCancelEdit}
                           disabled={isLoading}
                           className="py-4 px-6 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-purple-200 disabled:text-purple-400 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:cursor-not-allowed"
@@ -624,22 +770,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   </div>
                 )}
                   </>
-                )}
-
-                {currentStep === 'finding-drugs' && drugsResponse && (
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                      <Activity className="text-purple-300" size={20} />
-                      AI is Finding Your Medications
-                    </h3>
-                    <TypingText
-                      text={drugsResponse}
-                      speed={25}
-                      onComplete={() => {
-                        addToast('Medication recommendations ready!', { type: 'success' });
-                      }}
-                    />
-                  </div>
                 )}
 
                 {currentStep === 'finding-products' && showProducts && (
@@ -664,8 +794,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
-                {(showAnalysis || symptoms.length > 0) && (
-                  <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-600/30 rounded-xl p-4">
+                {(showAnalysis || analysisComplete) && (
+                  <div className="bg-slate-800-30 backdrop-blur-sm border border-slate-600-30 rounded-xl p-4">
                     <h4 className="text-white font-medium mb-3 flex items-center gap-2">
                       <Brain className="text-purple-300" size={16} />
                       Your Symptoms
@@ -674,12 +804,12 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       <>
                         <div className="space-y-2">
                           {symptoms.map((symptom, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg">
+                            <div key={index} className="flex items-center justify-between p-2 bg-slate-700-30 rounded-lg">
                               <span className="text-purple-200 text-sm">{symptom.name}</span>
                               <span className={`text-xs px-2 py-1 rounded-full ${
-                                symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300' :
+                                symptom.severity === 'mild' ? 'bg-green-400-30 text-green-300' :
                                 symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
-                                'bg-red-400/30 text-red-300'
+                                'bg-red-400-30 text-red-300'
                               }`}>
                                 {symptom.severity}
                               </span>
@@ -687,7 +817,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           ))}
                         </div>
                         {showAnalysis && (
-                          <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
+                          <div className="mt-4 p-3 bg-slate-700-20 rounded-lg">
                             <p className="text-purple-200 text-xs">
                               <strong>Since:</strong> {new Date(newSince).toLocaleDateString()}
                             </p>
@@ -716,7 +846,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       <SpeechModal
         isOpen={isSpeechModalOpen}
         onClose={toggleSpeechModal}
-        onTranscriptComplete={handleSpeechTranscript}
+        onRecordingComplete={handleSpeechRecording}
       />
     </div>
   );
