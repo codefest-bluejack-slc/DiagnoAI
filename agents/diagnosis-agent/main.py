@@ -20,7 +20,7 @@ from uagents_core.contrib.protocols.chat import (
 
 agent = Agent(name="Diagnosis Agent",
               seed=env_helper.SEED_SECRET,
-              port=8000,
+              port=8001,
               mailbox=True,
               publish_agent_details=True)
 
