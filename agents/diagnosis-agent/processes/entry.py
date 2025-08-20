@@ -1,9 +1,11 @@
 import json
 import re
-from models import DiagnosisFromSymptomsRequest, DiagnosisResponse, DiagonsisRawRequest
+from models import DiagnosisFromSymptomsRequest, DiagnosisResponse, DiagonsisRawRequest, RecommendationAgentRequest, RecommendationAgentResponse
 from processes.fetch_documents import fetch_documents
 from processes.process_documents import process_documents
 from llm import gemini_llm
+from uagents.query import send_sync_message
+from helpers import env_helper
 
 def get_diagnosis(request: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
     symptom_formatted = ", ".join(symptom.name for symptom in request.symptoms)
@@ -52,3 +54,15 @@ def get_diagnosis_raw(request: DiagonsisRawRequest) -> DiagnosisResponse:
     except Exception as e:
         print(f"Error parsing JSON: {e}")
         return DiagnosisResponse(diagnosis="Error parsing the response from the LLM.")
+    
+def get_recommended_medicine(disease: str) -> RecommendationAgentResponse:
+    message = RecommendationAgentRequest(
+        question=disease
+    )
+
+    response = send_sync_message(
+        destination=env_helper.RECOMMENDATION_AGENT_ADDRESS,
+        message=message
+    )
+
+    return response

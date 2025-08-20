@@ -39,6 +39,18 @@ async def answer_question(ctx: Context, sender: str, msg: DiagnosisFromSymptomsR
         sender, diagnosis
     )
 
+@agent.on_rest_post("/diagnosis/from-symptoms", request=DiagnosisFromSymptomsRequest, response=DiagnosisResponse)
+async def diagnosis_from_symptoms(ctx: Context, req: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
+    ctx.logger.info(f"Received REST request: {req}")
+    diagnosis = get_diagnosis(req)
+    return diagnosis
+
+
+@agent.on_rest_post("/diagnosis/raw", request=DiagonsisRawRequest, response=DiagnosisResponse)
+async def diagnosis_raw(ctx: Context, req: DiagonsisRawRequest) -> DiagnosisResponse:
+    ctx.logger.info(f"Received REST raw request: {req}")
+    diagnosis = get_diagnosis_raw(req)
+    return diagnosis
 
 def main():
     setup_logging()

@@ -1,7 +1,7 @@
 ﻿import os
 from dotenv import load_dotenv
 
-ENVS = ["GEMINI_API_KEY", "ELASTIC_HOST", "MEDICAL_INDEX", "SEED_SECRET", "AGENT_ADRESS"]
+ENVS = ["GEMINI_API_KEY", "ELASTIC_HOST", "MEDICAL_INDEX", "SEED_SECRET", "AGENT_ADRESS", "RECOMMENDATION_AGENT_ADDRESS"]
 
 class EnvHelper:
     """Class for gathering and saving all env for the application """
@@ -30,5 +30,6 @@ class EnvHelper:
         self.MEDICAL_INDEX = self.envs[ENVS[2]]
         self.SEED_SECRET = self.envs[ENVS[3]]
         self.AGENT_ADRESS = self.envs[ENVS[4]]
+        self.RECOMMENDATION_AGENT_ADDRESS = self.envs[ENVS[5]]
 
 env_helper = EnvHelper()
