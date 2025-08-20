@@ -383,7 +383,7 @@ export default function ProductPage() {
                           backgroundClip: 'text',
                         }}
                       >
-                        Rp.{product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}
+                        {product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}$
                       </p>
                       {product.source && (
                         <p className="text-purple-300 text-sm mt-1">from {product.source}</p>

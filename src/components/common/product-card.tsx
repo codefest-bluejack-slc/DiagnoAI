@@ -58,7 +58,7 @@ export const ProductCard: React.FC<{
       
       <div className="flex items-center justify-between pt-2">
         <span className="text-lg font-bold text-purple-400">
-          Rp.{product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}
+          {product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}$
         </span>
         <a
           href={product.link}

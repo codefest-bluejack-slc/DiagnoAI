@@ -110,21 +110,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setShowAddForm(false);
   };
 
-  const handleContinueToMedication = () => {
-    setAnalysisComplete(false);
-    startDiagnostic(
-      (illnessResp) => {
-        setIllnessResponse(illnessResp);
-      },
-      (drugsResp) => {
-        setDrugsResponse(drugsResp);
-      },
-      () => {
-        setShowProducts(true);
-      }
-    );
-  };
-
 
   const handleEditSymptom = (index: number) => {
     const symptom = symptoms[index];
@@ -496,7 +481,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       {analysisComplete && (
                         <div className="bg-slate-800-30 backdrop-blur-sm border border-purple-400-30 rounded-xl p-4">
                           <button
-                            onClick={handleContinueToMedication}
+                            onClick={() => {
+                              setCurrentStep('finding-products');
+                              setShowProducts(true);
+                            }}
                             className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
                           >
                             <ShoppingCart size={16} />
@@ -772,29 +760,29 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   </>
                 )}
 
-                {currentStep === 'finding-products' && showProducts && (
+                {/* {currentStep === 'finding-products' && showProducts && (
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                       <Target className="text-purple-300" size={20} />
-                      Searching Available Products
+                      Available Products Found
                     </h3>
                     <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-400/30 p-4 mb-4">
                       <div className="flex items-center gap-2 mb-2">
                         <CheckCircle className="text-green-300" size={18} />
-                        <span className="text-green-200 font-medium">Products Successfully Located!</span>
+                        <span className="text-green-200 font-medium"> ssfully Located!</span>
                       </div>
                       <p className="text-green-100 text-sm">
-                        Found {6} available products that match your medication needs. All items are ready for purchase.
+                        Browse through the recommended products in the sidebar. All items are available for purchase from verified sellers.
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 
             <div className="col-span-12 lg:col-span-3">
               <div className="sticky top-24 space-y-6">
-                {(showAnalysis || analysisComplete) && (
+                {(showAnalysis || analysisComplete || showProducts) && (
                   <div className="bg-slate-800-30 backdrop-blur-sm border border-slate-600-30 rounded-xl p-4">
                     <h4 className="text-white font-medium mb-3 flex items-center gap-2">
                       <Brain className="text-purple-300" size={16} />
@@ -816,7 +804,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             </div>
                           ))}
                         </div>
-                        {showAnalysis && (
+                        {(showAnalysis || showProducts) && (
                           <div className="mt-4 p-3 bg-slate-700-20 rounded-lg">
                             <p className="text-purple-200 text-xs">
                               <strong>Since:</strong> {new Date(newSince).toLocaleDateString()}

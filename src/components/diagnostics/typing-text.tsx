@@ -50,7 +50,6 @@ export const TypingText: React.FC<TypingTextProps> = ({
             <span className="text-purple-200 text-sm font-medium">AI DiagnoAssistant</span>
             <div className="flex gap-1">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse [animation-delay:0.2s]"></div>
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse [animation-delay:0.4s]"></div>
             </div>
           </div>
