@@ -18,7 +18,7 @@ def get_diagnosis(request: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
 
     disease = documents[0].name
     recommendation_response = get_recommended_medicine(disease=disease)
-    print(recommendation_response)
+    print(f'LIAT SINI PAUL {recommendation_response}')
 
     return DiagnosisResponse(diagnosis=str(result))
 

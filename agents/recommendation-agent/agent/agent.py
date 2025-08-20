@@ -20,10 +20,10 @@ class RecommendationAgent:
         self._register_handlers()
     
     def _register_handlers(self):
-        self.agent.on_message(model=RecommendationAgentRequest, replies=RecommendationAgentResponse)(self._handle_ai_request)
+        self.agent.on_message(model=RecommendationAgentRequest, replies=RecommendationAgentResponse)(self.handle_ai_request)
         self.agent.on_event("startup")(self._startup_handler)
     
-    async def _handle_ai_request(self, ctx: Context, sender: str, msg: RecommendationAgentRequest):
+    async def handle_ai_request(self, ctx: Context, sender: str, msg: RecommendationAgentRequest):
         ctx.logger.info(f"Received question from {sender}: {msg.question}")
         response_text, medicine_list = self.recommendation_service.send_query(msg.question)
         ctx.logger.info(f"Response: {response_text}")
