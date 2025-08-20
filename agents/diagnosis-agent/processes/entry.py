@@ -14,6 +14,11 @@ def get_diagnosis(request: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
         request=request,
         documents=documents
     )
+
+    disease = documents[0].name
+    recommendation_response = get_recommended_medicine(disease=disease)
+    print(recommendation_response)
+
     return DiagnosisResponse(diagnosis=str(result))
 
 def clean_llm_json(raw: str) -> str:
