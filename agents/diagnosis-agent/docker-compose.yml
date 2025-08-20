@@ -18,10 +18,14 @@
     build:
       dockerfile: Dockerfile
     environment:
-      - MEDICAL_INDEX=medical
-      - GEMINI_API_KEY=AIzaSyAMgwjltJTkN79duoAX2uNCmnVjGOrMxD4
-      - ELASTIC_HOST=http://elasticsearch:9200/
-      - SEED_SECRET=OPPA_GANGNAM_STYLE
+      - MEDICAL_INDEX=${MEDICAL_INDEX}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ELASTIC_HOST=${ELASTIC_HOST}
+      - SEED_SECRET=${SEED_SECRET}
+      - AGENT_ADRESS=${AGENT_ADRESS}
+      - RECOMMENDATION_AGENT_ADDRESS=${RECOMMENDATION_AGENT_ADDRESS}
+    ports:
+      - "8000:8000"
     depends_on:
       - elasticsearch
     volumes:
