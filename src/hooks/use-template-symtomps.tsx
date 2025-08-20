@@ -1,11 +1,19 @@
-import React from 'react';
+interface FuzzysortOptions {
+  keys?: string[];
+  threshold?: number;
+}
+
+interface FuzzysortResult {
+  score: number;
+  obj: any;
+}
 
 const fuzzysort = (function() {
   'use strict'
 
   const fuzzysort = {
-    go: (search, targets, options) => {
-      if (!search) return targets ? targets.map(t => ({obj: t})) : []
+    go: (search: string, targets: any[], options?: FuzzysortOptions): FuzzysortResult[] => {
+      if (!search) return targets ? targets.map(t => ({obj: t, score: 0})) : []
       
       const searchLower = search.toLowerCase()
       const searchLen = search.length
@@ -381,7 +389,7 @@ const symptoms = [
 ];
 
 export const useTemplateSymptoms = () => {
-  const searchSymptoms = (query) => {
+  const searchSymptoms = (query: string): string[] => {
     if (!query) {
       return symptoms;
     }

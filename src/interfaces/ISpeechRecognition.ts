@@ -1,8 +1,11 @@
 export interface ISpeechRecognition {
-  isRecording: boolean;
+  isRecording?: boolean;
   error: string | null;
   audioUrl?: string;
   audioBlob?: Blob;
+  isListening?: boolean;
+  transcript?: string;
+  confidence?: number;
 }
 
 export interface ISpeechModalProps {
