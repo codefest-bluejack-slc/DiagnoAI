@@ -1,6 +1,6 @@
 import os
 from uagents import Agent, Context
-from models.api import AIRequest, AIResponse
+from models.api import RecommendationAgentRequest, RecommendationAgentResponse
 from config import EnvLoader
 from services import OpenFDAService, RecommendationService
 
@@ -10,24 +10,25 @@ class RecommendationAgent:
         self.recommendation_service = RecommendationService()
         
         self.agent = Agent(
-            name="gemini-agent",
+            name="Recommendation Agent",
             seed=self.seed_value,
             port=8000,
-            endpoint=["http://localhost:8000/submit"],
+            mailbox=True,
+            publish_agent_details=True,
         )
         
         self._register_handlers()
     
     def _register_handlers(self):
-        self.agent.on_message(model=AIRequest, replies=AIResponse)(self._handle_ai_request)
+        self.agent.on_message(model=RecommendationAgentRequest, replies=RecommendationAgentResponse)(self._handle_ai_request)
         self.agent.on_event("startup")(self._startup_handler)
     
-    async def _handle_ai_request(self, ctx: Context, sender: str, msg: AIRequest):
+    async def _handle_ai_request(self, ctx: Context, sender: str, msg: RecommendationAgentRequest):
         ctx.logger.info(f"Received question from {sender}: {msg.question}")
         response_text, medicine_list = self.recommendation_service.send_query(msg.question)
         ctx.logger.info(f"Response: {response_text}")
         ctx.logger.info(f"Medicines: {medicine_list}")
-        await ctx.send(sender, AIResponse(answer=response_text, medicines=medicine_list))
+        await ctx.send(sender, RecommendationAgentResponse(answer=response_text, medicines=medicine_list))
     
     async def _startup_handler(self, ctx: Context):
         ctx.logger.info(f"Agent address: {self.agent.address}")

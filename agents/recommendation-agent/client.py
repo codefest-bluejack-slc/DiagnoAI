@@ -1,5 +1,5 @@
 from uagents import Agent, Context
-from models.api import AIRequest, AIResponse
+from models.api import RecommendationAgentRequest, RecommendationAgentResponse
  
 agent = Agent (
     name="simple test agent",
@@ -16,11 +16,11 @@ async def ask_question(ctx: Context):
         f"Asking AI agent to answer {QUESTION}"
     )
     await ctx.send (
-        'agent1qgjequt609avltyjtg6xwzt87u7qu0e0666j72kygqu02tamh2ya2x53ksn', AIRequest(question=QUESTION)
+        'agent1qgjequt609avltyjtg6xwzt87u7qu0e0666j72kygqu02tamh2ya2x53ksn', RecommendationAgentRequest(question=QUESTION)
     )
  
-@agent.on_message(model=AIResponse)
-async def handle_data(ctx: Context, sender: str, data: AIResponse):
+@agent.on_message(model=RecommendationAgentResponse)
+async def handle_data(ctx: Context, sender: str, data: RecommendationAgentResponse):
     ctx.logger.info(f"Got response from AI agent: \n{data.answer}")
     
     if data.medicines:

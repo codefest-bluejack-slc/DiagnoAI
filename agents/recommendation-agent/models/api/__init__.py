@@ -1,4 +1,4 @@
-from .ai_request import AIRequest
-from .ai_response import AIResponse
+from .recommendation_agent_request import RecommendationAgentRequest
+from .recommendation_agent_response import RecommendationAgentResponse
 
-__all__ = ["AIRequest", "AIResponse"]
+__all__ = ["RecommendationAgentRequest", "RecommendationAgentResponse"]
