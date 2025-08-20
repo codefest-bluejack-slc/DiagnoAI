@@ -5,10 +5,25 @@ from uagents import Agent, Context
 from database import build_all_index
 from models import DiagnosisResponse, DiagnosisFromSymptomsRequest, DiagonsisRawRequest
 from helpers import env_helper
-from processes.entry import get_diagnosis, get_diagnosis_raw
+from processes.entry import get_diagnosis, get_diagnosis_raw, get_structure_from_raw_text
 from models.diagnosis_raw_request import DiagonsisRawRequest
+from datetime import datetime
+from uuid import uuid4
+from uagents import Context, Protocol, Agent
+from uagents_core.contrib.protocols.chat import (
+    ChatAcknowledgement,
+    ChatMessage,
+    EndSessionContent,
+    TextContent,
+    chat_protocol_spec,
+)
 
-agent = Agent(name="Diagnosis Agent", seed=env_helper.SEED_SECRET, port=8000, endpoint=["http://localhost:8000/submit"])
+agent = Agent(name="Diagnosis Agent",
+              seed=env_helper.SEED_SECRET,
+              port=8000,
+              mailbox=True,
+              publish_agent_details=True)
+
 
 @agent.on_event("startup")
 async def start_application(ctx: Context):
@@ -19,32 +34,16 @@ async def start_application(ctx: Context):
         ctx.logger.error(e)
         traceback.print_exc()
 
-@agent.on_message(model=DiagnosisFromSymptomsRequest, replies=DiagnosisResponse)
-async def answer_question(ctx: Context, sender: str, msg: DiagnosisFromSymptomsRequest):
-    ctx.logger.info(f"Received question from {sender}: {msg}")
-
-    diagnosis = get_diagnosis(msg)
-
-    await ctx.send(
-        sender, diagnosis
-    )
-
-@agent.on_message(model=DiagonsisRawRequest, replies=DiagnosisResponse)
-async def answer_question(ctx: Context, sender: str, msg: DiagnosisFromSymptomsRequest):
-    ctx.logger.info(f"Received question from {sender}: {msg}")
-
-    diagnosis = get_diagnosis_raw(msg)
-
-    await ctx.send(
-        sender, diagnosis
-    )
-
 @agent.on_rest_post("/diagnosis/from-symptoms", request=DiagnosisFromSymptomsRequest, response=DiagnosisResponse)
 async def diagnosis_from_symptoms(ctx: Context, req: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
     ctx.logger.info(f"Received REST request: {req}")
     diagnosis = get_diagnosis(req)
     return diagnosis
 
+@agent.on_rest_post("/diagnosis/get_structure", request=DiagonsisRawRequest, response=DiagnosisFromSymptomsRequest)
+async def diagnosis_from_symptoms(ctx: Context, req: DiagonsisRawRequest) -> DiagnosisFromSymptomsRequest:
+    ctx.logger.info(f"Received REST request: {req}")
+    return get_structure_from_raw_text(req.text)
 
 @agent.on_rest_post("/diagnosis/raw", request=DiagonsisRawRequest, response=DiagnosisResponse)
 async def diagnosis_raw(ctx: Context, req: DiagonsisRawRequest) -> DiagnosisResponse:
@@ -108,6 +107,45 @@ def setup_logging(log_file: str = "app.log"):
     logger.addHandler(file_handler)
 
     return logger
+
+protocol = Protocol(spec=chat_protocol_spec)
+ 
+@protocol.on_message(ChatMessage)
+async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
+    ctx.logger.info(f'Got message: {msg}')
+    await ctx.send(
+        sender,
+        ChatAcknowledgement(timestamp=datetime.now(), acknowledged_msg_id=msg.msg_id),
+    )
+ 
+    text = ''
+    for item in msg.content:
+        if isinstance(item, TextContent):
+            text += item.text
+ 
+    response = 'I am afraid something went wrong and I am unable to answer your question at the moment'
+    try:
+        request = DiagonsisRawRequest(text=text)
+        diagnosis_result = get_diagnosis_raw(request)
+
+        response = diagnosis_result.diagnosis
+    except:
+        ctx.logger.exception('Error querying model')
+ 
+    await ctx.send(sender, ChatMessage(
+        timestamp=datetime.utcnow(),
+        msg_id=uuid4(),
+        content=[
+            TextContent(type="text", text=response),
+            EndSessionContent(type="end-session"),
+        ]
+    ))
+
+@protocol.on_message(ChatAcknowledgement)
+async def handle_ack(_ctx: Context, sender: str, msg: ChatAcknowledgement):
+    print('I got a chat acknowledgement', sender, msg)
+ 
+agent.include(protocol, publish_manifest=True)
 
 if __name__ == "__main__":
     # main()

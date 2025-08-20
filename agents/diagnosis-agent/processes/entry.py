@@ -28,9 +28,13 @@ def clean_llm_json(raw: str) -> str:
 
     return cleaned
 
-def get_diagnosis_raw(request: DiagonsisRawRequest) -> DiagnosisResponse:
-    prompt = request.text + '\n'
-    prompt += "can you format the following information in JSON format:\n"
+def get_structure_from_raw_text(raw_text: str) -> DiagnosisFromSymptomsRequest:
+    """
+    Converts free-text input into a structured DiagnosisFromSymptomsRequest
+    using the Gemini LLM.
+    """
+    prompt = raw_text + '\n'
+    prompt += "Can you format the following information in JSON format:\n"
     prompt += "{\n"
     prompt += '    "description": "",\n'
     prompt += '    "symptoms": [\n'
@@ -38,21 +42,36 @@ def get_diagnosis_raw(request: DiagonsisRawRequest) -> DiagnosisResponse:
     prompt += '        {"name": "", "severity": ""},\n'
     prompt += '        {"name": "", "severity": ""}\n'
     prompt += '    ],\n'
-    prompt += '    "since": ""\n //please provide the date in YYYY-MM-DD format\n'
+    prompt += '    "since": ""\n // please provide the date in YYYY-MM-DD format\n'
     prompt += "}\n"
 
     try:
         req_json_result = gemini_llm.answer(prompt)
+
         req_json_result = clean_llm_json(req_json_result)
         print(f'Cleaned: {req_json_result}')
-        parsed = json.loads(req_json_result)
-        diagnosis = DiagnosisFromSymptomsRequest(**parsed)
-        print(diagnosis)
 
-        return get_diagnosis(diagnosis)
+        parsed = json.loads(req_json_result)
+
+        return DiagnosisFromSymptomsRequest(**parsed)
 
     except Exception as e:
         print(f"Error parsing JSON: {e}")
+        raise
+
+
+def get_diagnosis_raw(request: DiagonsisRawRequest) -> DiagnosisResponse:
+    """
+    Handles raw text input by converting it into structured format
+    and then running the normal diagnosis pipeline.
+    """
+    try:
+        diagnosis_request = get_structure_from_raw_text(request.text)
+        print(diagnosis_request)
+
+        return get_diagnosis(diagnosis_request)
+
+    except Exception:
         return DiagnosisResponse(diagnosis="Error parsing the response from the LLM.")
     
 def get_recommended_medicine(disease: str) -> RecommendationAgentResponse:
