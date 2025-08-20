@@ -8,7 +8,7 @@ from helpers import env_helper
 from processes.entry import get_diagnosis, get_diagnosis_raw
 from models.diagnosis_raw_request import DiagonsisRawRequest
 
-agent = Agent(name="Diagnosis Agent", seed=env_helper.SEED_SECRET, port=8000, endpoint=["http://localhost:8000/submit"])
+agent = Agent(name="Diagnosis Agent", seed=env_helper.SEED_SECRET, port=8000, endpoint=["http://localhost:8001/submit"])
 
 @agent.on_event("startup")
 async def start_application(ctx: Context):
