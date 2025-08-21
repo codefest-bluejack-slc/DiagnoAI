@@ -1,14 +1,14 @@
 import { ISpeechRecognition } from '../interfaces/ISpeechRecognition';
+import axios from 'axios';
 
 export class SpeechService {
-  
+
   public static async startSpeechRecognition(): Promise<ISpeechRecognition> {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           isListening: true,
           transcript: 'Mock speech recognition result',
-          confidence: 0.95,
           error: null
         });
       }, 1000);
@@ -85,6 +85,23 @@ export class SpeechService {
       localStorage.setItem('projectVoiceRecordings', JSON.stringify(recordings));
     } catch (err) {
       throw new Error(`Failed to delete project recording: ${err}`);
+    }
+  }
+
+  public static async uploadRecording(audioBlob: Blob): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recording.webm');
+
+    try {
+      const response = await axios.post('http://localhost:8002/transcribe', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+
+      return response.data.text;
+    } catch (error) {
+      throw new Error(`Failed to upload recording: ${error}`);
     }
   }
 }
