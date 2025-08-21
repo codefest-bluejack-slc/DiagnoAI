@@ -1,9 +1,10 @@
 ﻿import logging
 import sys
 import traceback
+import asyncio
 from uagents import Agent, Context
 from database import build_all_index
-from models import DiagnosisResponse, DiagnosisFromSymptomsRequest, DiagonsisRawRequest, StringResponse
+from models import DiagnosisResponse, DiagnosisFromSymptomsRequest, DiagonsisRawRequest, StringResponse, RecommendationAgentResponse
 from helpers import env_helper
 from processes.entry import get_diagnosis, get_diagnosis_raw, get_structure_from_raw_text
 from models.diagnosis_raw_request import DiagonsisRawRequest
@@ -24,7 +25,6 @@ agent = Agent(name="Diagnosis Agent",
               mailbox=True,
               publish_agent_details=True)
 
-
 @agent.on_event("startup")
 async def start_application(ctx: Context):
     try:
@@ -34,11 +34,25 @@ async def start_application(ctx: Context):
         ctx.logger.error(e)
         traceback.print_exc()
 
+pending_response: asyncio.Future[RecommendationAgentResponse] | None = None
+
 @agent.on_rest_post("/diagnosis/from-symptoms", request=DiagnosisFromSymptomsRequest, response=DiagnosisResponse)
 async def diagnosis_from_symptoms(ctx: Context, req: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
+    # global pending_response
+    # pending_response = asyncio.get_event_loop().create_future()
+
     ctx.logger.info(f"Received REST request: {req}")
-    diagnosis = get_diagnosis(req)
+    diagnosis = await get_diagnosis(ctx, req)
+
     return diagnosis
+
+@agent.on_message(model=RecommendationAgentResponse)
+async def receive_message_recommendation(ctx: Context, sender: str, data: RecommendationAgentResponse) -> DiagnosisResponse:
+    global pending_response
+    ctx.logger.info(f"Got response from AI agent: {data.answer}")
+
+    if pending_response and not pending_response.done():
+        pending_response.set_result(data)
 
 @agent.on_rest_post("/diagnosis/get_structure", request=DiagonsisRawRequest, response=StringResponse)
 async def diagnosis_from_symptoms(ctx: Context, req: DiagonsisRawRequest) -> StringResponse:

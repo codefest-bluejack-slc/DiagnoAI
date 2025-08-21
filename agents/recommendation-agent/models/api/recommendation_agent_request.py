@@ -1,6 +1,4 @@
-from pydantic import BaseModel, Field
+from uagents import Model
 
-class RecommendationAgentRequest(BaseModel):
-    question: str = Field(
-        description="The question that the user wants to have an answer for."
-    )
+class RecommendationAgentRequest(Model):
+    question: str
