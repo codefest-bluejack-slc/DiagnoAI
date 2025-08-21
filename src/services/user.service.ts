@@ -20,6 +20,16 @@ export class UserService extends BaseService<UserCanisterService> {
             return firstOrDefault(response);
         } catch (error) {
             console.error("Error fetching user by principal:", error);
+            if (error instanceof Error && error.message.includes("Certificate verification")) {
+                await BaseService.refreshAgent();
+                try {
+                    const response = await this.actor.getUser(principal);
+                    return firstOrDefault(response);
+                } catch (retryError) {
+                    console.error("Retry failed:", retryError);
+                    throw retryError;
+                }
+            }
             throw error;
         }
     }
@@ -109,6 +119,10 @@ export class UserService extends BaseService<UserCanisterService> {
             
             return this.getUserByPrincipal(principal);
         } catch (error) {
+            if (error instanceof Error && error.message.includes("Certificate verification")) {
+                console.warn("Certificate verification failed in me(), returning null");
+                return null;
+            }
             console.error("Error fetching current user:", error);
             return null;
         }

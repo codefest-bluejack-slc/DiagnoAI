@@ -32,9 +32,15 @@ export function AuthProvider({ children }: AuthProps) {
             setIsAuthenticated(!!data);
         },
         onError: (error) => {
-            console.error('Failed to fetch user:', error);
-            setUser(null);
-            setIsAuthenticated(false);
+            if (error instanceof Error && error.message.includes("Certificate verification")) {
+                console.warn('Certificate verification failed, user will remain unauthenticated');
+                setUser(null);
+                setIsAuthenticated(false);
+            } else {
+                console.error('Failed to fetch user:', error);
+                setUser(null);
+                setIsAuthenticated(false);
+            }
         }
     });
 

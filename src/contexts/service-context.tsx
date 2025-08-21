@@ -29,9 +29,16 @@ export const ServiceProvider = ({ children } : { children: ReactNode }) => {
                 setUserService(newUserService);
                 setHistoryService(newHistoryService);
                 setSymptomService(newSymptomService);
-                setLoading(false);
             } catch (error) {
                 console.error("Failed to initialize services:", error);
+                const newUserService = new UserService();
+                const newHistoryService = new HistoryService();
+                const newSymptomService = new SymptomService();
+                
+                setUserService(newUserService);
+                setHistoryService(newHistoryService);
+                setSymptomService(newSymptomService);
+            } finally {
                 setLoading(false);
             }
         };

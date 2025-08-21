@@ -15,10 +15,15 @@ export abstract class BaseService<T> {
         protected readonly createActor: (canisterId: string, options?: any) => ActorSubclass<T>,
     ) {
         this.ensureInitialized().then(() => {
-            this.actor = this.createActor(this.canisterId, {
+            const agentOptions: any = {
                 agent: BaseService.agent,
-            });
+            };
             
+            if (process.env.DFX_NETWORK !== "ic") {
+                agentOptions.verifyQuerySignatures = false;
+            }
+            
+            this.actor = this.createActor(this.canisterId, agentOptions);
         });
     }
 
@@ -32,9 +37,26 @@ export abstract class BaseService<T> {
 
     protected static async updateAgentIdentity() {
         const identity = this.authClient.getIdentity() || new AnonymousIdentity();
-        this.agent = new HttpAgent({ identity });
+        
+        const agentOptions: any = {
+            identity,
+            host: process.env.DFX_NETWORK === "ic" 
+                ? "https://ic0.app" 
+                : "http://127.0.0.1:4943"
+        };
+        
         if (process.env.DFX_NETWORK !== "ic") {
-            await this.agent.fetchRootKey();
+            agentOptions.verifyQuerySignatures = false;
+        }
+        
+        this.agent = new HttpAgent(agentOptions);
+        
+        if (process.env.DFX_NETWORK !== "ic") {
+            try {
+                await this.agent.fetchRootKey();
+            } catch (error) {
+                console.warn("Failed to fetch root key, continuing with insecure mode:", error);
+            }
         }
     }
 
@@ -44,7 +66,13 @@ export abstract class BaseService<T> {
 
     public static async refreshAgent() {
         if (this.initialized && this.authClient) {
-            await this.updateAgentIdentity();
+            try {
+                await this.updateAgentIdentity();
+            } catch (error) {
+                console.warn("Failed to refresh agent, reinitializing:", error);
+                this.initialized = false;
+                await this.initializeAgent();
+            }
         }
     }
     

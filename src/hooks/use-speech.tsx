@@ -44,7 +44,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       });
 
       const result = response.data;
-      console.log("hasil transcribe", result);
+      console.log("hsilnya ", result);
       setTranscript(result.text);
 
       if (result.text) {
@@ -55,9 +55,13 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
           
           const parsedStructuredData = JSON.parse(diagnosisResponse.result);
           setStructuredData(parsedStructuredData);
-          console.log("structured data from diagnosis", parsedStructuredData);
         } catch (diagnosisError) {
           console.warn("Failed to get structured diagnosis:", diagnosisError);
+          setStructuredData({
+            description: result.text,
+            symptoms: [],
+            since: new Date().toISOString().split('T')[0]
+          });
         }
       }
     } catch (err: any) {
@@ -131,10 +135,12 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
   }, []);
 
   const resetRecording = useCallback(() => {
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-    }
-    setAudioUrl(null);
+    setAudioUrl((prevUrl) => {
+      if (prevUrl) {
+        URL.revokeObjectURL(prevUrl);
+      }
+      return null;
+    });
     setAudioBlob(null);
     setError(null);
     setTranscript(null);
@@ -142,7 +148,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     setIsProcessing(false);
     setIsRecording(false);
     audioChunksRef.current = [];
-  }, [audioUrl]);
+  }, []);
 
   return {
     isRecording,

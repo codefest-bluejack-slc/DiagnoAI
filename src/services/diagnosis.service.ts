@@ -24,11 +24,25 @@ export interface StringResponse {
 }
 
 export class DiagnosisService {
-  private static readonly BASE_URL = import.meta.env.VITE_FORWARD_DIAGNOSTIC || 'http://localhost:8001';
+  private static getBaseUrl(): string {
+    const envUrl = import.meta.env.VITE_FORWARD_DIAGNOSTIC;
+    const fallbackUrl = 'http://localhost:8001';
+    
+    console.log('All import.meta.env:', import.meta.env);
+    console.log('Environment VITE_FORWARD_DIAGNOSTIC:', envUrl);
+    console.log('Environment type:', typeof envUrl);
+    
+    const baseUrl = (envUrl || fallbackUrl).replace(/\/$/, '');
+    console.log('Using base URL:', baseUrl);
+    
+    return baseUrl;
+  }
 
   public static async getStructuredDiagnosis(request: DiagnosisFromSymptomsRequest): Promise<DiagnosisResponse> {
+    const baseUrl = this.getBaseUrl();
     try {
-      const response = await axios.post(`${this.BASE_URL}/diagnosis/from-symptoms`, request, {
+      console.log('Calling structured diagnosis endpoint:', `${baseUrl}/diagnosis/from-symptoms`);
+      const response = await axios.post(`${baseUrl}/diagnosis/from-symptoms`, request, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -40,8 +54,10 @@ export class DiagnosisService {
   }
 
   public static async getUnstructuredDiagnosis(request: DiagnosisRawRequest): Promise<StringResponse> {
+    const baseUrl = this.getBaseUrl();
     try {
-      const response = await axios.post(`${this.BASE_URL}/diagnosis/get_structure`, request, {
+      console.log('Calling unstructured diagnosis endpoint:', `${baseUrl}/diagnosis/get_structure`);
+      const response = await axios.post(`${baseUrl}/diagnosis/get_structure`, request, {
         headers: {
           'Content-Type': 'application/json',
         }
