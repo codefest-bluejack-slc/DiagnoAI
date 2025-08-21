@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Mic, MicOff, Volume2, Check, Loader2, Loader2 } from 'lucide-react';
+import { X, Mic, MicOff, Volume2, Check, Loader2 } from 'lucide-react';
 import { ISpeechModalProps } from '../../interfaces/ISpeechRecognition';
 import { useSpeech } from '../../hooks/use-speech';
 
@@ -12,23 +12,13 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
   const { 
     isRecording,
     isProcessing,
-    isProcessing,
     error,
-    transcript,
     transcript,
     audioUrl,
     audioBlob,
     structuredData,
     startListening, 
     stopListening, 
-    resetRecording,
-  } = useSpeech('http://localhost:8002/transcribe');
-
-  useEffect(() => {
-    if (isOpen) {
-      resetRecording();
-    }
-  }, [isOpen, resetRecording]);
     resetRecording,
   } = useSpeech('http://localhost:8002/transcribe');
 
@@ -98,38 +88,6 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
 
   const { icon: statusIcon, text: statusText } = getStatusContent();
 
-  const getStatusContent = () => {
-    if (isProcessing) {
-      return {
-        icon: <Loader2 className="text-purple-400 animate-spin" size={32} />,
-        text: 'Processing audio...',
-      };
-    }
-    if (isRecording) {
-      return {
-        icon: (
-          <div className="relative">
-            <MicOff className="text-red-400" size={32} />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-          </div>
-        ),
-        text: 'Recording...',
-      };
-    }
-    if (transcript) {
-      return {
-        icon: <Check className="text-green-400" size={32} />,
-        text: 'Transcription complete',
-      };
-    }
-    return {
-      icon: <Mic className="text-purple-400" size={32} />,
-      text: 'Ready to record',
-    };
-  };
-
-  const { icon: statusIcon, text: statusText } = getStatusContent();
-
   const modalContent = (
     <div
       className="fixed inset-0 z-[9999] transition-all duration-200 opacity-100"
@@ -157,10 +115,8 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
               <div>
                 <h2 className="text-xl font-semibold text-purple-100">
                   Voice Transcription
-                  Voice Transcription
                 </h2>
                 <p className="text-sm text-purple-300">
-                  Record your voice to generate text
                   Record your voice to generate text
                 </p>
               </div>
@@ -183,20 +139,14 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                     ? 'bg-purple-500/20 border-purple-400'
                     : transcript
                     ? 'bg-green-500/20 border-green-400'
-                    : isProcessing
-                    ? 'bg-purple-500/20 border-purple-400'
-                    : transcript
-                    ? 'bg-green-500/20 border-green-400'
                     : 'bg-purple-500/20 border-purple-400 shadow-lg shadow-purple-500/30'
                 }`}
               >
-                {statusIcon}
                 {statusIcon}
               </div>
               
               <div className="space-y-2">
                 <p className="font-medium text-purple-100">
-                  {statusText}
                   {statusText}
                 </p>
               </div>
@@ -256,11 +206,6 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                   <span className="text-sm font-medium text-purple-300">
                     Playback Recording:
                   </span>
-                <div className="flex items-center gap-2 mb-3">
-                  <Volume2 className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm font-medium text-purple-300">
-                    Playback Recording:
-                  </span>
                 </div>
                 <audio 
                   controls 
@@ -291,14 +236,6 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                   <Loader2 size={18} className="animate-spin" />
                   Processing...
                 </button>
-              ) : isProcessing ? (
-                <button
-                  disabled
-                  className="flex-1 py-3 px-4 bg-slate-700 text-slate-400 font-semibold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed"
-                >
-                  <Loader2 size={18} className="animate-spin" />
-                  Processing...
-                </button>
               ) : (
                 <>
                   <button
@@ -318,22 +255,10 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                      </button>
                   )}
                 </>
-                  {transcript && (
-                     <button
-                        onClick={handleApprove}
-                        className="py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400"
-                     >
-                        <Check size={16} />
-                        Use Transcription
-                     </button>
-                  )}
-                </>
               )}
             </div>
             
-            
             <div className="text-center text-xs text-purple-400">
-              Your voice will be sent to our servers for transcription.
               Your voice will be sent to our servers for transcription.
             </div>
           </div>

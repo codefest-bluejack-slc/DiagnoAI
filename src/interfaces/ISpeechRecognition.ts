@@ -21,12 +21,6 @@ export interface UseSpeechReturn {
   audioUrl?: string;
   audioBlob?: Blob;
   startListening: () => Promise<void>;
-  isProcessing: boolean;
-  error?: string;
-  transcript?: string;
-  audioUrl?: string;
-  audioBlob?: Blob;
-  startListening: () => Promise<void>;
   stopListening: () => void;
   resetRecording: () => void;
 }

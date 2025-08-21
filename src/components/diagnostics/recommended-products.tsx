@@ -45,6 +45,12 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     setError(null);
     const productsData: { [key: string]: IProduct[] } = {};
     
+    if (!apiKey) {
+      setError('API key not configured');
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       for (const medicine of medicines) {
         try {
