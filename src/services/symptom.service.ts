@@ -11,13 +11,13 @@ export class SymptomService extends BaseService<SymptomCanisterService> {
         super(symptomCanisterId, createSymptomActor);
     }
 
-    public async addSymptom(symptom: Symptom): Promise<Symptom | null> {
+    public async addSymptom(username: string, symptom: Symptom): Promise<Symptom | null> {
         try {
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
                 throw new Error("User is not authenticated");
             }
-            const response = await this.actor.addSymptom(principal, symptom, historyCanisterId);
+            const response = await this.actor.addSymptom(principal,username, symptom, historyCanisterId);
             return firstOrDefault(response);
         } catch (error) {
             console.error("Error adding symptom:", error);

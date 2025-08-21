@@ -45,7 +45,7 @@ export const useDiagnostic = () => {
       await testConnection();
       
       const historyData = await historyService.getMyHistories();
-      setHistory(historyData);
+      // setHistory(historyData);
       
       setConnectionStatus('connected');
     } catch (error) {
@@ -59,14 +59,15 @@ export const useDiagnostic = () => {
   };
 
   const addSymptomMutation = useMutation({
-    mutationFn: async (symptom: { name: string; severity: string; historyId: string }) => {
+    mutationFn: async (input: { symptom: { name: string; severity: string; historyId: string }; username: string }) => {
+      const { symptom, username } = input;
       const symptomData: Symptom = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         historyId: symptom.historyId,
         name: symptom.name,
         severity: symptom.severity,
       };
-      return symptomService.addSymptom(symptomData);
+      return symptomService.addSymptom(username, symptomData);
     },
     onSuccess: (data) => {
       console.log('Symptom added successfully:', data);
@@ -82,7 +83,7 @@ export const useDiagnostic = () => {
     onSuccess: (data) => {
       console.log('History fetched successfully:', data);
       if (data) {
-        setHistory(data);
+        // setHistory(data);
       }
     },
     onError: (error) => {
@@ -93,7 +94,7 @@ export const useDiagnostic = () => {
   });
 
   const addHistoryMutation = useMutation({
-    mutationFn: (assessment: IHealthAssessment) => historyService.addHistory(assessment),
+    mutationFn: (input : {assessment: IHealthAssessment, username: string}) => historyService.addHistory(input.username,input.assessment),
     onSuccess: (data) => {
       console.log('History added successfully:', data);
       addToast('Assessment saved successfully!', { type: 'success' });
@@ -420,7 +421,7 @@ export const useDiagnostic = () => {
     return 0;
   };
 
-  const addToHistory = (description: string, diagnosis: string) => {
+  const addToHistory = (description: string, diagnosis: string,username : string) => {
     const newHistoryItem: IHistoryItem = {
       id: Date.now().toString(),
       since: new Date().toISOString().split('T')[0],
@@ -438,7 +439,7 @@ export const useDiagnostic = () => {
       since: newHistoryItem.since || ''
     };
     
-    addHistoryMutation.mutate(assessment);
+    addHistoryMutation.mutate({assessment, username});
   };
 
   const clearHistory = async () => {

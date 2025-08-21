@@ -26,7 +26,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
         }
     }
 
-    public async getMyHistories(): Promise<IHistoryItem[]> {
+    public async getMyHistories(){
         try {
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
@@ -42,10 +42,6 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                         if ('ok' in historyWithSymptoms) {
                             return {
                                 id: history.id,
-                                description: history.description,
-                                since: history.since,
-                                status: history.status as 'completed' | 'in-progress',
-                                severity: history.severity as 'mild' | 'moderate' | 'severe',
                                 diagnosis: history.diagnosis ? history.diagnosis[0] : undefined,
                                 symptoms: historyWithSymptoms.ok.symptoms.map(symptom => ({
                                     name: symptom.name,
@@ -59,10 +55,6 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                     
                     return {
                         id: history.id,
-                        description: history.description,
-                        since: history.since,
-                        status: history.status as 'completed' | 'in-progress',
-                        severity: history.severity as 'mild' | 'moderate' | 'severe',
                         diagnosis: history.diagnosis ? history.diagnosis[0] : undefined,
                         symptoms: []
                     };
@@ -78,7 +70,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
         }
     }
 
-    public async addHistory(assessment: IHealthAssessment): Promise<History | null> {
+    public async addHistory(username: string,assessment: IHealthAssessment): Promise<History | null> {
         try {
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
@@ -88,11 +80,10 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
             const history: History = {
                 id: assessment.id,
                 userId: principal,
-                description: assessment.description,
-                since: assessment.since,
-                status: 'in-progress',
-                severity: assessment.symptoms.length > 0 ? assessment.symptoms[0].severity : 'mild',
-                diagnosis: []
+                username: username,
+                diagnosis : "",
+                medicines: [],
+                medicine_response: "",
             };
 
             const response = await this.actor.addHistory(history);
@@ -122,11 +113,10 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
             const updatedHistory: History = {
                 id: id,
                 userId: principal,
-                description: updates.description || existingHistory.description,
-                since: updates.since || existingHistory.since,
-                status: 'in-progress',
-                severity: updates.symptoms && updates.symptoms.length > 0 ? updates.symptoms[0].severity : existingHistory.severity,
-                diagnosis: []
+                username: existingHistory.username,
+                diagnosis: existingHistory.diagnosis,
+                medicines: existingHistory.medicines,
+                medicine_response: existingHistory.medicine_response,
             };
 
             const response = await this.actor.updateHistory(id, updatedHistory);

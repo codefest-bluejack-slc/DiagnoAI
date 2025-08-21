@@ -37,11 +37,23 @@
       "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
     }
   },
+  
   "defaults": {
     "build": {
       "packtool": "npm run --silent sources"
     }
   },
+  "ignore": [
+    "node_modules",
+    "dist",
+    "backend/user/node_modules",
+    "backend/symptom/node_modules",
+    "backend/history/node_modules",
+    ".git",
+    ".gitignore",
+    ".DS_Store",
+    "dfx.lock"
+  ],
   "output_env_file": ".env",
   "version": 2
 }

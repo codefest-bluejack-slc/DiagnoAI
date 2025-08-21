@@ -15,7 +15,7 @@ persistent actor Symptoms {
         Map.get<Text, Type.Symptom>(map, Map.thash, id);
     };
 
-    public func addSymptom(userId: Principal, value: Type.Symptom, historyCanisterId : Text) : async ?Type.Symptom {
+    public func addSymptom(userId: Principal,username: Text, value: Type.Symptom, historyCanisterId : Text) : async ?Type.Symptom {
         let historyActor = actor (historyCanisterId) : HistoryModule.HistoryActor;
         let history = await historyActor.getHistory(value.historyId);
         switch (history) {
@@ -23,11 +23,10 @@ persistent actor Symptoms {
                 ignore await historyActor.addHistory({
                     id = value.historyId;
                     userId = userId;
-                    description = "Health Assessment";
-                    since = "2024-01-01";
-                    status = "in-progress";
-                    severity = value.severity;
-                    diagnosis = null;
+                    username = username;
+                    diagnosis = "";
+                    medicine_response = "";
+                    medicines = [];
                 });
             };
             case (#ok _) {};

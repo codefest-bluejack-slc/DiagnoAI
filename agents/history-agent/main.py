@@ -20,7 +20,7 @@ ASI1_HEADERS = {
     "Content-Type": "application/json"
 }
 
-CANISTER_ID = "uxrrr-q7777-77774-qaaaq-cai"
+CANISTER_ID = "u6s2n-gx777-77774-qaaba-cai"
 BASE_URL = "http://127.0.0.1:4943"
 
 HEADERS = {

@@ -6,10 +6,12 @@ import Principal "mo:base/Principal";
 import Array "mo:base/Array";
 import Type "lib";
 import SymptomModule "../symptom/interface";
+import { JSON } "mo:serde";
 
 
 persistent actor History{
     let map = Map.new<Text, Type.History>();
+    
 
     public func getHistory(id: Text) : async Result.Result<Type.History, Text> {
         let history = Map.get<Text, Type.History>(map, Map.thash, id);
@@ -28,11 +30,10 @@ persistent actor History{
                 let response: Type.HistoryResponse = {
                     id = history.id;
                     userId = history.userId;
-                    description = history.description;
-                    since = history.since;
-                    status = history.status;
-                    severity = history.severity;
+                    username = history.username;
                     diagnosis = history.diagnosis;
+                    medicine_response = history.medicine_response;
+                    medicines = history.medicines;
                     symptoms = symptomList;
                 };
                 #ok(response)
@@ -45,6 +46,16 @@ persistent actor History{
         let histories = Iter.toArray(Map.entries<Text, Type.History>(map));
         let userHistories = Array.filter(histories, func ((_, history) : (Text, Type.History)) : Bool {
             history.userId == id
+        });
+        #ok(Array.map(userHistories, func ((_, history) : (Text, Type.History)) : Type.History {
+            history
+        }));
+    };
+
+    public query func getHistoryByUsername(username: Text) : async Result.Result<[Type.History], Text> {
+        let histories = Iter.toArray(Map.entries<Text, Type.History>(map));
+        let userHistories = Array.filter(histories, func ((_, history) : (Text, Type.History)) : Bool {
+            history.username == username
         });
         #ok(Array.map(userHistories, func ((_, history) : (Text, Type.History)) : Type.History {
             history
@@ -78,6 +89,14 @@ persistent actor History{
     public query func getAllHistories() : async [(Text, Type.History)] {
         Iter.toArray(Map.entries<Text, Type.History>(map));
     };
+
+    public shared query func welcome() : async Type.WelcomeResponse {
+        {
+        message = "Welcome to the Bitcoin Canister API";
+        };
+    };
+
+    
 
 
 }

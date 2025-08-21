@@ -11,7 +11,7 @@ for c in "${CANISTERS[@]}"; do
     echo "Generating canister: $c"
     dfx generate "$c"
     echo "Deploying canister: $c"
-    dfx deploy "$c"
 done
+dfx deploy
 dfx canister create frontend
 dfx deploy frontend
