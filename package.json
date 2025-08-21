@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "setup": "./setup.sh",
-    "start": "run-p frontend backend",
+    "start": "run-p frontend",
     "frontend": "vite --port 3000",
     "backend": "mo-dev --generate --deploy -y",
     "build": "tsc && vite build",

@@ -7,6 +7,7 @@ import Array "mo:base/Array";
 import Type "lib";
 import SymptomModule "../symptom/interface";
 import { JSON } "mo:serde";
+import Debug "mo:base/Debug";
 
 
 persistent actor History{
@@ -52,15 +53,18 @@ persistent actor History{
         }));
     };
 
-    public query func getHistoryByUsername(username: Text) : async Result.Result<[Type.History], Text> {
+    public query func getHistoryByUsername(username: Text) : async Result.Result<Type.History, Text> {
         let histories = Iter.toArray(Map.entries<Text, Type.History>(map));
         let userHistories = Array.filter(histories, func ((_, history) : (Text, Type.History)) : Bool {
             history.username == username
         });
-        #ok(Array.map(userHistories, func ((_, history) : (Text, Type.History)) : Type.History {
-            history
-        }));
-    };
+
+        if (userHistories.size() > 0) {
+            #ok(userHistories[0].1); // `.1` because it’s a (key, value) tuple
+        } else {
+            #err("No history found for " # username);
+        }
+};
 
     public func addHistory(value: Type.History) : async ?Type.History {
         ignore Map.put<Text, Type.History>(map, Map.thash, value.id, value);
@@ -94,6 +98,154 @@ persistent actor History{
         {
         message = "Welcome to the Bitcoin Canister API";
         };
+    };
+
+    let WelcomeResponseKeys = ["message"];
+    let HistoryResponseKeys = ["id", "userId", "username", "diagnosis", "medicine_response", "medicines"];
+    private func extractUsername(body : Blob) : Result.Result<Text, Text> {
+        // Convert Blob to Text
+        let jsonText = switch (Text.decodeUtf8(body)) {
+            case null { return #err("Invalid UTF-8 encoding in request body") };
+            case (?txt) { txt };
+        };
+
+        // Parse JSON using serde
+        let #ok(blob) = JSON.fromText(jsonText, null) else {
+            return #err("Invalid JSON format in request body");
+        };
+
+        type Username = {
+            username : Text;
+        };
+        let usernameField : ?Username = from_candid (blob);
+
+        switch (usernameField) {
+            case null return #err("Username field not found in JSON");
+            case (?username) #ok(username.username);
+        };
+    };
+
+    // Constructs a JSON HTTP response using serde
+    private func makeJsonResponse(statusCode : Nat16, jsonText : Text) : Type.HttpResponse {
+        {
+        status_code = statusCode;
+        headers = [("content-type", "application/json"), ("access-control-allow-origin", "*")];
+        body = Text.encodeUtf8(jsonText);
+        streaming_strategy = null;
+        upgrade = ?true;
+        };
+    };
+
+    // Constructs a standardized error response for serialization failures
+    private func makeSerializationErrorResponse() : Type.HttpResponse {
+        {
+        status_code = 500;
+        headers = [("content-type", "application/json")];
+        body = Text.encodeUtf8("{\"error\": \"Failed to serialize response\"}");
+        streaming_strategy = null;
+        upgrade = null;
+        };
+    };
+
+    // Handles simple HTTP routes (GET/OPTIONS and fallback)
+    private func handleRoute(method : Text, url : Text, _body : Blob) : Type.HttpResponse {
+        let normalizedUrl = Text.trimEnd(url, #text "/");
+
+        switch (method, normalizedUrl) {
+            case ("GET", "" or "/") {
+                let welcomeMsg = {
+                    message = "Welcome to the Dummy Bitcoin Canister API";
+                };
+                let blob = to_candid (welcomeMsg);
+                let #ok(jsonText) = JSON.toText(blob, WelcomeResponseKeys, null) else return makeSerializationErrorResponse();
+                makeJsonResponse(200, jsonText);
+            };
+            case ("OPTIONS", _) {
+                {
+                    status_code = 200;
+                    headers = [("access-control-allow-origin", "*"), ("access-control-allow-methods", "GET, POST, OPTIONS"), ("access-control-allow-headers", "Content-Type")];
+                    body = Text.encodeUtf8("");
+                    streaming_strategy = null;
+                    upgrade = null;
+                };
+            };
+            case ("POST", "/get-history") {
+                {
+                    status_code = 200;
+                    headers = [("content-type", "application/json")];
+                    body = Text.encodeUtf8("");
+                    streaming_strategy = null;
+                    upgrade = ?true;
+                };
+            };
+            case _ {
+                {
+                    status_code = 404;
+                    headers = [("content-type", "application/json")];
+                    body = Text.encodeUtf8("Not found: " # url);
+                    streaming_strategy = null;
+                    upgrade = null;
+                };
+            };
+        };
+    };
+
+    // Handles POST routes that require async update (e.g., calling other functions)
+    private func handleRouteUpdate(method : Text, url : Text, body : Blob) : async Type.HttpResponse {
+        let normalizedUrl = Text.trimEnd(url, #text "/");
+
+        switch (method, normalizedUrl) {
+            case ("POST", "/get-history") {
+                Debug.print("[INFO]: Started Get History");
+                let usernameResult = extractUsername(body);
+                let username = switch (usernameResult) {
+                case (#err(errorMessage)) {
+                    return makeJsonResponse(400, "{\"error\": \"" # errorMessage # "\"}");
+                };
+                case (#ok(name)) { name };
+                };
+
+                let response : Result.Result<Type.History, Text> = await getHistoryByUsername(username);
+
+                switch (response) {
+                    case (#ok(history)) {
+                        // Now `history` is your Type.History value
+                        let blob = to_candid(history); // convert just the History
+                        let #ok(jsonText) = JSON.toText(blob, HistoryResponseKeys, null)
+                        else return makeSerializationErrorResponse();
+                        Debug.print("[INFO]: Get History response: " # debug_show(jsonText));
+                        makeJsonResponse(200, jsonText);
+                    };
+                    case (#err(msg)) {
+                        // handle error
+                        Debug.print("[ERROR]: " # msg);
+                        makeJsonResponse(404, "{\"error\": \"" # msg # "\"}");
+                    };
+                };
+            };
+            case ("OPTIONS", _) {
+                {
+                status_code = 200;
+                headers = [("access-control-allow-origin", "*"), ("access-control-allow-methods", "GET, POST, OPTIONS"), ("access-control-allow-headers", "Content-Type")];
+                body = Text.encodeUtf8("");
+                streaming_strategy = null;
+                upgrade = null;
+                };
+            };
+            case _ {
+                return handleRoute(method, url, body);
+            };
+        };
+    };
+
+    // HTTP query interface for GET/OPTIONS and static responses
+    public query func http_request(req : Type.HttpRequest) : async Type.HttpResponse {
+        return handleRoute(req.method, req.url, req.body);
+    };
+
+    // HTTP update interface for POST routes requiring async calls
+    public func http_request_update(req : Type.HttpRequest) : async Type.HttpResponse {
+        return await handleRouteUpdate(req.method, req.url, req.body);
     };
 
     

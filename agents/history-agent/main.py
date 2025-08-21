@@ -10,90 +10,52 @@ from uagents_core.contrib.protocols.chat import (
 from uagents import Agent, Context, Protocol
 from datetime import datetime, timezone, timedelta
 from uuid import uuid4
+from config import ConfigLoader
+from dotenv import load_dotenv
 
-# ASI1 API settings
-# Create yours at: https://asi1.ai/dashboard/api-keys
-ASI1_API_KEY = "sk_d8bef63e3f4941fb9c53bf650f8feaa55f12897e7528471a8c61c7840ef5e8b3" # your_asi1_api_key" # Replace with your ASI1 key
-ASI1_BASE_URL = "https://api.asi1.ai/v1"
+load_dotenv()
+
+ASI1_API_KEY = ConfigLoader.get_str("ASI1_API_KEY")
+ASI1_BASE_URL = ConfigLoader.get_str("ASI1_BASE_URL")
 ASI1_HEADERS = {
     "Authorization": f"Bearer {ASI1_API_KEY}",
     "Content-Type": "application/json"
 }
 
-CANISTER_ID = "u6s2n-gx777-77774-qaaba-cai"
-BASE_URL = "http://127.0.0.1:4943"
+HISTORY_CANISTER_ID = ConfigLoader.get_str("HISTORY_CANISTER_ID")
+BASE_URL = ConfigLoader.get_str("BASE_URL")
 
 HEADERS = {
-    "Host": f"{CANISTER_ID}.localhost",
+    "Host": f"{HISTORY_CANISTER_ID}.localhost",
     "Content-Type": "application/json"
 }
 
-# Function definitions for ASI1 function calling
 tools = [
     {
         "type": "function",
         "function": {
-            "name": "get_current_fee_percentiles",
-            "description": "Gets the 100 fee percentiles measured in millisatoshi/byte.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_balance",
-            "description": "Returns the balance of a given Bitcoin address.",
+            "name": "get_history",
+            "description": "Get My History",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "address": {
+                    "username": {
                         "type": "string",
-                        "description": "The Bitcoin address to check."
+                        "description": "The username to check."
                     }
                 },
-                "required": ["address"],
+                "required": ["username"],
                 "additionalProperties": False
             },
             "strict": True
         }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_utxos",
-            "description": "Returns the UTXOs of a given Bitcoin address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {
-                        "type": "string",
-                        "description": "The Bitcoin address to fetch UTXOs for."
-                    }
-                },
-                "required": ["address"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },    
+    } 
 ]
 
-async def call_icp_endpoint(func_name: str, args: dict):
-    if func_name == "get_current_fee_percentiles":
-        url = f"{BASE_URL}/get-current-fee-percentiles"
-        response = requests.post(url, headers=HEADERS, json={})
-    elif func_name == "get_balance":
-        url = f"{BASE_URL}/get-balance"
-        response = requests.post(url, headers=HEADERS, json={"address": args["address"]})
-    elif func_name == "get_utxos":
-        url = f"{BASE_URL}/get-utxos"
-        response = requests.post(url, headers=HEADERS, json={"address": args["address"]})    
+async def call_backend_endpoint(func_name: str, args: dict):
+    if func_name == "get_history":
+        url = f"{BASE_URL}/get-history"
+        response = requests.post(url, headers=HEADERS, json={"username": args["username"]})
     else:
         raise ValueError(f"Unsupported function call: {func_name}")
     response.raise_for_status()
@@ -101,7 +63,6 @@ async def call_icp_endpoint(func_name: str, args: dict):
 
 async def process_query(query: str, ctx: Context) -> str:
     try:
-        # Step 1: Initial call to ASI1 with user query and tools
         initial_message = {
             "role": "user",
             "content": query
@@ -120,15 +81,17 @@ async def process_query(query: str, ctx: Context) -> str:
         )
         response.raise_for_status()
         response_json = response.json()
+        print(response_json)
 
-        # Step 2: Parse tool calls from response
         tool_calls = response_json["choices"][0]["message"].get("tool_calls", [])
         messages_history = [initial_message, response_json["choices"][0]["message"]]
 
         if not tool_calls:
-            return "I couldn't determine what Bitcoin information you're looking for. Please try rephrasing your question."
+            content = response_json["choices"][0]["message"]["content"]
+            if content:
+                return content
+            return "I couldn't determine what History information you're looking for. Please try rephrasing your question."
 
-        # Step 3: Execute tools and format results
         for tool_call in tool_calls:
             func_name = tool_call["function"]["name"]
             arguments = json.loads(tool_call["function"]["arguments"])
@@ -137,7 +100,7 @@ async def process_query(query: str, ctx: Context) -> str:
             ctx.logger.info(f"Executing {func_name} with arguments: {arguments}")
 
             try:
-                result = await call_icp_endpoint(func_name, arguments)
+                result = await call_backend_endpoint(func_name, arguments)
                 content_to_send = json.dumps(result)
             except Exception as e:
                 error_content = {
@@ -153,7 +116,6 @@ async def process_query(query: str, ctx: Context) -> str:
             }
             messages_history.append(tool_result_message)
 
-        # Step 4: Send results back to ASI1 for final answer
         final_payload = {
             "model": "asi1-mini",
             "messages": messages_history,
@@ -168,7 +130,6 @@ async def process_query(query: str, ctx: Context) -> str:
         final_response.raise_for_status()
         final_response_json = final_response.json()
 
-        # Step 5: Return the model's final answer
         return final_response_json["choices"][0]["message"]["content"]
 
     except Exception as e:
@@ -176,7 +137,7 @@ async def process_query(query: str, ctx: Context) -> str:
         return f"An error occurred while processing your request: {str(e)}"
 
 agent = Agent(
-    name='test-ICP-agent',
+    name="DiagnoAI Agent",
     port=8001,
     mailbox=True
 )
@@ -226,34 +187,3 @@ agent.include(chat_proto)
 
 if __name__ == "__main__":
     agent.run()
-
-
-"""
-Queries for /get-balance
-What's the balance of address bc1q8sxznvhualuyyes0ded7kgt33876phpjhp29rs?
-
-Can you check how many bitcoins are in bc1q8sxznvhualuyyes0ded7kgt33876phpjhp29rs?
-
-Show me the balance of this Bitcoin wallet: bc1q8sxznvhualuyyes0ded7kgt33876phpjhp29rs.
-
-🧾 Queries for /get-utxos
-What UTXOs are available for address bc1q8sxznvhualuyyes0ded7kgt33876phpjhp29rs?
-
-List unspent outputs for bc1q8sxznvhualuyyes0ded7kgt33876phpjhp29rs.
-
-Do I have any unspent transactions for bc1q8sxznvhualuyyes0ded7kgt33876phpjhp29rs?
-
-🧾 Queries for /get-current-fee-percentiles
-What are the current Bitcoin fee percentiles?
-
-Show me the latest fee percentile distribution.
-
-How much are the Bitcoin network fees right now?
-
-🧾 Queries for /get-p2pkh-address
-What is my canister's P2PKH address?
-
-Generate a Bitcoin address for me.
-
-Give me a Bitcoin address I can use to receive coins.
-"""
