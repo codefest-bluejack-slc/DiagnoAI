@@ -23,7 +23,8 @@ agent = Agent(name="Diagnosis Agent",
               seed=env_helper.SEED_SECRET,
               port=8001,
               mailbox=True,
-              publish_agent_details=True)
+              publish_agent_details=True,
+              readme_path='./README.md')
 
 @agent.on_event("startup")
 async def start_application(ctx: Context):

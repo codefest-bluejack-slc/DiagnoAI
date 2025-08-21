@@ -15,6 +15,7 @@ class RecommendationAgent:
             port=8000,
             mailbox=True,
             publish_agent_details=True,
+            readme_path='../README.md'
         )
         
         self._register_handlers()
