@@ -1,14 +1,16 @@
 import json
 import re
-from models import DiagnosisFromSymptomsRequest, DiagnosisResponse, DiagonsisRawRequest, RecommendationAgentRequest, RecommendationAgentResponse, Symptom
+import asyncio
+from models import DiagnosisFromSymptomsRequest, DiagnosisResponse, DiagonsisRawRequest, Symptom, RecommendationAgentResponse, RecommendationAgentRequest
 from processes.fetch_documents import fetch_documents
 from processes.process_documents import process_documents
 from llm import gemini_llm
 from uagents.query import send_sync_message
 from helpers import env_helper
 from datetime import date
+from uagents import Context
 
-def get_diagnosis(request: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
+async def get_diagnosis(ctx: Context, request: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
     symptom_formatted = ", ".join(symptom.name for symptom in request.symptoms)
     documents = fetch_documents(query=symptom_formatted)
     result = process_documents(
@@ -17,10 +19,10 @@ def get_diagnosis(request: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
     )
 
     disease = documents[0].name
-    recommendation_response = get_recommended_medicine(disease=disease)
-    print(f'LIAT SINI PAUL {recommendation_response}')
+    res = await get_recommended_medicine(ctx, disease=disease)
+    print(f"Get Recommended Medicine At Get Diagnosis: {res}")
 
-    return DiagnosisResponse(diagnosis=str(result))
+    return DiagnosisResponse(diagnosis=str(result), recommendation_agent_response=res)
 
 def clean_llm_json(raw: str) -> str:
     """
@@ -86,14 +88,20 @@ def get_diagnosis_raw(request: DiagonsisRawRequest) -> DiagnosisResponse:
     except Exception:
         return DiagnosisResponse(diagnosis="Error parsing the response from the LLM.")
     
-def get_recommended_medicine(disease: str) -> RecommendationAgentResponse:
+async def get_recommended_medicine(ctx: Context, disease: str) -> RecommendationAgentResponse:
     message = RecommendationAgentRequest(
         question=disease
     )
+    
+    print(f"Requesting medicine...")
 
-    response = send_sync_message(
-        destination=env_helper.RECOMMENDATION_AGENT_ADDRESS,
-        message=message
+    reply, status = await ctx.send_and_receive (
+        'agent1qgjequt609avltyjtg6xwzt87u7qu0e0666j72kygqu02tamh2ya2x53ksn',
+        message,
+        response_type=RecommendationAgentResponse
     )
+    
+    print(f"Get Recommended Medicine Status: {status}")
+    print(f"Get Recommended Medicine Reply: {reply}")
 
-    return response
+    return reply

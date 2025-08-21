@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from uagents import Model
 
-class StringResponse(BaseModel):
+class StringResponse(Model):
     result: str
