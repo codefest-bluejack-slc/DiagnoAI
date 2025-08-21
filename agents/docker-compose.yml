@@ -1,0 +1,112 @@
+services:
+  elasticsearch:
+    image: elasticsearch:9.1.2
+    container_name: elasticsearch
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - action.auto_create_index=true
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - ELASTIC_PASSWORD=password
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: |
+        curl -f http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+
+  diagnosis_agent:
+    container_name: diagnosis_agent
+    restart: unless-stopped
+    build:
+      context: ./diagnosis-agent
+      dockerfile: Dockerfile
+    environment:
+      - MEDICAL_INDEX=${MEDICAL_INDEX}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ELASTIC_HOST=${ELASTIC_HOST}
+      - SEED_SECRET=${SEED_SECRET}
+      - AGENT_ADRESS=${AGENT_ADRESS}
+      - RECOMMENDATION_AGENT_ADDRESS=${RECOMMENDATION_AGENT_ADDRESS}
+    ports:
+      - "8001:8001"
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./diagnosis-agent:/app
+
+  recommendation-agent:
+    container_name: recommendation-agent
+    restart: unless-stopped
+    build:
+      context: ./recommendation-agent
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-gemini-2.5-flash}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SEED_VALUE=${SEED_VALUE:-recommendation-agent-seed}
+      - OPENFDA_URL=http://elasticsearch:9200
+    volumes:
+      - ./recommendation-agent/data:/app/data:ro
+      - ./recommendation-agent/config:/app/config:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  kibana:
+    image: kibana:9.1.2
+    container_name: kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  speech-to-text-agent:
+    build:
+      context: ./speech-to-text-agent
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  elasticsearch_data:
