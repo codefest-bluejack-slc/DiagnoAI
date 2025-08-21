@@ -32,7 +32,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   
   const medicines = ['Bowel Sode', 'BHI Diarrhea', 'Pepto-Bismol Chewable, TRAVEL BASIX', 'Ver'];
   
-  const apiKey = process.env.VITE_SERPAPI_KEY || 'demo_api_key_for_testing';
+  const apiKey = process.env.VITE_SERPAPI_KEY;
 
   useEffect(() => {
     if (isVisible) {

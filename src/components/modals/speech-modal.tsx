@@ -16,6 +16,7 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
     transcript,
     audioUrl,
     audioBlob,
+    structuredData,
     startListening, 
     stopListening, 
     resetRecording,
@@ -29,15 +30,15 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
 
   useEffect(() => {
     if (transcript && onRecordingComplete) {
-      onRecordingComplete(transcript);
+      onRecordingComplete(transcript, structuredData);
     }
-  }, [transcript, onRecordingComplete]);
+  }, [transcript, structuredData, onRecordingComplete]);
 
   if (!isOpen) return null;
 
   const handleApprove = () => {
     if (transcript) {
-      onRecordingComplete(transcript);
+      onRecordingComplete(transcript, structuredData);
     }
     onClose();
   };
@@ -158,9 +159,44 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
             )}
 
             {transcript && !isProcessing && (
-              <blockquote className="p-4 rounded-lg bg-slate-800/60 border-l-4 border-purple-500/50 text-purple-200 italic">
-                {transcript}
-              </blockquote>
+              <div className="space-y-4">
+                <blockquote className="p-4 rounded-lg bg-slate-800/60 border-l-4 border-purple-500/50 text-purple-200 italic">
+                  {transcript}
+                </blockquote>
+                
+                {structuredData && (
+                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-400/30">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Check className="w-4 h-4 text-green-400" />
+                      <span className="text-sm font-medium text-green-300">
+                        AI Analysis Complete:
+                      </span>
+                    </div>
+                    
+                    {structuredData.extracted_symptoms && structuredData.extracted_symptoms.length > 0 && (
+                      <div className="mb-3">
+                        <span className="text-xs font-medium text-green-400">Detected Symptoms:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {structuredData.extracted_symptoms.map((symptom: any, index: number) => (
+                            <span 
+                              key={index}
+                              className="px-2 py-1 text-xs bg-green-500/20 border border-green-400/40 rounded-full text-green-300"
+                            >
+                              {symptom.name} ({symptom.severity})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {structuredData.extracted_date && (
+                      <div className="text-xs text-green-400">
+                        <span className="font-medium">Since:</span> {structuredData.extracted_date}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
             {audioUrl && !transcript && (

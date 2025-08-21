@@ -10,7 +10,7 @@ export interface ISpeechRecognition {
 export interface ISpeechModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRecordingComplete: (transcript: string) => void;
+  onRecordingComplete: (transcript: string, structuredData?: any) => void;
 }
 
 export interface UseSpeechReturn {

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import axios from 'axios';
+import { DiagnosisService } from '../services/diagnosis.service';
 
 export interface UseSpeechReturn {
   isRecording: boolean;
@@ -8,6 +9,7 @@ export interface UseSpeechReturn {
   transcript: string | null;
   audioUrl: string | null;
   audioBlob: Blob | null;
+  structuredData: any | null;
   startListening: () => Promise<void>;
   stopListening: () => void;
   resetRecording: () => void;
@@ -20,6 +22,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
   const [transcript, setTranscript] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [structuredData, setStructuredData] = useState<any | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -28,6 +31,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     setIsProcessing(true);
     setError(null);
     setTranscript(null);
+    setStructuredData(null);
 
     const formData = new FormData();
     formData.append('file', blob, 'recording.webm');
@@ -42,6 +46,18 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       const result = response.data;
       console.log("hasil transcribe", result);
       setTranscript(result.text);
+
+      if (result.text) {
+        try {
+          const diagnosisResponse = await DiagnosisService.getUnstructuredDiagnosis({
+            text: result.text
+          });
+          setStructuredData(diagnosisResponse);
+          console.log("structured data from diagnosis", diagnosisResponse);
+        } catch (diagnosisError) {
+          console.warn("Failed to get structured diagnosis:", diagnosisError);
+        }
+      }
     } catch (err: any) {
       setError(`Failed to send audio: ${err.message || err}`);
     } finally {
@@ -120,6 +136,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     setAudioBlob(null);
     setError(null);
     setTranscript(null);
+    setStructuredData(null);
     setIsProcessing(false);
     setIsRecording(false);
     audioChunksRef.current = [];
@@ -132,6 +149,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     transcript,
     audioUrl,
     audioBlob,
+    structuredData,
     startListening,
     stopListening,
     resetRecording,

@@ -5,6 +5,7 @@ import { useService } from './use-service';
 import { useMutation } from './use-mutation';
 import { useToast } from './use-toast';
 import { Symptom } from '../declarations/symptom/symptom.did';
+import { DiagnosisService } from '../services/diagnosis.service';
 
 export const useDiagnostic = () => {
   const [history, setHistory] = useState<IHistoryItem[]>([]);
@@ -135,14 +136,9 @@ export const useDiagnostic = () => {
     }
   });
 
-  const addToSymptomList = (name: string) => {
-    if (!name.trim()) {
+    const addToSymptomList = (name: string, severity?: 'mild' | 'moderate' | 'severe') => {
+    if (!name || name.trim().length === 0) {
       addToast('Symptom name is required', { type: 'warning', title: 'Validation Error' });
-      return;
-    }
-    
-    if (name.trim().length < 2) {
-      addToast('Symptom name must be at least 2 characters long', { type: 'warning', title: 'Validation Error' });
       return;
     }
     
@@ -167,7 +163,7 @@ export const useDiagnostic = () => {
 
     const newSymptom: ISymptom = {
       name: name.trim(),
-      severity: newSymptomSeverity,
+      severity: severity || newSymptomSeverity,
     };
     setSymptoms((prev) => [...prev, newSymptom]);
     setNewSymptomName('');
@@ -236,12 +232,21 @@ export const useDiagnostic = () => {
       
       setCurrentStep('finding-illness');
       addToast('Starting comprehensive symptom analysis...', { type: 'success' });
-      
-      const illnessResponse = generateIllnessResponse(newDescription, symptoms, newSince);
-      
-      setTimeout(() => {
-        if (onIllnessFound) {
-          onIllnessFound(illnessResponse);
+
+      const diagnosisRequest = {
+        description: newDescription.trim(),
+        symptoms: symptoms.map(symptom => ({
+          name: symptom.name,
+          severity: symptom.severity
+        })),
+        since: newSince
+      };
+
+      try {
+        const diagnosisResponse = await DiagnosisService.getStructuredDiagnosis(diagnosisRequest);
+        
+        if (onIllnessFound && diagnosisResponse.diagnosis) {
+          onIllnessFound(diagnosisResponse.diagnosis);
         }
         
         setTimeout(() => {
@@ -269,7 +274,43 @@ export const useDiagnostic = () => {
             }, 2000);
           }, 2000);
         }, 3000);
-      }, 2000);
+      } catch (diagnosisError) {
+        console.warn('Diagnosis service unavailable, using fallback:', diagnosisError);
+        
+        const illnessResponse = generateIllnessResponse(newDescription, symptoms, newSince);
+        
+        setTimeout(() => {
+          if (onIllnessFound) {
+            onIllnessFound(illnessResponse);
+          }
+          
+          setTimeout(() => {
+            setCurrentStep('finding-drugs');
+            addToast('Searching for suitable medications...', { type: 'success' });
+            
+            const drugsResponse = generateDrugsResponse(symptoms);
+            
+            setTimeout(() => {
+              if (onDrugsFound) {
+                onDrugsFound(drugsResponse);
+              }
+              
+              setTimeout(() => {
+                setCurrentStep('finding-products');
+                addToast('Locating available products in marketplace...', { type: 'success' });
+                
+                setTimeout(() => {
+                  if (onProductsReady) {
+                    onProductsReady();
+                  }
+                  setIsLoading(false);
+                  addToast('Complete health analysis finished successfully!', { type: 'success' });
+                }, 1000);
+              }, 2000);
+            }, 2000);
+          }, 3000);
+        }, 2000);
+      }
       
     } catch (error) {
       console.error('Error starting diagnostic:', error);

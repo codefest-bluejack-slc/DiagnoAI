@@ -201,10 +201,26 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setIsSpeechModalOpen(!isSpeechModalOpen);
   };
 
-  const handleSpeechRecording = async (transcribedText: string) => {
+  const handleSpeechRecording = async (transcribedText: string, structuredData?: any) => {
     try {
       if (transcribedText && transcribedText.trim()) {
         setNewDescription(prev => prev ? `${prev} ${transcribedText}` : transcribedText);
+        
+        if (structuredData) {
+          console.log('Structured data received from diagnosis:', structuredData);
+          
+          if (structuredData.extracted_symptoms && Array.isArray(structuredData.extracted_symptoms)) {
+            structuredData.extracted_symptoms.forEach((symptom: any) => {
+              if (symptom.name && symptom.severity) {
+                addToSymptomList(symptom.name, symptom.severity);
+              }
+            });
+          }
+          
+          if (structuredData.extracted_date) {
+            setNewSince(structuredData.extracted_date);
+          }
+        }
         
         addToast(
           'Voice transcription added to your description successfully!', 
