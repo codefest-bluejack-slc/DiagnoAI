@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Navbar from '../components/common/navbar';
 import HeroSection from '../components/sections/hero-section';
 import ScrollMarquee from '../components/sections/scroll-marquee';
+import InfoSection from '../components/sections/info-section';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
 import '../styles/diagnostic-page.css';
 import { Loading } from '../components/common/loading';
@@ -60,6 +61,7 @@ export default function HomePage() {
         </section>
         
         <ScrollMarquee />
+        <InfoSection />
       </main>
     </div>
   );

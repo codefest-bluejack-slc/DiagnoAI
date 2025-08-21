@@ -46,9 +46,9 @@ export class UserService extends BaseService<UserCanisterService> {
                         const identity = await BaseService.getCallerIdentity();
                         const user : User = {
                             id: identity.getPrincipal(),
-                            name: "",
-                            email: "",
-                            bio: "My Bio",
+                            name: "MIAW MIAW WOMP",
+                            email: "amengameng@gmail.com",
+                            bio: "WWWIWIWIWWIWWI AWIDJAWDIAWJAWDAWAJDWIADJIAWAW DAWDASHDUIASHDUASHDSUIA",
                             profilePicture: []
                         }
                         const response = await this.addUser(user)
@@ -94,6 +94,24 @@ export class UserService extends BaseService<UserCanisterService> {
         } catch (error) {
             console.error("Error fetching current user:", error);
             return null;
+        }
+    }
+
+    public async checkAuthenticate(): Promise<boolean> {
+        try {
+            const principal = await BaseService.getCallerPrincipal();
+            return !principal.isAnonymous();
+        } catch (error) {
+            return false;
+        }
+    }
+
+    public async logout(): Promise<void> {
+        try {
+            await BaseService.authClient.logout();
+        } catch (error) {
+            console.error("Logout failed:", error);
+            throw error;
         }
     }
 

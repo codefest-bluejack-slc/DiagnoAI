@@ -1,75 +1,116 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const titleSentence = "WELCOME TO THE FUTURE OF DIAGNOSTICS • REVOLUTIONIZING HEALTHCARE WITH AI TECHNOLOGY • DIAGNOAI LEADS THE WAY";
-
 export default function ScrollMarquee() {
-  const [sectionProgress, setSectionProgress] = useState(0);
-  const [isInView, setIsInView] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
 
+  const text = "WELCOME TO THE FUTURE OF DIAGNOSTICS • REVOLUTIONIZING HEALTHCARE WITH AI TECHNOLOGY • DIAGNOAI LEADS THE WAY";
+
+  const renderFloatingText = (text: string, index: number) => {
+    return text.split('').map((char, charIndex) => (
+      <span
+        key={`${index}-${charIndex}`}
+        className="inline-block gradient-text-glow"
+        style={{
+          animation: `floatChar 3s ease-in-out infinite`,
+          animationDelay: `${(charIndex * 0.1 + index * 0.5)}s`,
+        }}
+      >
+        {char === ' ' ? '\u00A0' : char}
+      </span>
+    ));
+  };
+
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!isInView) return;
-
     const handleScroll = () => {
       if (!sectionRef.current) return;
-
+      
       const rect = sectionRef.current.getBoundingClientRect();
       const sectionTop = rect.top;
       const sectionHeight = rect.height;
       const windowHeight = window.innerHeight;
-
-      const progress = Math.max(0, Math.min(1, (windowHeight - sectionTop) / (windowHeight + sectionHeight)));
-      setSectionProgress(progress);
+      
+      const startPoint = windowHeight;
+      const endPoint = -sectionHeight;
+      const totalDistance = startPoint - endPoint;
+      const currentPosition = sectionTop - endPoint;
+      
+      const progress = Math.max(0, Math.min(1, 1 - (currentPosition / totalDistance)));
+      const movement = progress * window.innerWidth * 1.5;
+      
+      setScrollOffset(window.innerWidth - movement);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isInView]);
+  }, []);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes floatChar {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   return (
     <section 
       ref={sectionRef}
-      className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-900/5 to-transparent"
+      className="relative flex items-center justify-center py-8 bg-gradient-to-b from-purple-900/5 to-transparent overflow-hidden"
     >
-      <div className="w-full max-w-[98vw] px-2 flex items-center justify-center overflow-hidden">
-        <h1 
-          className={`text-[8vw] md:text-[6vw] lg:text-[4vw] font-bold text-center relative group transition-all duration-1000 whitespace-nowrap ${
-            isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
-          }`}
+      <div className="w-full flex items-center justify-center">
+        <div 
+          className="flex whitespace-nowrap transition-transform duration-100 ease-out"
           style={{
-            transform: `translateX(${isInView ? (sectionProgress - 0.5) * 100 : -50}%)`,
-            willChange: 'transform, opacity',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
+            transform: `translateX(${scrollOffset}px)`,
+            willChange: 'transform',
           }}
         >
-          <span className="inline-block animate-float-title gradient-text-glow">WELCOME TO THE FUTURE</span>
-          <span className="inline-block animate-float-title-delayed mx-2 gradient-text-glow">OF DIAGNOSTICS</span>
-          <span className="inline-block animate-float-title mx-2 gradient-text-glow">•</span>
-          <span className="inline-block animate-float-title-delayed gradient-text-glow">REVOLUTIONIZING</span>
-          <span className="inline-block animate-float-title mx-2 gradient-text-glow">HEALTHCARE</span>
-          <span className="inline-block animate-float-title-delayed mx-2 gradient-text-glow">•</span>
-          <span className="inline-block animate-float-title gradient-text-glow">DIAGNOAI</span>
-          <span className="inline-block animate-float-title-delayed mx-2 gradient-text-glow">LEADS THE WAY</span>
-        </h1>
+          <h1 
+            className="font-bold text-center relative mx-8"
+            style={{
+              fontSize: 'clamp(2.5rem, 8vw, 6rem)',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+            }}
+          >
+            {renderFloatingText(text, 0)}
+          </h1>
+          
+          <h1 
+            className="font-bold text-center relative mx-8"
+            style={{
+              fontSize: 'clamp(2.5rem, 8vw, 6rem)',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+            }}
+          >
+            {renderFloatingText(text, 1)}
+          </h1>
+          
+          <h1 
+            className="font-bold text-center relative mx-8"
+            style={{
+              fontSize: 'clamp(2.5rem, 8vw, 6rem)',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+            }}
+          >
+            {renderFloatingText(text, 2)}
+          </h1>
+        </div>
       </div>
     </section>
   );

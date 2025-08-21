@@ -6,15 +6,21 @@ module {
     public type History = {
         id: Text;
         userId: Principal;
-        title : Text;
-        result: Text;
+        description: Text;
+        since: Text;
+        status: Text;
+        severity: Text;
+        diagnosis: ?Text;
     };
 
     public type HistoryResponse = {
         id: Text;
         userId: Principal;
-        title: Text;
-        result: Text;
-        symptomps: [SymptomType.Symptom];
+        description: Text;
+        since: Text;
+        status: Text;
+        severity: Text;
+        diagnosis: ?Text;
+        symptoms: [SymptomType.Symptom];
     };
 }

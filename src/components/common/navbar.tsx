@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Search, Activity, Store, Settings, LogIn } from 'lucide-react';
+import { Home, Search, Activity, Store, LogIn, User } from 'lucide-react';
 import diagnoaiLogo from '../../assets/diagnoai_logo.png';
 import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
 import { useModal } from '../../hooks/use-modal';
 import { useTransition } from '../../hooks/use-transition';
 import { useAuth } from '../../hooks/use-auth';
+import { deserializeImage } from '../../utils/image-utils';
 
 interface NavbarProps {}
 
@@ -13,7 +14,7 @@ export default function Navbar({}: NavbarProps) {
   const { navigateTo } = useTransition();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { login, me, getCurrentUser } = useAuth();
+  const { login, me, isAuthenticated, getCurrentUser } = useAuth();
 
 
   const {
@@ -156,23 +157,38 @@ export default function Navbar({}: NavbarProps) {
             </button>
           </Tooltip>
 
-          <Tooltip content="Settings" position="bottom">
-            <button
-              onClick={handleSettingsClick}
-              className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
-            >
-              <Settings size={20} />
-            </button>
-          </Tooltip>
-
-          <Tooltip content="Login" position="bottom">
-            <button
-              onClick={handleLoginClick}
-              className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
-            >
-              <LogIn size={20} />
-            </button>
-          </Tooltip>
+          {isAuthenticated ? (
+            <Tooltip content={me?.name || "Profile"} position="bottom">
+              <div 
+                className="flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 ml-6"
+                onClick={handleSettingsClick}
+              >
+                <span className="text-white text-sm font-medium hidden sm:block max-w-[100px] truncate">
+                  {me?.name || "User"}
+                </span>
+                <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden">
+                  {me?.profilePicture && me.profilePicture.length > 0 ? (
+                    <img
+                      src={deserializeImage(me.profilePicture)}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="text-purple-300" size={16} />
+                  )}
+                </div>
+              </div>
+            </Tooltip>
+          ) : (
+            <Tooltip content="Login" position="bottom">
+              <button
+                onClick={handleLoginClick}
+                className="p-2 rounded-lg text-purple-200 bg-transparent border-none cursor-pointer transition-all duration-200 flex items-center justify-center hover:text-white hover:bg-white/20 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+              >
+                <LogIn size={20} />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </div>
 

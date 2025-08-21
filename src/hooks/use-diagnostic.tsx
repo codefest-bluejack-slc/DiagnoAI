@@ -1,173 +1,79 @@
 import { useState, useEffect } from 'react';
-import { ISymptom } from '../interfaces/IDiagnostic';
+import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
+import { IHistoryItem } from '../interfaces/IHistoryModal';
 import { useService } from './use-service';
 import { useMutation } from './use-mutation';
+import { useToast } from './use-toast';
 import { Symptom } from '../declarations/symptom/symptom.did';
-import { v4 as uuidv4 } from 'uuid';
-
-const SYMPTOMS_STORAGE_KEY = 'diagnoai_symptoms';
-const HISTORY_STORAGE_KEY = 'diagnoai_history';
-
-export interface IHistoryItem {
-  id: string;
-  date: string;
-  title: string;
-  symptoms: string[];
-  diagnosis: string;
-  status: 'completed' | 'in-progress';
-  severity: 'mild' | 'moderate' | 'severe';
-}
 
 export const useDiagnostic = () => {
-  const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
   const [history, setHistory] = useState<IHistoryItem[]>([]);
-  const [newSymptomIllness, setNewSymptomIllness] = useState('');
-  const [newSymptomDescription, setNewSymptomDescription] = useState('');
+  const [newSymptomName, setNewSymptomName] = useState('');
   const [newSymptomSeverity, setNewSymptomSeverity] = useState<'mild' | 'moderate' | 'severe'>('mild');
-  const [newSymptomDuration, setNewSymptomDuration] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newSince, setNewSince] = useState('');
+  const [symptoms, setSymptoms] = useState<ISymptom[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [currentStep, setCurrentStep] = useState<
-    'input' | 'review' | 'analysis'
+    'input' | 'finding-illness' | 'finding-drugs' | 'finding-products'
   >('input');
+  const [isLoading, setIsLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
   const { symptomService, historyService } = useService();
+  const { addToast } = useToast();
 
   useEffect(() => {
-    const savedSymptoms = localStorage.getItem(SYMPTOMS_STORAGE_KEY);
-    if (savedSymptoms) {
-      try {
-        const parsedSymptoms = JSON.parse(savedSymptoms);
-        setSymptoms(parsedSymptoms);
-      } catch (error) {
-        console.error('Error parsing saved symptoms:', error);
-        localStorage.removeItem(SYMPTOMS_STORAGE_KEY);
-      }
-    }
-
-    const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
-    if (savedHistory) {
-      try {
-        const parsedHistory = JSON.parse(savedHistory);
-        setHistory(parsedHistory);
-      } catch (error) {
-        console.error('Error parsing saved history:', error);
-        localStorage.removeItem(HISTORY_STORAGE_KEY);
-        setHistory([
-          {
-            id: '1',
-            date: '2024-12-15',
-            title: 'Headache Analysis',
-            symptoms: ['Migraine', 'Nausea'],
-            diagnosis: 'Tension Headache',
-            status: 'completed',
-            severity: 'moderate'
-          },
-          {
-            id: '2',
-            date: '2024-12-10',
-            title: 'Back Pain Assessment',
-            symptoms: ['Lower Back Pain', 'Stiffness'],
-            diagnosis: 'Muscle Strain',
-            status: 'completed',
-            severity: 'mild'
-          },
-          {
-            id: '3',
-            date: '2024-12-08',
-            title: 'Fever Symptoms',
-            symptoms: ['High Temperature', 'Chills', 'Fatigue'],
-            diagnosis: 'Viral Infection',
-            status: 'completed',
-            severity: 'severe'
-          },
-          {
-            id: '4',
-            date: '2024-12-05',
-            title: 'Stomach Issues',
-            symptoms: ['Abdominal Pain', 'Bloating'],
-            diagnosis: 'Indigestion',
-            status: 'completed',
-            severity: 'mild'
-          },
-          {
-            id: '5',
-            date: '2024-12-01',
-            title: 'Sleep Problems',
-            symptoms: ['Insomnia', 'Restlessness'],
-            diagnosis: 'Sleep Disorder',
-            status: 'in-progress',
-            severity: 'moderate'
-          }
-        ]);
-      }
-    } else {
-      setHistory([
-        {
-          id: '1',
-          date: '2024-12-15',
-          title: 'Headache Analysis',
-          symptoms: ['Migraine', 'Nausea'],
-          diagnosis: 'Tension Headache',
-          status: 'completed',
-          severity: 'moderate'
-        },
-        {
-          id: '2',
-          date: '2024-12-10',
-          title: 'Back Pain Assessment',
-          symptoms: ['Lower Back Pain', 'Stiffness'],
-          diagnosis: 'Muscle Strain',
-          status: 'completed',
-          severity: 'mild'
-        },
-        {
-          id: '3',
-          date: '2024-12-08',
-          title: 'Fever Symptoms',
-          symptoms: ['High Temperature', 'Chills', 'Fatigue'],
-          diagnosis: 'Viral Infection',
-          status: 'completed',
-          severity: 'severe'
-        },
-        {
-          id: '4',
-          date: '2024-12-05',
-          title: 'Stomach Issues',
-          symptoms: ['Abdominal Pain', 'Bloating'],
-          diagnosis: 'Indigestion',
-          status: 'completed',
-          severity: 'mild'
-        },
-        {
-          id: '5',
-          date: '2024-12-01',
-          title: 'Sleep Problems',
-          symptoms: ['Insomnia', 'Restlessness'],
-          diagnosis: 'Sleep Disorder',
-          status: 'in-progress',
-          severity: 'moderate'
-        }
-      ]);
-    }
+    loadHistoryFromBackend();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem(SYMPTOMS_STORAGE_KEY, JSON.stringify(symptoms));
-  }, [symptoms]);
+  const testConnection = async () => {
+    try {
+      setConnectionStatus('connecting');
+      await historyService.ensureInitialized();
+      await symptomService.ensureInitialized();
+      setConnectionStatus('connected');
+    } catch (error) {
+      console.error('Connection test failed:', error);
+      setConnectionStatus('disconnected');
+      addToast('Backend connection failed', { type: 'error' });
+    }
+  };
 
-  useEffect(() => {
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
-  }, [history]);
+  const loadHistoryFromBackend = async () => {
+    try {
+      setIsLoading(true);
+      await testConnection();
+      
+      const historyData = await historyService.getMyHistories();
+      setHistory(historyData);
+      
+      setConnectionStatus('connected');
+    } catch (error) {
+      console.error('Error loading history from backend:', error);
+      setHistory([]);
+      setConnectionStatus('disconnected');
+      addToast('Failed to load data from backend', { type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const addSymptomMutation = useMutation({
-    mutationFn: (symptom: Symptom) => symptomService.addSymptom(symptom),
+    mutationFn: async (symptom: { name: string; severity: string; historyId: string }) => {
+      const symptomData: Symptom = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        historyId: symptom.historyId,
+        name: symptom.name,
+        severity: symptom.severity,
+      };
+      return symptomService.addSymptom(symptomData);
+    },
     onSuccess: (data) => {
       console.log('Symptom added successfully:', data);
-      if (!data) return;
-      setNewSymptomDescription('');
-      setShowAddForm(false);
     },
     onError: (error) => {
       console.error('Error adding symptom:', error);
+      addToast('Failed to add symptom to backend', { type: 'error' });
     }
   });
 
@@ -175,92 +81,402 @@ export const useDiagnostic = () => {
     mutationFn: () => historyService.getMyHistories(),
     onSuccess: (data) => {
       console.log('History fetched successfully:', data);
-      // if (!data) return;
-      // setSymptoms((prev) => [...prev, data]);
+      if (data) {
+        setHistory(data);
+      }
     },
     onError: (error) => {
-      console.error('Error fetching symptom:', error);
+      console.error('Error fetching history:', error);
+      setHistory([]);
+      addToast('Failed to load history from backend', { type: 'error' });
     }
   });
 
-  const addSymptom = () => {
-    if (newSymptomIllness.trim() && newSymptomDescription.trim()) {
-      const symptom: ISymptom = {
-        id: Date.now().toString(),
-        illness: newSymptomIllness.trim(),
-        description: newSymptomDescription.trim(),
-        severity: newSymptomSeverity,
-        duration: newSymptomDuration.trim() || undefined,
-      };
+  const addHistoryMutation = useMutation({
+    mutationFn: (assessment: IHealthAssessment) => historyService.addHistory(assessment),
+    onSuccess: (data) => {
+      console.log('History added successfully:', data);
+      addToast('Assessment saved successfully!', { type: 'success' });
+      loadHistoryFromBackend();
+    },
+    onError: (error) => {
+      console.error('Error adding history:', error);
+      addToast('Failed to save assessment', { type: 'error' });
+    }
+  });
 
-      setSymptoms((prev) => [...prev, symptom]);
-      setNewSymptomIllness('');
-      setNewSymptomDescription('');
-      setNewSymptomSeverity('mild');
-      setNewSymptomDuration('');
-      setShowAddForm(false);
+  const deleteHistoryMutation = useMutation({
+    mutationFn: (historyId: string) => historyService.deleteHistory(historyId),
+    onSuccess: () => {
+      console.log('History deleted successfully');
+      addToast('Assessment deleted successfully', { type: 'success' });
+      loadHistoryFromBackend();
+    },
+    onError: (error) => {
+      console.error('Error deleting history:', error);
+      addToast('Failed to delete assessment', { type: 'error' });
+    }
+  });
+
+  const clearAllHistoryMutation = useMutation({
+    mutationFn: async () => {
+      const deletePromises = history.map(item => historyService.deleteHistory(item.id));
+      await Promise.all(deletePromises);
+    },
+    onSuccess: () => {
+      console.log('All history cleared successfully');
+      setHistory([]);
+      addToast('All history cleared successfully', { type: 'success' });
+    },
+    onError: (error) => {
+      console.error('Error clearing all history:', error);
+      addToast('Failed to clear history', { type: 'error' });
+    }
+  });
+
+  const addToSymptomList = (name: string) => {
+    if (!name.trim()) {
+      addToast('Symptom name is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (name.trim().length < 2) {
+      addToast('Symptom name must be at least 2 characters long', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (name.trim().length > 100) {
+      addToast('Symptom name must be less than 100 characters', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+
+    if (symptoms.length >= 20) {
+      addToast('Maximum 20 symptoms allowed', { type: 'warning', title: 'Limit Reached' });
+      return;
+    }
+
+    const isDuplicate = symptoms.some(symptom => 
+      symptom.name.toLowerCase() === name.trim().toLowerCase()
+    );
+    
+    if (isDuplicate) {
+      addToast('This symptom has already been added', { type: 'warning', title: 'Duplicate Symptom' });
+      return;
+    }
+
+    const newSymptom: ISymptom = {
+      name: name.trim(),
+      severity: newSymptomSeverity,
+    };
+    setSymptoms((prev) => [...prev, newSymptom]);
+    setNewSymptomName('');
+    addToast(`Successfully added symptom: ${name.trim()}`, { type: 'success', duration: 2000 });
+  };
+
+  const removeFromSymptomList = (index: number) => {
+    const removedSymptom = symptoms[index];
+    setSymptoms((prev) => prev.filter((_, i) => i !== index));
+    if (removedSymptom) {
+      addToast(`Removed symptom: ${removedSymptom.name}`, { type: 'info', duration: 2000 });
     }
   };
 
-  const removeSymptom = (id: string) => {
-    setSymptoms((prev) => prev.filter((symptom) => symptom.id !== id));
+  const clearSymptomList = () => {
+    if (symptoms.length > 0) {
+      setSymptoms([]);
+      addToast('All symptoms cleared', { type: 'info', duration: 2000 });
+    }
   };
 
-  const updateSymptom = (id: string, updatedSymptom: Partial<ISymptom>) => {
-    setSymptoms((prev) => prev.map(symptom => 
-      symptom.id === id ? { ...symptom, ...updatedSymptom } : symptom
-    ));
+  const startDiagnostic = async (
+    onIllnessFound?: (response: string) => void,
+    onDrugsFound?: (response: string) => void,
+    onProductsReady?: () => void
+  ) => {
+    if (!newDescription.trim()) {
+      addToast('Description is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (newDescription.trim().length < 10) {
+      addToast('Description must be at least 10 characters long', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (newDescription.trim().length > 500) {
+      addToast('Description must be less than 500 characters', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (!newSince) {
+      addToast('Date is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    const selectedDate = new Date(newSince);
+    const today = new Date();
+    if (selectedDate > today) {
+      addToast('Date cannot be in the future', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (symptoms.length === 0) {
+      addToast('At least one symptom is required', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+    
+    if (symptoms.length > 20) {
+      addToast('Maximum 20 symptoms allowed', { type: 'warning', title: 'Validation Error' });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      setCurrentStep('finding-illness');
+      addToast('Starting comprehensive symptom analysis...', { type: 'success' });
+      
+      const illnessResponse = generateIllnessResponse(newDescription, symptoms, newSince);
+      
+      setTimeout(() => {
+        if (onIllnessFound) {
+          onIllnessFound(illnessResponse);
+        }
+        
+        setTimeout(() => {
+          setCurrentStep('finding-drugs');
+          addToast('Searching for suitable medications...', { type: 'success' });
+          
+          const drugsResponse = generateDrugsResponse(symptoms);
+          
+          setTimeout(() => {
+            if (onDrugsFound) {
+              onDrugsFound(drugsResponse);
+            }
+            
+            setTimeout(() => {
+              setCurrentStep('finding-products');
+              addToast('Locating available products in marketplace...', { type: 'success' });
+              
+              setTimeout(() => {
+                if (onProductsReady) {
+                  onProductsReady();
+                }
+                setIsLoading(false);
+                addToast('Complete health analysis finished successfully!', { type: 'success' });
+              }, 1000);
+            }, 2000);
+          }, 2000);
+        }, 3000);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error starting diagnostic:', error);
+      addToast('Failed to start diagnostic', { type: 'error', title: 'Diagnostic Error' });
+      setIsLoading(false);
+      setCurrentStep('input');
+    }
   };
 
-  const clearAllSymptoms = () => {
-    setSymptoms([]);
-    localStorage.removeItem(SYMPTOMS_STORAGE_KEY);
+  const generateIllnessResponse = (description: string, symptoms: ISymptom[], since: string): string => {
+    const severeCounts = symptoms.filter(s => s.severity === 'severe').length;
+    const moderateCounts = symptoms.filter(s => s.severity === 'moderate').length;
+    const mildCounts = symptoms.filter(s => s.severity === 'mild').length;
+    
+    const daysSince = Math.floor((new Date().getTime() - new Date(since).getTime()) / (1000 * 3600 * 24));
+    
+    let response = `🔍 AI Illness Analysis Complete\n\n`;
+    response += `Based on your symptoms: ${symptoms.map(s => s.name).join(', ')}\n\n`;
+    
+    if (severeCounts > 0) {
+      response += `🚨 **Primary Concern**: Acute condition requiring immediate attention\n`;
+      response += `Your severe symptoms suggest a condition that needs prompt medical evaluation.\n\n`;
+    } else if (moderateCounts > 1) {
+      response += `⚠️ **Primary Concern**: Moderate condition requiring monitoring\n`;
+      response += `Multiple moderate symptoms indicate a developing condition that should be addressed.\n\n`;
+    } else {
+      response += `✅ **Primary Concern**: Mild condition with manageable symptoms\n`;
+      response += `Your symptoms appear to be manageable with proper care and monitoring.\n\n`;
+    }
+    
+    response += `📊 **Symptom Analysis**:\n`;
+    if (severeCounts > 0) response += `• ${severeCounts} severe symptom${severeCounts > 1 ? 's' : ''} detected\n`;
+    if (moderateCounts > 0) response += `• ${moderateCounts} moderate symptom${moderateCounts > 1 ? 's' : ''} identified\n`;
+    if (mildCounts > 0) response += `• ${mildCounts} mild symptom${mildCounts > 1 ? 's' : ''} noted\n`;
+    
+    response += `\n⏱️ **Duration**: Symptoms present for ${daysSince} day${daysSince !== 1 ? 's' : ''}\n\n`;
+    
+    response += `🎯 **Possible Conditions**:\n`;
+    if (symptoms.some(s => s.name.toLowerCase().includes('fever'))) {
+      response += `• Viral or bacterial infection\n`;
+    }
+    if (symptoms.some(s => s.name.toLowerCase().includes('headache'))) {
+      response += `• Tension headache or migraine\n`;
+    }
+    if (symptoms.some(s => s.name.toLowerCase().includes('nausea'))) {
+      response += `• Digestive system disturbance\n`;
+    }
+    response += `• General inflammatory response\n`;
+    
+    response += `\n⚠️ This is an AI analysis for informational purposes only. Please consult a healthcare professional for proper diagnosis.`;
+    
+    return response;
+  };
+
+  const generateDrugsResponse = (symptoms: ISymptom[]): string => {
+    const severeCounts = symptoms.filter(s => s.severity === 'severe').length;
+    const moderateCounts = symptoms.filter(s => s.severity === 'moderate').length;
+    
+    let response = `💊 AI Medication Recommendations\n\n`;
+    response += `Based on your symptoms, here are suitable medication categories:\n\n`;
+    
+    response += `🎯 **Recommended Medications**:\n\n`;
+    
+    if (symptoms.some(s => s.name.toLowerCase().includes('fever'))) {
+      response += `🌡️ **For Fever**:\n`;
+      response += `• Paracetamol (Acetaminophen) - 500mg every 6-8 hours\n`;
+      response += `• Ibuprofen - 200-400mg every 6-8 hours\n\n`;
+    }
+    
+    if (symptoms.some(s => s.name.toLowerCase().includes('headache'))) {
+      response += `🧠 **For Headache**:\n`;
+      response += `• Aspirin - 325-650mg every 4 hours\n`;
+      response += `• Paracetamol - 500mg every 6 hours\n\n`;
+    }
+    
+    if (symptoms.some(s => s.name.toLowerCase().includes('nausea'))) {
+      response += `🤢 **For Nausea**:\n`;
+      response += `• Domperidone - 10mg before meals\n`;
+      response += `• Ondansetron - 4-8mg as needed\n\n`;
+    }
+    
+    response += `🍯 **General Support**:\n`;
+    response += `• Vitamin C - 1000mg daily for immune support\n`;
+    response += `• Multivitamin - Daily for nutritional support\n`;
+    response += `• Probiotics - For digestive health\n\n`;
+    
+    if (severeCounts > 0) {
+      response += `🚨 **Important**: Severe symptoms require prescription medications. Please consult a doctor immediately.\n\n`;
+    }
+    
+    response += `⚠️ **Safety Guidelines**:\n`;
+    response += `• Always follow recommended dosages\n`;
+    response += `• Check for drug allergies before use\n`;
+    response += `• Consult pharmacist for drug interactions\n`;
+    response += `• Stop use if adverse reactions occur\n\n`;
+    
+    response += `📋 This is an AI recommendation. Always consult healthcare professionals before taking any medication.`;
+    
+    return response;
+  };
+
+  const generateAIResponse = (description: string, symptoms: ISymptom[], since: string): string => {
+    const severeCounts = symptoms.filter(s => s.severity === 'severe').length;
+    const moderateCounts = symptoms.filter(s => s.severity === 'moderate').length;
+    const mildCounts = symptoms.filter(s => s.severity === 'mild').length;
+    
+    const daysSince = Math.floor((new Date().getTime() - new Date(since).getTime()) / (1000 * 3600 * 24));
+    
+    let response = `Hello! I've analyzed your health concerns. Based on your description of "${description.substring(0, 50)}${description.length > 50 ? '...' : ''}" and the ${symptoms.length} symptom${symptoms.length > 1 ? 's' : ''} you've reported, here's my assessment:\n\n`;
+    
+    response += `📊 Symptom Analysis:\n`;
+    if (severeCounts > 0) response += `• ${severeCounts} severe symptom${severeCounts > 1 ? 's' : ''}\n`;
+    if (moderateCounts > 0) response += `• ${moderateCounts} moderate symptom${moderateCounts > 1 ? 's' : ''}\n`;
+    if (mildCounts > 0) response += `• ${mildCounts} mild symptom${mildCounts > 1 ? 's' : ''}\n`;
+    
+    response += `\n⏰ Duration: These symptoms have been present for ${daysSince} day${daysSince !== 1 ? 's' : ''}.\n\n`;
+    
+    if (severeCounts > 0) {
+      response += `🚨 Immediate Attention Recommended:\nYour severe symptoms require prompt medical evaluation. Please consider consulting a healthcare professional as soon as possible.\n\n`;
+    } else if (moderateCounts > 1) {
+      response += `⚠️ Medical Consultation Suggested:\nWith multiple moderate symptoms, it would be wise to schedule an appointment with your healthcare provider within the next few days.\n\n`;
+    } else {
+      response += `✅ Monitor and Self-Care:\nYour symptoms appear manageable. Continue monitoring and consider basic self-care measures.\n\n`;
+    }
+    
+    response += `💡 Recommendations:\n`;
+    response += `• Keep a symptom diary to track changes\n`;
+    response += `• Stay hydrated and get adequate rest\n`;
+    response += `• Avoid known triggers if applicable\n`;
+    if (severeCounts > 0) {
+      response += `• Seek immediate medical attention if symptoms worsen\n`;
+    }
+    
+    response += `\n⚠️ Important Disclaimer: This analysis is for informational purposes only and should not replace professional medical advice. Please consult with a qualified healthcare provider for proper diagnosis and treatment.`;
+    
+    return response;
+  };
+
+  const refreshData = async () => {
+    await loadHistoryFromBackend();
+    addToast('Data refreshed', { type: 'success', duration: 2000 });
   };
 
   const getProgressPercentage = () => {
-    return Math.min(symptoms.length * 12.5, 100);
+    if (currentStep === 'input') return 0;
+    if (currentStep === 'finding-illness') return 25;
+    if (currentStep === 'finding-drugs') return 50;
+    if (currentStep === 'finding-products') return 100;
+    return 0;
   };
 
-  const addToHistory = (title: string, diagnosis: string) => {
+  const addToHistory = (description: string, diagnosis: string) => {
     const newHistoryItem: IHistoryItem = {
-      id: uuidv4(),
-      date: new Date().toISOString().split('T')[0],
-      title,
-      symptoms: symptoms.map(s => s.illness),
-      diagnosis,
+      id: Date.now().toString(),
+      since: new Date().toISOString().split('T')[0],
+      description: description || '',
+      symptoms: symptoms,
+      diagnosis: diagnosis || '',
       status: 'completed',
-      severity: symptoms.length > 0 ? symptoms[0].severity || 'mild' : 'mild'
+      severity: symptoms.length > 0 ? symptoms[0].severity : 'mild'
     };
     
-    setHistory(prev => [newHistoryItem, ...prev]);
+    const assessment: IHealthAssessment = {
+      id: newHistoryItem.id,
+      description: newHistoryItem.description || '',
+      symptoms: symptoms,
+      since: newHistoryItem.since || ''
+    };
+    
+    addHistoryMutation.mutate(assessment);
   };
 
-  const clearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem(HISTORY_STORAGE_KEY);
+  const clearHistory = async () => {
+    await clearAllHistoryMutation.mutate();
   };
 
   return {
-    symptoms,
     history,
-    newSymptomIllness,
-    setNewSymptomIllness,
-    newSymptomDescription,
-    setNewSymptomDescription,
+    newSymptomName,
+    setNewSymptomName,
     newSymptomSeverity,
     setNewSymptomSeverity,
-    newSymptomDuration,
-    setNewSymptomDuration,
+    newDescription,
+    setNewDescription,
+    newSince,
+    setNewSince,
+    symptoms,
+    setSymptoms,
     showAddForm,
     setShowAddForm,
     currentStep,
     setCurrentStep,
-    addSymptom,
-    removeSymptom,
-    updateSymptom,
-    clearAllSymptoms,
+    isLoading,
+    connectionStatus,
+    startDiagnostic,
+    addToSymptomList,
+    removeFromSymptomList,
+    clearSymptomList,
     getProgressPercentage,
     addToHistory,
     clearHistory,
+    loadHistoryFromBackend,
+    refreshData,
+    testConnection,
+    addSymptomMutation,
+    getHistoryMutation,
+    addHistoryMutation,
+    deleteHistoryMutation,
+    clearAllHistoryMutation,
   };
 };

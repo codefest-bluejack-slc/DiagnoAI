@@ -39,6 +39,17 @@ export function AuthProvider({ children }: AuthProps) {
           }
         });
 
+    const logout = useMutation({
+        mutationFn: () => userService.logout(),
+        onSuccess: () => {
+            setUser(null);
+            setIsAuthenticated(false);
+        },
+        onError: (error) => {
+            console.error('Logout failed:', error);
+        }
+    });
+
     useEffect(() => {
         fetchUser.mutate();
     }, []);
@@ -51,6 +62,7 @@ export function AuthProvider({ children }: AuthProps) {
             setUser: setUser,
             isAuthenticated : isAuthenticated,
             login: login,
+            logout: logout,
             getCurrentUser : fetchUser
         }
       }

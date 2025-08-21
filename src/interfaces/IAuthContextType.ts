@@ -6,5 +6,6 @@ export interface IAuthContextType {
     isAuthenticated: Boolean | null;
     setUser: (user: User) => void;
     login: ReturnType<typeof useMutation<void, User | null>>;
+    logout: ReturnType<typeof useMutation<void, void>>;
     getCurrentUser: ReturnType<typeof useMutation<void, User | null>>;
 }

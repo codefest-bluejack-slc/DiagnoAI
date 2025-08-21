@@ -2,6 +2,7 @@ import Map "mo:motoko-hash-map/Map";
 import Iter "mo:base/Iter";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
+import Array "mo:base/Array";
 import Type "lib";
 import HistoryModule "../history/interface";
 
@@ -22,8 +23,11 @@ persistent actor Symptoms {
                 ignore await historyActor.addHistory({
                     id = value.historyId;
                     userId = userId;
-                    title = "Your Symptoms";
-                    result = "";
+                    description = "Health Assessment";
+                    since = "2024-01-01";
+                    status = "in-progress";
+                    severity = value.severity;
+                    diagnosis = null;
                 });
             };
             case (#ok _) {};
@@ -54,6 +58,21 @@ persistent actor Symptoms {
 
     public query func getAllSymptoms() : async [(Text, Type.Symptom)] {
         Iter.toArray(Map.entries<Text, Type.Symptom>(map));
+    };
+
+    public query func getSymptomsByHistoryId(historyId: Text) : async [Type.Symptom] {
+        // sama kea map di js, Text itu kea datatypenya (kea generic value?)
+        let symptoms = Iter.toArray(Map.entries<Text, Type.Symptom>(map));
+
+        // filter kea callback, filter based dari historyId
+        let filteredSymptoms = Array.filter(symptoms, func ((_, symptom) : (Text, Type.Symptom)) : Bool {
+            symptom.historyId == historyId
+        });
+        
+        // return 
+        Array.map(filteredSymptoms, func ((_, symptom) : (Text, Type.Symptom)) : Type.Symptom {
+            symptom
+        });
     };
 
 
