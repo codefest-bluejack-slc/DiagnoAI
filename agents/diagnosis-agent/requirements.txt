@@ -1,4 +1,4 @@
-﻿uagents==0.22.5
+﻿uagents==0.22.7
 datasets==3.3.2
 dotenv
 elasticsearch==9.0.2

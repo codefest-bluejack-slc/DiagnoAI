@@ -12,8 +12,11 @@ from uagents_core.contrib.protocols.chat import (
     TextContent,
     chat_protocol_spec,
 )
+from dotenv import load_dotenv
 
+load_dotenv()
 agent = RecommendationAgent()
+
 
 protocol = Protocol(spec=chat_protocol_spec)
 @protocol.on_message(ChatMessage)
