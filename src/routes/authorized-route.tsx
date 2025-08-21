@@ -17,6 +17,8 @@ const AuthorizedRoute = () => {
         duration: 3000
       });
       hasShownWelcomeToast.current = true;
+    } else if (isAuthenticated === false) {
+      hasShownWelcomeToast.current = false;
     }
   }, [isAuthenticated, me, addToast]);
   

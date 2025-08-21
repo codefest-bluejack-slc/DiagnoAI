@@ -52,8 +52,10 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
           const diagnosisResponse = await DiagnosisService.getUnstructuredDiagnosis({
             text: result.text
           });
-          setStructuredData(diagnosisResponse);
-          console.log("structured data from diagnosis", diagnosisResponse);
+          
+          const parsedStructuredData = JSON.parse(diagnosisResponse.result);
+          setStructuredData(parsedStructuredData);
+          console.log("structured data from diagnosis", parsedStructuredData);
         } catch (diagnosisError) {
           console.warn("Failed to get structured diagnosis:", diagnosisError);
         }

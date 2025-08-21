@@ -43,28 +43,40 @@ export class UserService extends BaseService<UserCanisterService> {
                 await BaseService.authClient.login({
                     identityProvider: this.II_URL,
                     onSuccess: async () => {
-                        const identity = await BaseService.getCallerIdentity();
-                        const user : User = {
-                            id: identity.getPrincipal(),
-                            name: "MIAW MIAW WOMP",
-                            email: "amengameng@gmail.com",
-                            bio: "WWWIWIWIWWIWWI AWIDJAWDIAWJAWDAWAJDWIADJIAWAW DAWDASHDUIASHDUASHDSUIA",
-                            profilePicture: []
+                        try {
+                            await BaseService.refreshAgent();
+                            const identity = await BaseService.getCallerIdentity();
+                            const principal = identity.getPrincipal();
+                            
+                            let existingUser = await this.getUserByPrincipal(principal);
+                            
+                            if (!existingUser) {
+                                const newUser: User = {
+                                    id: principal,
+                                    name: "User",
+                                    email: "",
+                                    bio: "",
+                                    profilePicture: []
+                                };
+                                existingUser = await this.addUser(newUser);
+                            }
+                            
+                            resolve(existingUser);
+                        } catch (setupError) {
+                            console.error("Post-login setup error:", setupError);
+                            reject(setupError);
                         }
-                        const response = await this.addUser(user)
-
-                        resolve(response);
                     },
                     onError: (error) => {
                         console.error("Login error:", error);
                         reject(error);
                     }
-                })
+                });
             } catch (error) {
                 console.error("Login failed:", error);
                 reject(error);
             }       
-        })
+        });
     }
 
     public async updateUser(user: User): Promise<boolean> {
@@ -85,11 +97,16 @@ export class UserService extends BaseService<UserCanisterService> {
 
     public async me() : Promise<User | null> {
         try {
-            console.log(BaseService.authClient)
+            const isAuth = await BaseService.isAuthenticated();
+            if (!isAuth) {
+                return null;
+            }
+            
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
-                throw new Error("User is not authenticated");
+                return null;
             }
+            
             return this.getUserByPrincipal(principal);
         } catch (error) {
             console.error("Error fetching current user:", error);
@@ -99,8 +116,7 @@ export class UserService extends BaseService<UserCanisterService> {
 
     public async checkAuthenticate(): Promise<boolean> {
         try {
-            const principal = await BaseService.getCallerPrincipal();
-            return !principal.isAnonymous();
+            return await BaseService.isAuthenticated();
         } catch (error) {
             return false;
         }
@@ -109,6 +125,7 @@ export class UserService extends BaseService<UserCanisterService> {
     public async logout(): Promise<void> {
         try {
             await BaseService.authClient.logout();
+            await BaseService.refreshAgent();
         } catch (error) {
             console.error("Logout failed:", error);
             throw error;

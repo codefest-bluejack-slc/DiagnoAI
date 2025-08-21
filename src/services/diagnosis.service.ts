@@ -19,12 +19,16 @@ export interface DiagnosisResponse {
   severity_level: string;
 }
 
+export interface StringResponse {
+  result: string;
+}
+
 export class DiagnosisService {
-  private static readonly BASE_URL = 'http://localhost:8001';
+  private static readonly BASE_URL = import.meta.env.VITE_FORWARD_DIAGNOSTIC || 'http://localhost:8001';
 
   public static async getStructuredDiagnosis(request: DiagnosisFromSymptomsRequest): Promise<DiagnosisResponse> {
     try {
-      const response = await axios.post(`${this.BASE_URL}/get_diagonsis/structured`, request, {
+      const response = await axios.post(`${this.BASE_URL}/diagnosis/from-symptoms`, request, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -35,9 +39,9 @@ export class DiagnosisService {
     }
   }
 
-  public static async getUnstructuredDiagnosis(request: DiagnosisRawRequest): Promise<DiagnosisResponse> {
+  public static async getUnstructuredDiagnosis(request: DiagnosisRawRequest): Promise<StringResponse> {
     try {
-      const response = await axios.post(`${this.BASE_URL}/get_diagnosis/unstructured`, request, {
+      const response = await axios.post(`${this.BASE_URL}/diagnosis/get_structure`, request, {
         headers: {
           'Content-Type': 'application/json',
         }

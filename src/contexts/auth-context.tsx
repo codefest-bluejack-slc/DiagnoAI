@@ -11,33 +11,32 @@ interface AuthProps {
 export function AuthProvider({ children }: AuthProps) {
     const [user, setUser] = useState<User | null>(null);
     const { userService } = useService();
-    const [ isAuthenticated, setIsAuthenticated ] = useState<Boolean | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
     const login = useMutation({
-            mutationFn: () => userService.login(),
-            onSuccess: (data) => {
-                setUser(data);
-                setIsAuthenticated(true);
-            },
-            onError: (error) => {
-                console.error('Login failed:', error);
-                setIsAuthenticated(false);
-            }
-        })
+        mutationFn: () => userService.login(),
+        onSuccess: (data) => {
+            setUser(data);
+            setIsAuthenticated(true);
+        },
+        onError: (error) => {
+            console.error('Login failed:', error);
+            setIsAuthenticated(false);
+        }
+    });
 
     const fetchUser = useMutation({
-            mutationFn: () => userService.me(),
-            onSuccess: (data) => {
-                console.log('Fetched user:', data);
-                setUser(data);
-                setIsAuthenticated(!!data);
-            },
-            onError: (error) => {
-                console.error('Failed to fetch user:', error);
-                setUser(null);
-                setIsAuthenticated(false);
-          }
-        });
+        mutationFn: () => userService.me(),
+        onSuccess: (data) => {
+            setUser(data);
+            setIsAuthenticated(!!data);
+        },
+        onError: (error) => {
+            console.error('Failed to fetch user:', error);
+            setUser(null);
+            setIsAuthenticated(false);
+        }
+    });
 
     const logout = useMutation({
         mutationFn: () => userService.logout(),
@@ -51,8 +50,25 @@ export function AuthProvider({ children }: AuthProps) {
     });
 
     useEffect(() => {
-        fetchUser.mutate();
-    }, []);
+        if (userService) {
+            fetchUser.mutate();
+        }
+    }, [userService]);
+
+    useEffect(() => {
+        const checkAuthStatus = async () => {
+            if (userService && isAuthenticated === true && !user) {
+                const currentUser = await userService.me();
+                if (!currentUser) {
+                    setIsAuthenticated(false);
+                    setUser(null);
+                }
+            }
+        };
+
+        const interval = setInterval(checkAuthStatus, 30000);
+        return () => clearInterval(interval);
+    }, [userService, isAuthenticated, user]);
 
   return (
     <AuthContext.Provider

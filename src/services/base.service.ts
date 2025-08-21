@@ -25,18 +25,27 @@ export abstract class BaseService<T> {
     protected static async initializeAgent() {
         if (!this.initialized) {
             this.authClient = await AuthClient.create();
-            const identity = this.authClient.getIdentity() || new AnonymousIdentity();
-            this.agent = new HttpAgent({ identity });
-            if (process.env.DFX_NETWORK !== "ic") {
-                await this.agent.fetchRootKey();
-            }
+            await this.updateAgentIdentity();
             this.initialized = true;
         }
     }
 
+    protected static async updateAgentIdentity() {
+        const identity = this.authClient.getIdentity() || new AnonymousIdentity();
+        this.agent = new HttpAgent({ identity });
+        if (process.env.DFX_NETWORK !== "ic") {
+            await this.agent.fetchRootKey();
+        }
+    }
 
     public async ensureInitialized() {
         await BaseService.initializeAgent();
+    }
+
+    public static async refreshAgent() {
+        if (this.initialized && this.authClient) {
+            await this.updateAgentIdentity();
+        }
     }
     
 
@@ -55,5 +64,13 @@ export abstract class BaseService<T> {
         } else {
             throw new Error("Invalid identity type: Expected SignIdentity");
         }
+    }
+
+    public static async isAuthenticated(): Promise<boolean> {
+        if (!this.initialized || !this.authClient) {
+            return false;
+        }
+        const identity = this.authClient.getIdentity();
+        return !(identity instanceof AnonymousIdentity);
     }
 }

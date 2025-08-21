@@ -6,52 +6,51 @@ import { HistoryService } from "../services/history.service";
 import { SymptomService } from "../services/symptom.service";
 
 export const ServiceProvider = ({ children } : { children: ReactNode }) => {
-    const [userService, setUserService] = useState<UserService>(new UserService());
-    const [historyService, setHistoryService] = useState<HistoryService>(new HistoryService());
-    const [symptomService, setSymptomService] = useState<SymptomService>(new SymptomService());
+    const [userService, setUserService] = useState<UserService | null>(null);
+    const [historyService, setHistoryService] = useState<HistoryService | null>(null);
+    const [symptomService, setSymptomService] = useState<SymptomService | null>(null);
 
     const [loading, setLoading] = useState<boolean>(true);
-    const [currentPage, setCurrentPage] = useState<string>("loading");
 
     useEffect(() => {
         const initializeServices = async () => {
-            setLoading(true);
-            const userService = new UserService();
-            const historyService = new HistoryService();
-            const symptomService = new SymptomService();
+            try {
+                setLoading(true);
+                const newUserService = new UserService();
+                const newHistoryService = new HistoryService();
+                const newSymptomService = new SymptomService();
 
-            await Promise.all([
-                userService.ensureInitialized(),
-                historyService.ensureInitialized(),
-                symptomService.ensureInitialized()
-            ]);
-            setUserService(userService);
-            setHistoryService(historyService);
-            setSymptomService(symptomService);
-
-            
-            setLoading(false);
-            setTimeout(() => {
-                setCurrentPage("loaded");
-            }, 100);
+                await Promise.all([
+                    newUserService.ensureInitialized(),
+                    newHistoryService.ensureInitialized(),
+                    newSymptomService.ensureInitialized()
+                ]);
+                
+                setUserService(newUserService);
+                setHistoryService(newHistoryService);
+                setSymptomService(newSymptomService);
+                setLoading(false);
+            } catch (error) {
+                console.error("Failed to initialize services:", error);
+                setLoading(false);
+            }
         };
 
         initializeServices();
     }, []);
 
-    const value: IServiceContextType = useMemo(() => {
+    const value: IServiceContextType | null = useMemo(() => {
+        if (!userService || !historyService || !symptomService) {
+            return null;
+        }
         return {
-            userService: userService,
-            historyService: historyService,
-            symptomService: symptomService,
+            userService,
+            historyService,
+            symptomService,
         };
-    }, [userService]);
+    }, [userService, historyService, symptomService]);
 
-    const handlePageChange = (page: string) => {
-        setCurrentPage(page);
-    };
-
-    if (loading) {
+    if (loading || !value) {
         return <div></div>;
     }
 
