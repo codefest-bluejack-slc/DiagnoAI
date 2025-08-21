@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Mic, MicOff, Volume2, Check } from 'lucide-react';
+import { X, Mic, MicOff, Volume2, Check, Loader2 } from 'lucide-react';
 import { ISpeechModalProps } from '../../interfaces/ISpeechRecognition';
 import { useSpeech } from '../../hooks/use-speech';
 
@@ -11,24 +11,34 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
 }) => {
   const { 
     isRecording,
+    isProcessing,
     error,
+    transcript,
     audioUrl,
     audioBlob,
-    isSaved,
     startListening, 
     stopListening, 
-    clearCurrentRecording
-  } = useSpeech();
+    resetRecording,
+  } = useSpeech('http://localhost:8002/transcribe');
 
   useEffect(() => {
-    if (isOpen && !audioUrl && !isRecording) {
-      clearCurrentRecording();
+    if (isOpen) {
+      resetRecording();
     }
-  }, [isOpen, clearCurrentRecording, audioUrl, isRecording]);
+  }, [isOpen, resetRecording]);
+
+  useEffect(() => {
+    if (transcript && onRecordingComplete) {
+      onRecordingComplete(transcript);
+    }
+  }, [transcript, onRecordingComplete]);
 
   if (!isOpen) return null;
 
   const handleApprove = () => {
+    if (transcript) {
+      onRecordingComplete(transcript);
+    }
     onClose();
   };
 
@@ -39,16 +49,43 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
     onClose();
   };
 
-  const handleRetry = () => {
-    clearCurrentRecording();
-    startListening();
-  };
-
   const handleOverlayClick = (event: React.MouseEvent) => {
     if (event.target === event.currentTarget) {
       handleClose();
     }
   };
+
+  const getStatusContent = () => {
+    if (isProcessing) {
+      return {
+        icon: <Loader2 className="text-purple-400 animate-spin" size={32} />,
+        text: 'Processing audio...',
+      };
+    }
+    if (isRecording) {
+      return {
+        icon: (
+          <div className="relative">
+            <MicOff className="text-red-400" size={32} />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+          </div>
+        ),
+        text: 'Recording...',
+      };
+    }
+    if (transcript) {
+      return {
+        icon: <Check className="text-green-400" size={32} />,
+        text: 'Transcription complete',
+      };
+    }
+    return {
+      icon: <Mic className="text-purple-400" size={32} />,
+      text: 'Ready to record',
+    };
+  };
+
+  const { icon: statusIcon, text: statusText } = getStatusContent();
 
   const modalContent = (
     <div
@@ -76,10 +113,10 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-purple-100">
-                  Voice Recording
+                  Voice Transcription
                 </h2>
                 <p className="text-sm text-purple-300">
-                  Record your voice message
+                  Record your voice to generate text
                 </p>
               </div>
             </div>
@@ -97,22 +134,19 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                 className={`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
                   isRecording
                     ? 'bg-red-500/20 border-red-400 shadow-lg shadow-red-500/30 animate-pulse' 
+                    : isProcessing
+                    ? 'bg-purple-500/20 border-purple-400'
+                    : transcript
+                    ? 'bg-green-500/20 border-green-400'
                     : 'bg-purple-500/20 border-purple-400 shadow-lg shadow-purple-500/30'
                 }`}
               >
-                {isRecording ? (
-                  <div className="relative">
-                    <MicOff className="text-red-400" size={32} />
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  </div>
-                ) : (
-                  <Mic className="text-purple-400" size={32} />
-                )}
+                {statusIcon}
               </div>
               
               <div className="space-y-2">
                 <p className="font-medium text-purple-100">
-                  {isRecording ? 'Recording...' : 'Ready to record'}
+                  {statusText}
                 </p>
               </div>
             </div>
@@ -123,21 +157,19 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
               </div>
             )}
 
-            {audioUrl && (
+            {transcript && !isProcessing && (
+              <blockquote className="p-4 rounded-lg bg-slate-800/60 border-l-4 border-purple-500/50 text-purple-200 italic">
+                {transcript}
+              </blockquote>
+            )}
+
+            {audioUrl && !transcript && (
               <div className="p-4 rounded-lg bg-slate-800/60 border border-purple-500/30">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-purple-400" />
-                    <span className="text-sm font-medium text-purple-300">
-                      Audio Recording:
-                    </span>
-                  </div>
-                  {isSaved && (
-                    <div className="flex items-center gap-1 text-green-400 text-xs">
-                      <Check size={12} />
-                      <span>Saved</span>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2 mb-3">
+                  <Volume2 className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-medium text-purple-300">
+                    Playback Recording:
+                  </span>
                 </div>
                 <audio 
                   controls 
@@ -160,6 +192,14 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                   <MicOff size={18} />
                   Stop Recording
                 </button>
+              ) : isProcessing ? (
+                <button
+                  disabled
+                  className="flex-1 py-3 px-4 bg-slate-700 text-slate-400 font-semibold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed"
+                >
+                  <Loader2 size={18} className="animate-spin" />
+                  Processing...
+                </button>
               ) : (
                 <>
                   <button
@@ -169,25 +209,21 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                     <Mic size={18} />
                     {audioBlob ? 'New Recording' : 'Start Recording'}
                   </button>
+                  {transcript && (
+                     <button
+                        onClick={handleApprove}
+                        className="py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400"
+                     >
+                        <Check size={16} />
+                        Use Transcription
+                     </button>
+                  )}
                 </>
               )}
-
-              {audioBlob && !isRecording && (
-                <button
-                  onClick={handleApprove}
-                  className="py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400"
-                >
-                  <Check size={16} />
-                  Use Recording
-                </button>
-              )}
             </div>
-
+            
             <div className="text-center text-xs text-purple-400">
-              {isSaved 
-                ? 'Recording saved successfully to project storage' 
-                : 'Recordings will be saved to project storage automatically'
-              }
+              Your voice will be sent to our servers for transcription.
             </div>
           </div>
         </div>

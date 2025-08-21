@@ -22,7 +22,6 @@ import {
   RefreshCw,
   History,
   Mic,
-  CheckCircle,
   Pill,
   ShoppingCart,
 } from 'lucide-react';
@@ -53,8 +52,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isSpeechModalOpen, setIsSpeechModalOpen] = useState(false);
-  const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
-  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -198,42 +195,41 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setIllnessResponse('');
     setDrugsResponse('');
     setShowProducts(false);
-    
-    if (recordedAudioUrl) {
-      URL.revokeObjectURL(recordedAudioUrl);
-    }
-    setRecordedAudio(null);
-    setRecordedAudioUrl(null);
   };
 
   const toggleSpeechModal = () => {
     setIsSpeechModalOpen(!isSpeechModalOpen);
   };
 
-  const handleSpeechRecording = async (audioBlob: Blob) => {
+  const handleSpeechRecording = async (transcribedText: string) => {
     try {
-      const audioUrl = URL.createObjectURL(audioBlob);
-      setRecordedAudio(audioBlob);
-      setRecordedAudioUrl(audioUrl);
-      
-      const recordings = JSON.parse(localStorage.getItem('voiceRecordings') || '{}');
-      const recordingCount = Object.keys(recordings).length;
-      
-      addToast(
-        `Voice recording ${recordingCount + 1} saved successfully! You can now include this in your health analysis.`, 
-        { 
-          type: 'success', 
-          title: 'Recording Saved',
-          duration: 4000
-        }
-      );
+      if (transcribedText && transcribedText.trim()) {
+        setNewDescription(prev => prev ? `${prev} ${transcribedText}` : transcribedText);
+        
+        addToast(
+          'Voice transcription added to your description successfully!', 
+          { 
+            type: 'success', 
+            title: 'Transcription Added',
+            duration: 4000
+          }
+        );
+      } else {
+        addToast(
+          'No text was transcribed from the audio. Please try again.', 
+          { 
+            type: 'warning', 
+            title: 'Transcription Empty' 
+          }
+        );
+      }
       
       setIsSpeechModalOpen(false);
     } catch (error) {
-      console.error('Error handling speech recording:', error);
-      addToast('Failed to save recording. Please try again.', { 
+      console.error('Error handling speech transcription:', error);
+      addToast('Failed to process transcription. Please try again.', { 
         type: 'error', 
-        title: 'Recording Error' 
+        title: 'Transcription Error' 
       });
     }
   };
@@ -244,12 +240,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       setNewSince('');
       setSymptoms([]);
       setShowAddForm(false);
-      
-      if (recordedAudioUrl) {
-        URL.revokeObjectURL(recordedAudioUrl);
-      }
-      setRecordedAudio(null);
-      setRecordedAudioUrl(null);
     }
   };
 
@@ -631,34 +621,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                             Description
                           </label>
                         </div>
-                        
-                        {recordedAudio && recordedAudioUrl && (
-                          <div className="mb-4 p-3 bg-slate-800-60 border border-green-400-30 rounded-lg">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="w-4 h-4 text-green-400" />
-                                <span className="text-sm font-medium text-green-300">Voice Recording Attached</span>
-                              </div>
-                              <button
-                                onClick={() => {
-                                  if (recordedAudioUrl) {
-                                    URL.revokeObjectURL(recordedAudioUrl);
-                                  }
-                                  setRecordedAudio(null);
-                                  setRecordedAudioUrl(null);
-                                }}
-                                className="text-red-400 hover:text-red-300 transition-colors"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                            <audio 
-                              controls 
-                              src={recordedAudioUrl} 
-                              className="w-full rounded-lg audio-player"
-                            />
-                          </div>
-                        )}
                         
                         <textarea
                           value={newDescription}
