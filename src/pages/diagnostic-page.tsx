@@ -244,7 +244,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     } catch (error) {
       console.error('Error handling speech transcription:', error);
       addToast('Failed to process transcription. Please try again.', { 
+      console.error('Error handling speech transcription:', error);
+      addToast('Failed to process transcription. Please try again.', { 
         type: 'error', 
+        title: 'Transcription Error' 
         title: 'Transcription Error' 
       });
     }

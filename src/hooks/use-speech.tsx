@@ -16,9 +16,12 @@ export interface UseSpeechReturn {
 }
 
 export const useSpeech = (endpoint: string): UseSpeechReturn => {
+export const useSpeech = (endpoint: string): UseSpeechReturn => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -68,10 +71,12 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
   const initializeMediaRecorder = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           sampleRate: 44100,
+        }
         }
       });
 
@@ -88,6 +93,8 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       mediaRecorder.onstop = async () => {
         const currentAudioBlob = new Blob(audioChunksRef.current, {
           type: 'audio/webm;codecs=opus'
+        const currentAudioBlob = new Blob(audioChunksRef.current, {
+          type: 'audio/webm;codecs=opus'
         });
 
         const url = URL.createObjectURL(currentAudioBlob);
@@ -95,6 +102,12 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
         setAudioUrl(url);
         setIsRecording(false);
 
+        const url = URL.createObjectURL(currentAudioBlob);
+        setAudioBlob(currentAudioBlob);
+        setAudioUrl(url);
+        setIsRecording(false);
+
+        await sendAudioToEndoint(currentAudioBlob);
         await sendAudioToEndoint(currentAudioBlob);
 
         stream.getTracks().forEach(track => track.stop());
@@ -107,8 +120,10 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       return false;
     }
   }, [sendAudioToEndoint]);
+  }, [sendAudioToEndoint]);
 
   const startListening = useCallback(async () => {
+    resetRecording();
     resetRecording();
 
     const mediaRecorderInitialized = await initializeMediaRecorder();
@@ -145,7 +160,9 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
   return {
     isRecording,
     isProcessing,
+    isProcessing,
     error,
+    transcript,
     transcript,
     audioUrl,
     audioBlob,
