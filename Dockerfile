@@ -36,8 +36,6 @@ RUN npm run build
 
 # Expose ports
 EXPOSE 4943
-EXPOSE 8080
+EXPOSE 3000
 
-# Start local replica and serve frontend (with Vite preview)
-# CMD bash -c "dfx start --background --clean && cd frontend && npm run preview -- --host 0.0.0.0 --port 8080"
-CMD ["npm", "run", "preview", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["npm", "run", "start"]
