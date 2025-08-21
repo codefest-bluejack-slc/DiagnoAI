@@ -66,6 +66,12 @@ export const SymptomAutocomplete: React.FC<SymptomAutocompleteProps> = ({
     return suggestions[0];
   };
 
+  const getBestMatchForText = (text: string): string | null => {
+    if (!text || text.trim().length < 2) return null;
+    const results = searchSymptoms(text.trim());
+    return results.length > 0 ? results[0] : null;
+  };
+
   const handleAddWithSuggestion = () => {
     const bestSuggestion = getBestSuggestion();
     if (bestSuggestion) {

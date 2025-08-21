@@ -22,6 +22,8 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
     resetRecording,
   } = useSpeech('http://localhost:8002/transcribe');
 
+  const isTestMode = true;
+
   useEffect(() => {
     if (isOpen) {
       resetRecording();
@@ -107,11 +109,18 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                 <Mic size={20} />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-purple-100">
-                  Voice Transcription
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-purple-100">
+                    Voice Transcription
+                  </h2>
+                  {isTestMode && (
+                    <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
+                      TEST MODE
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-purple-300">
-                  Record your voice to generate text
+                  {isTestMode ? 'Using test data for demonstration' : 'Record your voice to generate text'}
                 </p>
               </div>
             </div>
@@ -270,7 +279,10 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
             </div>
             
             <div className="text-center text-xs text-purple-400">
-              Your voice will be sent to our servers for transcription.
+              {isTestMode 
+                ? 'Test mode active - using mock data for demonstration purposes.'
+                : 'Your voice will be sent to our servers for transcription.'
+              }
             </div>
           </div>
         </div>

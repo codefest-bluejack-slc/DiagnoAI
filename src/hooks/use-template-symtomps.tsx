@@ -397,8 +397,36 @@ export const useTemplateSymptoms = () => {
     return results.map(result => result.obj);
   };
 
+  const findBestMatch = (query: string): string | null => {
+    if (!query || query.trim().length < 2) {
+      return null;
+    }
+    const results = fuzzysort.go(query.trim(), symptoms);
+    if (results.length > 0 && results[0].score > -3000) {
+      return results[0].obj;
+    }
+    return null;
+  };
+
+  const findBestMatches = (queries: string[]): string[] => {
+    const matches: string[] = [];
+    const usedMatches = new Set<string>();
+    
+    for (const query of queries) {
+      const bestMatch = findBestMatch(query);
+      if (bestMatch && !usedMatches.has(bestMatch)) {
+        matches.push(bestMatch);
+        usedMatches.add(bestMatch);
+      }
+    }
+    
+    return matches;
+  };
+
   return {
     symptoms,
-    searchSymptoms
+    searchSymptoms,
+    findBestMatch,
+    findBestMatches
   };
 };

@@ -24,6 +24,31 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [structuredData, setStructuredData] = useState<any | null>(null);
 
+  const USE_TEST_MODE = true;
+
+  if (USE_TEST_MODE) {
+    console.log('Speech hook initialized in TEST MODE');
+  }
+
+  const TEST_SPEECH_DATA = {
+    description: "Symptoms experienced after eating a large amount of seafood.",
+    symptoms: [
+      {
+        name: "Headache",
+        severity: "Mild"
+      },
+      {
+        name: "Fever",
+        severity: "High"
+      },
+      {
+        name: "Diarrhea",
+        severity: "High"
+      }
+    ],
+    since: "2024-08-10"
+  };
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -32,6 +57,16 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     setError(null);
     setTranscript(null);
     setStructuredData(null);
+
+    if (USE_TEST_MODE) {
+      setTimeout(() => {
+        setTranscript(TEST_SPEECH_DATA.description);
+        setStructuredData(TEST_SPEECH_DATA);
+        console.log("Using test data for speech processing", TEST_SPEECH_DATA);
+        setIsProcessing(false);
+      }, 2000);
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', blob, 'recording.webm');
@@ -44,7 +79,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       });
 
       const result = response.data;
-      console.log("hsilnya ", result);
+      console.log("hasil transcribe", result);
       setTranscript(result.text);
 
       if (result.text) {
@@ -52,16 +87,10 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
           const diagnosisResponse = await DiagnosisService.getUnstructuredDiagnosis({
             text: result.text
           });
-          
-          const parsedStructuredData = JSON.parse(diagnosisResponse.result);
-          setStructuredData(parsedStructuredData);
+          setStructuredData(diagnosisResponse);
+          console.log("structured data from diagnosis", diagnosisResponse);
         } catch (diagnosisError) {
           console.warn("Failed to get structured diagnosis:", diagnosisError);
-          setStructuredData({
-            description: result.text,
-            symptoms: [],
-            since: new Date().toISOString().split('T')[0]
-          });
         }
       }
     } catch (err: any) {
@@ -69,9 +98,13 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     } finally {
       setIsProcessing(false);
     }
-  }, [endpoint]);
+  }, [endpoint, USE_TEST_MODE]);
 
   const initializeMediaRecorder = useCallback(async () => {
+    if (USE_TEST_MODE) {
+      return true;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -112,10 +145,15 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       setError(`Microphone access denied: ${err}`);
       return false;
     }
-  }, [sendAudioToEndoint]);
+  }, [sendAudioToEndoint, USE_TEST_MODE]);
 
   const startListening = useCallback(async () => {
     resetRecording();
+
+    if (USE_TEST_MODE) {
+      setIsRecording(true);
+      return;
+    }
 
     const mediaRecorderInitialized = await initializeMediaRecorder();
     if (!mediaRecorderInitialized) {
@@ -126,21 +164,28 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       mediaRecorderRef.current.start(100);
       setIsRecording(true);
     }
-  }, [initializeMediaRecorder]);
+  }, [initializeMediaRecorder, USE_TEST_MODE]);
 
   const stopListening = useCallback(() => {
+    if (USE_TEST_MODE) {
+      setIsRecording(false);
+      const dummyBlob = new Blob(['test'], { type: 'audio/webm' });
+      setTimeout(() => {
+        sendAudioToEndoint(dummyBlob);
+      }, 500);
+      return;
+    }
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
-  }, []);
+  }, [sendAudioToEndoint, USE_TEST_MODE]);
 
   const resetRecording = useCallback(() => {
-    setAudioUrl((prevUrl) => {
-      if (prevUrl) {
-        URL.revokeObjectURL(prevUrl);
-      }
-      return null;
-    });
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+    setAudioUrl(null);
     setAudioBlob(null);
     setError(null);
     setTranscript(null);
@@ -148,7 +193,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     setIsProcessing(false);
     setIsRecording(false);
     audioChunksRef.current = [];
-  }, []);
+  }, [audioUrl]);
 
   return {
     isRecording,

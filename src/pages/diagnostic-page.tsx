@@ -38,6 +38,7 @@ import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useToast } from '../hooks/use-toast';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
+import { useTemplateSymptoms } from '../hooks/use-template-symtomps';
 import {
   getSeverityColor,
   getStepIcon,
@@ -90,6 +91,57 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     refreshData,
     connectionStatus,
   } = useDiagnostic();
+
+  const { findBestMatches } = useTemplateSymptoms();
+
+  const convertSeverity = (severity: string): string => {
+    const severityMap: { [key: string]: string } = {
+      'High': 'severe',
+      'Mild': 'mild',
+      'Medium': 'moderate',
+      'Moderate': 'moderate',
+      'Low': 'mild',
+      'Severe': 'severe',
+      'high': 'severe',
+      'mild': 'mild',
+      'medium': 'moderate',
+      'moderate': 'moderate',
+      'low': 'mild',
+      'severe': 'severe'
+    };
+    return severityMap[severity] || 'mild';
+  };
+
+  const processExtractedSymptoms = (extractedSymptoms: any[]) => {
+    const processedSymptoms: { name: string; severity: string }[] = [];
+    
+    extractedSymptoms.forEach((extractedSymptom) => {
+      if (!extractedSymptom.name || !extractedSymptom.severity) return;
+      
+      const bestMatches = findBestMatches([extractedSymptom.name]);
+      
+      if (bestMatches.length > 0) {
+        processedSymptoms.push({
+          name: bestMatches[0],
+          severity: convertSeverity(extractedSymptom.severity)
+        });
+      } else {
+        const partialMatches = findBestMatches(extractedSymptom.name.split(' '));
+        if (partialMatches.length > 0) {
+          processedSymptoms.push({
+            name: partialMatches[0],
+            severity: convertSeverity(extractedSymptom.severity)
+          });
+        }
+      }
+    });
+    
+    const uniqueSymptoms = processedSymptoms.filter((symptom, index, self) => 
+      index === self.findIndex(s => s.name === symptom.name)
+    );
+    
+    return uniqueSymptoms;
+  };
 
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
@@ -209,16 +261,44 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         if (structuredData) {
           console.log('Structured data received from diagnosis:', structuredData);
           
-          if (structuredData.extracted_symptoms && Array.isArray(structuredData.extracted_symptoms)) {
-            structuredData.extracted_symptoms.forEach((symptom: any) => {
-              if (symptom.name && symptom.severity) {
+          if (structuredData.symptoms && Array.isArray(structuredData.symptoms)) {
+            console.log('Original symptoms:', structuredData.symptoms);
+            const processedSymptoms = processExtractedSymptoms(structuredData.symptoms);
+            console.log('Processed symptoms:', processedSymptoms);
+            
+            let addedSymptoms = 0;
+            processedSymptoms.forEach((symptom) => {
+              if (addedSymptoms < 10) {
                 addToSymptomList(symptom.name, symptom.severity);
+                addedSymptoms++;
               }
             });
+            
+            if (addedSymptoms > 0) {
+              const symptomList = processedSymptoms.slice(0, addedSymptoms).map(s => s.name).join(', ');
+              addToast(
+                `Auto-selected ${addedSymptoms} symptom${addedSymptoms > 1 ? 's' : ''}: ${symptomList}`, 
+                { 
+                  type: 'success', 
+                  title: 'Symptoms Auto-Selected',
+                  duration: 6000
+                }
+              );
+            } else if (structuredData.symptoms.length > 0) {
+              const attemptedSymptoms = structuredData.symptoms.map(s => s.name).join(', ');
+              addToast(
+                `No matches found for: ${attemptedSymptoms}. Please add them manually using the autocomplete.`, 
+                { 
+                  type: 'warning', 
+                  title: 'No Matches Found',
+                  duration: 6000
+                }
+              );
+            }
           }
           
-          if (structuredData.extracted_date) {
-            setNewSince(structuredData.extracted_date);
+          if (structuredData.since) {
+            setNewSince(structuredData.since);
           }
         }
         
