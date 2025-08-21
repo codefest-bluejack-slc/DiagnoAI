@@ -67,6 +67,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SEED_VALUE=${SEED_VALUE:-recommendation-agent-seed}
       - OPENFDA_URL=http://elasticsearch:9200
+      - OPENFDA_INDEX=${OPENFDA_INDEX:-openfda_data}
     volumes:
       - ./recommendation-agent/data:/app/data:ro
       - ./recommendation-agent/config:/app/config:ro
@@ -91,6 +92,18 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
+  
+  history-agent:
+    build:
+      context: ./history-agent
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      - ASI1_API_KEY=${ASI1_API_KEY}
+      - ASI1_BASE_URL=${ASI1_BASE_URL}
+      - BASE_URL=${BASE_URL}
+      - HISTORY_CANISTER_ID=${HISTORY_CANISTER_ID}
 
   speech-to-text-agent:
     build:

@@ -139,7 +139,8 @@ async def process_query(query: str, ctx: Context) -> str:
 agent = Agent(
     name="DiagnoAI Agent",
     port=8001,
-    mailbox=True
+    mailbox=True,
+    publish_agent_details=True
 )
 chat_proto = Protocol(spec=chat_protocol_spec)
 
