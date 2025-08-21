@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # Modify CANISTERS array to include the canisters you want to create
 CANISTERS=("user" "symptom" "history")
@@ -5,9 +6,6 @@ dfx stop
 dfx identity use default
 dfx start --clean --background
 npm i
-dfx deps pull
-dfx deps init rdmx6-jaaaa-aaaaa-aaadq-cai --argument null
-dfx deps deploy internet_identity
 for c in "${CANISTERS[@]}"; do
     echo "Creating canister: $c"
     dfx canister create "$c"
