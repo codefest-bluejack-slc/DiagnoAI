@@ -145,16 +145,16 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
 
   const { findBestMatches } = useTemplateSymptoms();
 
-  useEffect(() => {
-    if (USE_DEFAULT_DATA) {
-      setNewDescription(defaultData.description);
-      setNewSince(defaultData.since);
+  // useEffect(() => {
+  //   if (USE_DEFAULT_DATA) {
+  //     setNewDescription(defaultData.description);
+  //     setNewSince(defaultData.since);
       
-      defaultData.symptoms.forEach(symptom => {
-        addToSymptomList(symptom.name, symptom.severity);
-      });
-    }
-  }, []);
+  //     defaultData.symptoms.forEach(symptom => {
+  //       addToSymptomList(symptom.name, symptom.severity);
+  //     });
+  //   }
+  // }, []);
 
   const convertSeverity = (severity: string): string => {
     const severityMap: { [key: string]: string } = {
@@ -596,16 +596,8 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                       
                       try {
                         const username = 'user';
-                        const assessmentId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
                         
-                        const assessment = {
-                          id: assessmentId,
-                          description: newDescription || '',
-                          symptoms: symptoms,
-                          since: newSince || new Date().toISOString().split('T')[0]
-                        };
-                        
-                        addToHistory(newDescription, result, username);
+                        const assessmentId = addToHistory(newDescription, result, username);
                         
                         setTimeout(async () => {
                           try {
@@ -621,9 +613,14 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                                   product_ndc: med.product_ndc || med.product_ncd || ''
                                 }))
                               );
+                              addToast('Complete assessment with medicines saved to history!', { type: 'success' });
+                              refreshData();
+                            } else {
+                              addToast('Assessment saved to history!', { type: 'success' });
                             }
                           } catch (updateError) {
                             console.error('Failed to update history with diagnosis:', updateError);
+                            addToast('Assessment saved but failed to update with medicines', { type: 'warning' });
                           }
                         }, 1000);
                         

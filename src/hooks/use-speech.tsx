@@ -72,14 +72,14 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     formData.append('file', blob, 'recording.webm');
 
     try {
-      const response = await axios.post(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
+      // const response = await axios.post(endpoint, formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //   }
+      // });
 
-      const result = response.data;
-      // const result = {"text": "I have been sick for around 3 days after eating a lot of seafood, the symptoms include a mild headache, high fever, and high diarrhea. The symptoms started on august 10"}
+      // const result = response.data;
+      const result = {"text": "I have been sick for around 3 days after eating a lot of seafood, the symptoms include a mild headache, high fever, and high diarrhea. The symptoms started on august 10"}
       console.log("hasil transcribe", result);
       setTranscript(result.text);
 

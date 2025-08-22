@@ -1,5 +1,3 @@
-import { ISymptom } from './IDiagnostic';
-
 export interface IMedicine {
   brand_name: string;
   generic_name: string;
@@ -7,23 +5,36 @@ export interface IMedicine {
   product_ndc: string;
 }
 
-export interface IHistoryItem {
+export interface ISymptom {
+  id: string;
+  historyId: string;
+  name: string;
+  severity: string;
+}
+
+export interface IHistory {
   id: string;
   userId: string;
   username: string;
   diagnosis: string;
   medicine_response: string;
   medicines: IMedicine[];
+}
+
+export interface IHistoryResponse {
+  id: string;
+  userId: string;
+  username: string;
+  diagnosis: string;
+  medicines: IMedicine[];
+  medicine_response: string;
   symptoms: ISymptom[];
-  date?: string;
-  status?: 'completed' | 'in-progress';
-  severity?: 'mild' | 'moderate' | 'severe';
 }
 
 export interface IHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  historyData: IHistoryItem[];
+  historyData: IHistoryResponse[];
   onClearHistory: () => Promise<void>;
   isLoading?: boolean;
 }

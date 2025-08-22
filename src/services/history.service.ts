@@ -4,7 +4,7 @@ import { _SERVICE as HistoryCanisterService, HistoryResponse, History } from "..
 import { canisterId as historyCanisterId, createActor as createHistoryActor } from "../declarations/history";
 import { canisterId as symptomCanisterId } from "../declarations/symptom";
 import { IHealthAssessment } from "../interfaces/IDiagnostic";
-import { IHistoryItem, IMedicine } from "../interfaces/IHistoryModal";
+import { IHistoryResponse, IMedicine, IHistory } from "../interfaces/IHistoryModal";
 
 export class HistoryService extends BaseService<HistoryCanisterService> {
 
@@ -26,7 +26,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
         }
     }
 
-    public async getMyHistories(): Promise<IHistoryItem[]> {
+    public async getMyHistories(): Promise<IHistoryResponse[]> {
         try {
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
@@ -53,11 +53,11 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                                     product_ndc: med.product_ncd
                                 })),
                                 symptoms: historyWithSymptoms.ok.symptoms.map(symptom => ({
+                                    id: symptom.id,
+                                    historyId: symptom.historyId,
                                     name: symptom.name,
-                                    severity: symptom.severity as 'mild' | 'moderate' | 'severe'
-                                })),
-                                status: 'completed' as const,
-                                severity: this.calculateOverallSeverity(historyWithSymptoms.ok.symptoms)
+                                    severity: symptom.severity
+                                }))
                             };
                         }
                     } catch (error) {
@@ -76,9 +76,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                             manufacturer: med.manufacturer,
                             product_ndc: med.product_ncd
                         })),
-                        symptoms: [],
-                        status: 'completed' as const,
-                        severity: 'mild' as const
+                        symptoms: []
                     };
                 });
                 
@@ -92,13 +90,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
         }
     }
 
-    private calculateOverallSeverity(symptoms: any[]): 'mild' | 'moderate' | 'severe' {
-        if (symptoms.some(s => s.severity === 'severe')) return 'severe';
-        if (symptoms.some(s => s.severity === 'moderate')) return 'moderate';
-        return 'mild';
-    }
-
-    public async addHistory(username: string, assessment: IHealthAssessment): Promise<History | null> {
+    public async addHistory(username: string, assessment: IHealthAssessment, diagnosis?: string): Promise<History | null> {
         try {
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
@@ -109,7 +101,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                 id: assessment.id,
                 userId: principal,
                 username: username,
-                diagnosis: "",
+                diagnosis: diagnosis || "",
                 medicines: [],
                 medicine_response: "",
             };

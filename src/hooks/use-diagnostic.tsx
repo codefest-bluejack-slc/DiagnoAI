@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
-import { IHistoryItem } from '../interfaces/IHistoryModal';
+import { IHistoryResponse } from '../interfaces/IHistoryModal';
 import { useService } from './use-service';
 import { useMutation } from './use-mutation';
 import { useToast } from './use-toast';
@@ -8,7 +8,7 @@ import { Symptom } from '../declarations/symptom/symptom.did';
 import { DiagnosisService } from '../services/diagnosis.service';
 
 export const useDiagnostic = () => {
-  const [history, setHistory] = useState<IHistoryItem[]>([]);
+  const [history, setHistory] = useState<IHistoryResponse[]>([]);
   const [newSymptomName, setNewSymptomName] = useState('');
   const [newSymptomSeverity, setNewSymptomSeverity] = useState<'mild' | 'moderate' | 'severe'>('mild');
   const [newDescription, setNewDescription] = useState('');
@@ -101,7 +101,7 @@ export const useDiagnostic = () => {
   });
 
   const addHistoryMutation = useMutation({
-    mutationFn: (input : {assessment: IHealthAssessment, username: string}) => historyService.addHistory(input.username,input.assessment),
+    mutationFn: (input : {assessment: IHealthAssessment, username: string, diagnosis?: string}) => historyService.addHistory(input.username, input.assessment, input.diagnosis),
     onSuccess: (data) => {
       console.log('History added successfully:', data);
       addToast('Assessment saved successfully!', { type: 'success' });
@@ -475,7 +475,7 @@ export const useDiagnostic = () => {
     return 0;
   };
 
-  const addToHistory = (description: string, diagnosis: string, username: string) => {
+  const addToHistory = (description: string, diagnosis: string, username: string): string => {
     const assessmentId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     
     const assessment: IHealthAssessment = {
@@ -485,9 +485,10 @@ export const useDiagnostic = () => {
       since: newSince || new Date().toISOString().split('T')[0]
     };
     
-    addHistoryMutation.mutate({assessment, username});
+    addHistoryMutation.mutate({assessment, username, diagnosis});
     
     for (const symptom of symptoms) {
+      const symptomId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
       const symptomData = {
         symptom: {
           name: symptom.name,
@@ -498,6 +499,8 @@ export const useDiagnostic = () => {
       };
       addSymptomMutation.mutate(symptomData);
     }
+    
+    return assessmentId;
   };
 
   const clearHistory = async () => {
