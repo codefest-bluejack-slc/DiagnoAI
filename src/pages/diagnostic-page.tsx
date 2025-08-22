@@ -269,7 +269,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
             let addedSymptoms = 0;
             processedSymptoms.forEach((symptom) => {
               if (addedSymptoms < 10) {
-                addToSymptomList(symptom.name, symptom.severity);
+                addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe' | undefined);
                 addedSymptoms++;
               }
             });
@@ -285,7 +285,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                 }
               );
             } else if (structuredData.symptoms.length > 0) {
-              const attemptedSymptoms = structuredData.symptoms.map(s => s.name).join(', ');
+              const attemptedSymptoms = structuredData.symptoms.map((s: any) => s.name).join(', ');
               addToast(
                 `No matches found for: ${attemptedSymptoms}. Please add them manually using the autocomplete.`, 
                 { 

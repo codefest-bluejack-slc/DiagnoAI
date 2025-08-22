@@ -32,7 +32,7 @@ export function AuthProvider({ children }: AuthProps) {
             setIsAuthenticated(!!data);
         },
         onError: (error) => {
-            if (error instanceof Error && error.message.includes("Certificate verification")) {
+            if (error && error.includes("Certificate verification")) {
                 console.warn('Certificate verification failed, user will remain unauthenticated');
                 setUser(null);
                 setIsAuthenticated(false);
