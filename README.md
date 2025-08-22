@@ -11,7 +11,7 @@ The system is powered by **Fetch.ai** library and **Internet Computer Protocol (
 ### AI Agents  
 1. **Diagnosis Agent** 🧠  
    - Accepts user symptom descriptions.  
-   - Provides a probable **diagnosis** with structured output.  
+   - Provides a probable **diagnosis** with struct**u**red output.  
 
 2. **Recommendation Agent** 💊  
    - Suggests **relevant medicines** based on the diagnosis.  
@@ -59,12 +59,23 @@ This will:
 
 ## ICP Features Used  
 
-### Internet Identity (ICP-native Authentication)
+In DiagnoAI, the Internet Computer Protocol (ICP) is used as the backbone for decentralized backend services.  
 
-- **Self-sovereign login** via passkeys (WebAuthn, TPM-backed, biometric, or hardware keys)—no usernames/passwords needed.
-- **Per-dapp pseudonymous identities**: each user-dapp pair gets a unique principal to preserve privacy.
-- **Developer-friendly integration**: use `@dfinity/auth-client` + `whoami()` Motoko query for smooth identity flow.
-- **Secure and time-limited delegations**: handle sessions robustly without excessive user friction.
+- **Motoko Smart Contracts (Canisters):**  
+  The backend is implemented using Motoko to build canisters (smart contracts) that handle core application logic and state management.  
+
+- **Internet Identity for Authentication:**  
+  Users authenticate securely via Internet Identity, ensuring decentralized and privacy-preserving login without usernames or passwords.  
+
+- **HTTP Calls to Canisters:**  
+  The frontend communicates with the backend canisters using ICP’s HTTP call mechanism, enabling smooth interaction between the user interface and the blockchain backend.  
+
+- **Integration with Fetch.ai (History Agent):**  
+  The history agent uses Fetch.ai to log and manage user prompts. The agent communicates with Motoko canisters to store and retrieve the history of prompts for a given username. This ensures that every user’s interaction history is preserved and accessible.  
+
+- **Chat Protocol Support:**  
+  The agents leverage Fetch.ai’s chat protocol to enable structured communication between the frontend, ICP backend, and the AI agents.  
+
 
 ---
 
