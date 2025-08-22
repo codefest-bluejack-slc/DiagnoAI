@@ -40,7 +40,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   
   const medicines = medicineRecommendations.length > 0 
     ? [...new Set(medicineRecommendations.map(med => med.brand_name))]
-    : ['Bowel Sode', 'BHI Diarrhea', 'Pepto-Bismol Chewable, TRAVEL BASIX', 'Ver'];
+    : [];
   
   const apiKey = import.meta.env.VITE_SERPAPI_KEY;
 
@@ -56,9 +56,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     setIsLoading(true);
     setError(null);
     const productsData: { [key: string]: IProduct[] } = {};
-    
-    // temp untuk test doang
-    setIsLoading(false);
 
     if (!apiKey) {
       setError('API key not configured');
@@ -297,7 +294,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     );
   };
 
-  if (!isVisible) {
+  if (!isVisible || medicines.length === 0) {
     return null;
   }
 

@@ -1,6 +1,6 @@
 import json
 from datetime import date
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, HTTPException
 from uagents import Model
 from uagents.query import send_sync_message
 from models import DiagnosisFromSymptomsRequest, DiagonsisRawRequest
@@ -12,8 +12,8 @@ app = FastAPI()
 async def read_root():
     return {"message": "Welcome to the Diagnosis Agent API"}
 
-@app.post("/get_diagonsis/structured")
-async def get_diagnosis_structured(request: dict = Body(...)):
+@app.post("/diagnosis/from-symptoms")
+async def get_diagnosis_from_symptoms(request: dict = Body(...)):
     """
     {
         "description": "I have been sick for around 3 days after eating a lot of seafood",
@@ -40,9 +40,9 @@ async def get_diagnosis_structured(request: dict = Body(...)):
 
     except Exception as e:
         print(f"Error sending message: {e}")
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@app.post("/get_diagnosis/unstructured")
+@app.post("/diagnosis/get_structure")
 async def get_diagnosis_unstructured(request: dict = Body(...)):
     """
     {"text": "I have been sick for around 3 days after eating a lot of seafood, the symptoms include a mild headache, high fever, and high diarrhea. The symptoms started on august 10"}
@@ -60,4 +60,4 @@ async def get_diagnosis_unstructured(request: dict = Body(...)):
 
     except Exception as e:
         print(f"Error sending message: {e}")
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

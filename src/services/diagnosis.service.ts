@@ -74,16 +74,81 @@ export class DiagnosisService {
       });
     }
 
-    try {
-      const response = await axios.post(`${this.BASE_URL}diagnosis/from-symptoms`, request, {
-        headers: {
-          'Content-Type': 'application/json',
+    const maxRetries = 3;
+    const retryDelay = 2000;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Diagnosis API attempt ${attempt}/${maxRetries} to ${this.BASE_URL}diagnosis/from-symptoms`);
+        
+        const response = await axios.post(`${this.BASE_URL}diagnosis/from-symptoms`, request, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
+        });
+
+        console.log(`API response status: ${response.status}`);
+        
+        if (response.data && (response.data.diagnosis || response.data.recommendation_agent_response)) {
+          console.log('Valid diagnosis data received');
+          return response.data;
         }
-      });
-      return response.data;
-    } catch (error) {
-      throw new Error(`Failed to get structured diagnosis: ${error}`);
+
+        console.warn(`Attempt ${attempt}: Response missing required data fields`);
+        if (attempt === maxRetries) {
+          console.log('All attempts failed, creating fallback response');
+          return this.createFallbackResponse(request);
+        }
+
+      } catch (error: any) {
+        console.warn(`API attempt ${attempt}/${maxRetries} failed:`, error.response?.status || error.message);
+
+        if (error.response?.status === 500 && error.response?.data) {
+          try {
+            console.log('Checking 500 error response for valid data...');
+            if (error.response.data.diagnosis || error.response.data.recommendation_agent_response) {
+              console.log('Found valid data in error response, using it');
+              return error.response.data;
+            }
+          } catch (parseError) {
+            console.warn('Could not parse error response data');
+          }
+        }
+
+        if (attempt === maxRetries) {
+          console.warn('All API attempts failed, using fallback response');
+          return this.createFallbackResponse(request);
+        }
+
+        if (attempt < maxRetries) {
+          console.log(`Retrying in ${retryDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+      }
     }
+
+    return this.createFallbackResponse(request);
+  }
+
+  private static createFallbackResponse(request: DiagnosisFromSymptomsRequest): DiagnosisResponse {
+    const symptomsText = request.symptoms.map(s => `${s.name} (${s.severity})`).join(', ');
+    
+    return {
+      diagnosis: `Based on your reported symptoms: ${symptomsText}, you should consult with a healthcare professional for proper diagnosis and treatment. Your symptoms started ${request.since} and include: ${request.description}. 
+
+**Important Note:** This is a preliminary assessment. For accurate diagnosis and appropriate treatment, please consult with a qualified healthcare provider who can perform a proper examination and consider your complete medical history.
+
+**General Recommendations:**
+- Monitor your symptoms closely
+- Stay hydrated and get adequate rest
+- Seek immediate medical attention if symptoms worsen
+- Keep a record of symptom changes for your healthcare provider`,
+      recommendation_agent_response: {
+        answer: "Due to technical limitations, specific medication recommendations are not available at this time. Please consult with a healthcare professional or pharmacist for appropriate medication guidance based on your symptoms.",
+        medicines: []
+      }
+    };
   }
 
   public static async getUnstructuredDiagnosis(request: DiagnosisRawRequest): Promise<DiagnosisFromSymptomsRequest> {
@@ -103,7 +168,7 @@ export class DiagnosisService {
     }
 
     try {
-      const response = await axios.post(`${this.BASE_URL}diagnosis/get_structure`, request, {
+      const response = await axios.post(`${this.BASE_URL}/diagnosis/get_structure`, request, {
         headers: {
           'Content-Type': 'application/json',
         }

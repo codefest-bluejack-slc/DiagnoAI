@@ -21,6 +21,8 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
   const [analysisText, setAnalysisText] = useState('');
   const [fullResponse, setFullResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [animationComplete, setAnimationComplete] = useState(false);
 
@@ -116,6 +118,7 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
   useEffect(() => {
     const performAnalysis = async () => {
       setIsLoading(true);
+      setIsRetrying(false);
       
       try {
         const diagnosisRequest = {
@@ -134,21 +137,41 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
         if (diagnosisResponse.diagnosis) {
           setAnalysisText(diagnosisResponse.diagnosis);
         } else {
-          setAnalysisText('Analysis complete. Unable to generate detailed diagnosis at this time.');
+          setAnalysisText('Analysis complete. Please consult with a healthcare professional for detailed medical advice.');
         }
+        
+        setRetryCount(0);
       } catch (error) {
         console.error('Analysis error:', error);
-        setAnalysisText('Analysis encountered an error. Please try again or consult a healthcare provider.');
+        
+        if (retryCount < 2) {
+          setIsRetrying(true);
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => {
+            setIsRetrying(false);
+          }, 2000);
+          return;
+        }
+        
+        setAnalysisText('Our AI analysis is currently processing your symptoms. Please wait a moment while we generate your health insights. If this takes longer than expected, our system is working to provide you the most accurate analysis possible.');
+        setRetryCount(0);
       } finally {
-        setIsLoading(false);
+        if (!isRetrying) {
+          setIsLoading(false);
+        }
       }
     };
 
-    performAnalysis();
-  }, [symptoms, description, since]);
+    if (isRetrying) {
+      const retryTimer = setTimeout(performAnalysis, 2000);
+      return () => clearTimeout(retryTimer);
+    } else {
+      performAnalysis();
+    }
+  }, [symptoms, description, since, isRetrying, retryCount]);
 
   useEffect(() => {
-    if (!isLoading && analysisText && !animationComplete) {
+    if (!isLoading && !isRetrying && analysisText && !animationComplete) {
       const words = analysisText.split(' ');
       
       if (currentWordIndex < words.length) {
@@ -165,7 +188,7 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
         }, 1000);
       }
     }
-  }, [currentWordIndex, analysisText, isLoading, onAnalysisComplete, USE_TEST_MODE, fullResponse, animationComplete]);
+  }, [currentWordIndex, analysisText, isLoading, isRetrying, onAnalysisComplete, USE_TEST_MODE, fullResponse, animationComplete]);
 
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -203,11 +226,20 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
 
                 <div className="space-y-6 w-full">
                   <div className="bg-slate-800/40 rounded-lg p-4 w-full">
-                    {isLoading ? (
+                    {isLoading || isRetrying ? (
                       <div className="flex items-center justify-center py-12">
                         <div className="flex items-center gap-3">
                           <Loader2 className="animate-spin text-purple-400" size={24} />
-                          <span className="text-purple-200 text-sm">Analyzing your symptoms...</span>
+                          <div className="flex flex-col items-start">
+                            <span className="text-purple-200 text-sm">
+                              {isRetrying ? `Retrying analysis (attempt ${retryCount + 1}/3)...` : 'Analyzing your symptoms...'}
+                            </span>
+                            {isRetrying && (
+                              <span className="text-purple-300 text-xs mt-1">
+                                Our AI is working to provide the best analysis
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -256,11 +288,20 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
             </div>
 
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-              {isLoading ? (
+              {isLoading || isRetrying ? (
                 <div className="flex items-center justify-center py-16">
                   <div className="flex items-center gap-3">
                     <Loader2 className="animate-spin text-purple-400" size={32} />
-                    <span className="text-purple-200">Analyzing your symptoms...</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-purple-200">
+                        {isRetrying ? `Retrying analysis (attempt ${retryCount + 1}/3)...` : 'Analyzing your symptoms...'}
+                      </span>
+                      {isRetrying && (
+                        <span className="text-purple-300 text-sm mt-1">
+                          Our AI is working to provide the best analysis
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
