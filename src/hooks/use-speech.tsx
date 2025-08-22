@@ -26,9 +26,9 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
 
   const USE_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true';
 
-  if (USE_TEST_MODE) {
-    console.log('Speech hook initialized in TEST MODE');
-  }
+  // if (USE_TEST_MODE) {
+  //   console.log('Speech hook initialized in TEST MODE');
+  // }
 
   const TEST_SPEECH_DATA = {
     description: "Symptoms experienced after eating a large amount of seafood.",
@@ -62,7 +62,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       setTimeout(() => {
         setTranscript(TEST_SPEECH_DATA.description);
         setStructuredData(TEST_SPEECH_DATA);
-        console.log("Using test data for speech processing", TEST_SPEECH_DATA);
+        // console.log("Using test data for speech processing", TEST_SPEECH_DATA);
         setIsProcessing(false);
       }, 2000);
       return;

@@ -46,7 +46,7 @@ import {
 } from '../utils/diagnostic-utils';
 import '../styles/diagnostic-page.css';
 
-export default function DiagnosticPage({}: IDiagnosticPageProps) {
+export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const mousePosition = useMouseTracking();
   const { addToast } = useToast();
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -114,12 +114,12 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const processExtractedSymptoms = (extractedSymptoms: any[]) => {
     const processedSymptoms: { name: string; severity: string }[] = [];
-    
+
     extractedSymptoms.forEach((extractedSymptom) => {
       if (!extractedSymptom.name || !extractedSymptom.severity) return;
-      
+
       const bestMatches = findBestMatches([extractedSymptom.name]);
-      
+
       if (bestMatches.length > 0) {
         processedSymptoms.push({
           name: bestMatches[0],
@@ -135,12 +135,130 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         }
       }
     });
-    
-    const uniqueSymptoms = processedSymptoms.filter((symptom, index, self) => 
+
+    const uniqueSymptoms = processedSymptoms.filter((symptom, index, self) =>
       index === self.findIndex(s => s.name === symptom.name)
     );
-    
+
     return uniqueSymptoms;
+  };
+
+  const renderRichText = (text: string, colorScheme: 'purple' | 'blue' = 'purple') => {
+    const colors = {
+      purple: {
+        header: 'text-white border-b border-purple-500/30',
+        subheader: 'text-purple-100',
+        bullet: 'text-purple-400',
+        numbered: 'text-purple-100',
+        emphasis: 'text-purple-100 font-medium',
+        text: 'text-purple-200',
+        bold: 'text-white font-bold'
+      },
+      blue: {
+        header: 'text-white border-b border-blue-500/30',
+        subheader: 'text-blue-100',
+        bullet: 'text-blue-400',
+        numbered: 'text-blue-100',
+        emphasis: 'text-blue-100 font-medium',
+        text: 'text-purple-200',
+        bold: 'text-white font-bold'
+      }
+    };
+
+    const scheme = colors[colorScheme];
+
+    return text.split('\n').map((line, index) => {
+      if (line.trim() === '') {
+        return <div key={`empty-${index}`} className="h-3" />;
+      }
+
+      // Handle full line bold headers (like **Recommended Medication:** DysBio Plus)
+      if (line.includes('**') && line.match(/\*\*([^*]+)\*\*/)) {
+        const formattedLine = line.replace(/\*\*([^*]+)\*\*/g, `<span class="${scheme.bold}">$1</span>`);
+        return (
+          <div key={`bold-line-${index}`} className={`my-2 leading-relaxed ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedLine }} />
+        );
+      }
+
+      // Handle traditional full line bold headers
+      if (line.startsWith('**') && line.endsWith('**')) {
+        const cleanLine = line.replace(/\*\*/g, '');
+        return (
+          <h4 key={`section-${index}`} className={`font-bold mt-4 mb-2 text-base pb-1 ${scheme.header}`}>
+            {cleanLine}
+          </h4>
+        );
+      }
+
+      // Handle markdown subheadings
+      if (line.startsWith('###')) {
+        const cleanLine = line.replace(/###/g, '').trim();
+        return (
+          <h5 key={`subsection-${index}`} className={`font-semibold mt-3 mb-1 text-sm ${scheme.subheader}`}>
+            {cleanLine}
+          </h5>
+        );
+      }
+
+      // Handle bullet points
+      if (line.startsWith('• ') || line.startsWith('- ')) {
+        const bulletText = line.substring(2);
+        // Check if bullet text contains bold formatting
+        if (bulletText.includes('**')) {
+          const formattedBullet = bulletText.replace(/\*\*([^*]+)\*\*/g, `<span class="${scheme.bold}">$1</span>`);
+          return (
+            <div key={`bullet-${index}`} className="flex items-start gap-3 my-2 ml-2">
+              <span className={`flex-shrink-0 mt-1 ${scheme.bullet}`}>•</span>
+              <span className={`flex-1 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedBullet }} />
+            </div>
+          );
+        }
+        return (
+          <div key={`bullet-${index}`} className="flex items-start gap-3 my-2 ml-2">
+            <span className={`flex-shrink-0 mt-1 ${scheme.bullet}`}>•</span>
+            <span className={`flex-1 ${scheme.text}`}>{bulletText}</span>
+          </div>
+        );
+      }
+
+      // Handle numbered lists
+      if (line.match(/^\d+\./)) {
+        const parts = line.split(': ');
+        const numberPart = parts[0];
+        const restPart = parts.slice(1).join(': ');
+        
+        if (restPart && restPart.includes('**')) {
+          const formattedRest = restPart.replace(/\*\*([^*]+)\*\*/g, `<span class="${scheme.bold}">$1</span>`);
+          return (
+            <div key={`numbered-${index}`} className="my-2 ml-2">
+              <span className={`font-semibold ${scheme.numbered}`}>{numberPart}:</span>
+              <span className={`ml-2 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedRest }} />
+            </div>
+          );
+        }
+        return (
+          <div key={`numbered-${index}`} className="my-2 ml-2">
+            <span className={`font-semibold ${scheme.numbered}`}>{numberPart}:</span>
+            <span className={`ml-2 ${scheme.text}`}>{restPart}</span>
+          </div>
+        );
+      }
+
+      // Handle single asterisk emphasis (italic)
+      if (line.includes('*') && !line.includes('**')) {
+        const formattedLine = line.replace(/\*([^*]+)\*/g, `<em class="${scheme.emphasis}">$1</em>`);
+        return (
+          <div key={`text-${index}`} className={`my-2 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedLine }} />
+        );
+      }
+
+      // Regular text
+      return (
+        <div key={`text-${index}`} className={`my-2 leading-relaxed ${scheme.text}`}>
+          {line}
+        </div>
+      );
+    });
   };
 
   const [isExiting, setIsExiting] = useState(false);
@@ -179,7 +297,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       symptomsCount: symptoms.length,
       newSymptomName: newSymptomName.trim()
     });
-    
+
     if (editingSymptom !== null) {
       if (newSymptomName.trim()) {
         const index = parseInt(editingSymptom);
@@ -194,17 +312,17 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         addToast('Please provide a description of your health concerns', { type: 'warning', title: 'Missing Description' });
         return;
       }
-      
+
       if (!newSince) {
         addToast('Please select when your symptoms started', { type: 'warning', title: 'Missing Date' });
         return;
       }
-      
+
       if (symptoms.length === 0) {
         addToast('Please add at least one symptom to proceed', { type: 'warning', title: 'Missing Symptoms' });
         return;
       }
-      
+
       if (newDescription.trim() && newSince && symptoms.length > 0) {
         console.log('Starting diagnostic analysis...');
         setIllnessResponse('');
@@ -265,35 +383,35 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     try {
       if (transcribedText && transcribedText.trim()) {
         setNewDescription(prev => prev ? `${prev} ${transcribedText}` : transcribedText);
-        
+
         if (structuredData) {
           console.log('Structured data received from diagnosis:', structuredData);
-          
+
           if (structuredData.symptoms && Array.isArray(structuredData.symptoms)) {
             console.log('Original symptoms:', structuredData.symptoms);
             const processedSymptoms = processExtractedSymptoms(structuredData.symptoms);
             console.log('Processed symptoms:', processedSymptoms);
-            
+
             let addedSymptoms = 0;
             processedSymptoms.forEach((symptom) => {
               if (addedSymptoms < 10) {
                 let addedSymptoms = 0;
-            processedSymptoms.forEach((symptom) => {
-              if (addedSymptoms < 10) {
-                addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe');
+                processedSymptoms.forEach((symptom) => {
+                  if (addedSymptoms < 10) {
+                    addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe');
+                    addedSymptoms++;
+                  }
+                });
                 addedSymptoms++;
               }
             });
-                addedSymptoms++;
-              }
-            });
-            
+
             if (addedSymptoms > 0) {
               const symptomList = processedSymptoms.slice(0, addedSymptoms).map(s => s.name).join(', ');
               addToast(
-                `Auto-selected ${addedSymptoms} symptom${addedSymptoms > 1 ? 's' : ''}: ${symptomList}`, 
-                { 
-                  type: 'success', 
+                `Auto-selected ${addedSymptoms} symptom${addedSymptoms > 1 ? 's' : ''}: ${symptomList}`,
+                {
+                  type: 'success',
                   title: 'Symptoms Auto-Selected',
                   duration: 6000
                 }
@@ -301,45 +419,45 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
             } else if (structuredData.symptoms.length > 0) {
               const attemptedSymptoms = structuredData.symptoms.map((s: any) => s.name).join(', ');
               addToast(
-                `No matches found for: ${attemptedSymptoms}. Please add them manually using the autocomplete.`, 
-                { 
-                  type: 'warning', 
+                `No matches found for: ${attemptedSymptoms}. Please add them manually using the autocomplete.`,
+                {
+                  type: 'warning',
                   title: 'No Matches Found',
                   duration: 6000
                 }
               );
             }
           }
-          
+
           if (structuredData.since) {
             setNewSince(structuredData.since);
           }
         }
-        
+
         addToast(
-          'Voice transcription added to your description successfully!', 
-          { 
-            type: 'success', 
+          'Voice transcription added to your description successfully!',
+          {
+            type: 'success',
             title: 'Transcription Added',
             duration: 4000
           }
         );
       } else {
         addToast(
-          'No text was transcribed from the audio. Please try again.', 
-          { 
-            type: 'warning', 
-            title: 'Transcription Empty' 
+          'No text was transcribed from the audio. Please try again.',
+          {
+            type: 'warning',
+            title: 'Transcription Empty'
           }
         );
       }
-      
+
       setIsSpeechModalOpen(false);
     } catch (error) {
       console.error('Error handling speech transcription:', error);
-      addToast('Failed to process transcription. Please try again.', { 
-        type: 'error', 
-        title: 'Transcription Error' 
+      addToast('Failed to process transcription. Please try again.', {
+        type: 'error',
+        title: 'Transcription Error'
       });
     }
   };
@@ -359,10 +477,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
@@ -413,14 +531,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
         className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group history-button backdrop-blur-sm border"
       >
         {isLoading ? (
-          <RefreshCw 
-            className="animate-spin transition-transform duration-300 text-purple-300" 
-            size={20} 
+          <RefreshCw
+            className="animate-spin transition-transform duration-300 text-purple-300"
+            size={20}
           />
         ) : (
-          <History 
-            className="group-hover:rotate-12 transition-transform duration-300 text-purple-300" 
-            size={20} 
+          <History
+            className="group-hover:rotate-12 transition-transform duration-300 text-purple-300"
+            size={20}
           />
         )}
       </button>
@@ -442,7 +560,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               )}
             </div>
             <p className="text-purple-200 text-lg max-w-2xl mx-auto">
-              {import.meta.env.VITE_TEST_MODE === 'true' 
+              {import.meta.env.VITE_TEST_MODE === 'true'
                 ? 'Testing environment - using mock data for demonstration purposes'
                 : 'Share your symptoms and receive comprehensive AI-powered health insights'
               }
@@ -450,10 +568,10 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
             <div className="flex items-center justify-center gap-2 mt-3">
             </div>
           </div>
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-3">
-              <div className="sticky top-24 space-y-6">
-                <div className="step-card">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-3">
+              <div className="sticky top-24 space-y-6 w-full">
+                <div className="step-card w-full">
                   <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                     <Activity className="text-purple-300" size={20} />
                     Analysis Steps
@@ -462,28 +580,25 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     {['input', 'finding-illness', 'finding-products'].map((step, index) => (
                       <div
                         key={step}
-                        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
-                          currentStep === step
-                            ? 'step-item-active'
-                            : 'step-item-inactive'
-                        }`}
+                        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 w-full ${currentStep === step
+                          ? 'step-item-active'
+                          : 'step-item-inactive'
+                          }`}
                       >
                         <div
-                          className={`p-2 rounded-full ${
-                            currentStep === step
-                              ? 'bg-purple-500/30'
-                              : 'bg-white/10'
-                          }`}
+                          className={`p-2 rounded-full flex-shrink-0 ${currentStep === step
+                            ? 'bg-purple-500/30'
+                            : 'bg-white/10'
+                            }`}
                         >
                           {getStepIcon(step)}
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p
-                            className={`font-medium text-sm ${
-                              currentStep === step
-                                ? 'text-white'
-                                : 'text-purple-200'
-                            }`}
+                            className={`font-medium text-sm ${currentStep === step
+                              ? 'text-white'
+                              : 'text-purple-200'
+                              }`}
                           >
                             {step === 'input'
                               ? 'Share Your Health Concerns'
@@ -491,7 +606,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                                 ? 'AI is Analyzing Your Symptoms'
                                 : 'Searching Available Products'}
                           </p>
-                          <p className="text-purple-300 text-xs">
+                          <p className="text-purple-300 text-xs break-words">
                             {step === 'input'
                               ? 'Tell us about your symptoms'
                               : step === 'finding-illness'
@@ -506,8 +621,8 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               </div>
             </div>
 
-            <div className="col-span-12 lg:col-span-6">
-              <div className="space-y-6">
+            <div className="lg:col-span-6">
+              <div className="space-y-6 w-full">
                 {showAnalysis ? (
                   <AnalyzeSymptoms
                     symptoms={symptoms}
@@ -524,19 +639,19 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     }}
                   />
                 ) : analysisComplete && illnessResponse ? (
-                  <div className="space-y-6">
-                    <div className="bg-slate-800/50 backdrop-blur-sm border border-purple-400/30 rounded-xl p-6">
-                      <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50">
-                        <div className="flex items-start gap-4 mb-4">
-                          <div className="p-2 bg-green-500/20 rounded-full">
+                  <div className="w-full max-w-none">
+                    <div className="bg-slate-800/50 backdrop-blur-sm border border-purple-400/30 rounded-xl p-6 w-full">
+                      <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50 w-full">
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
+                          <div className="p-2 bg-green-500/20 rounded-full flex-shrink-0">
                             <Brain className="text-green-300" size={20} />
                           </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-4">
+                          <div className="flex-1 min-w-0 w-full">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                               <h3 className="text-white font-semibold text-lg">
-                                🔍 AI Diagnosis Complete
+                                AI Diagnosis Complete
                               </h3>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 {import.meta.env.VITE_TEST_MODE === 'true' && (
                                   <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
                                     TEST MODE
@@ -555,129 +670,94 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                                 </button>
                               </div>
                             </div>
-                            
-                            <div className="space-y-6">
-                              <div className="text-purple-200 text-sm leading-relaxed max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
-                                <div className="space-y-2">
-                                  {illnessResponse.split('\n').map((line, index) => {
-                                    if (line.trim() === '') {
-                                      return <div key={`empty-${index}`} className="h-2" />;
-                                    }
-                                    
-                                    if (line.startsWith('**') && line.endsWith('**')) {
-                                      const cleanLine = line.replace(/\*\*/g, '');
-                                      return (
-                                        <h4 key={`section-${index}`} className="font-bold text-white mt-4 mb-2 text-base">
-                                          {cleanLine}
-                                        </h4>
-                                      );
-                                    }
-                                    
-                                    if (line.startsWith('• ')) {
-                                      return (
-                                        <div key={`bullet-${index}`} className="flex items-start gap-2 my-1">
-                                          <span className="text-purple-400 flex-shrink-0">•</span>
-                                          <span className="flex-1">{line.substring(2)}</span>
-                                        </div>
-                                      );
-                                    }
-                                    
-                                    if (line.match(/^\d+\./)) {
-                                      const parts = line.split(': ');
-                                      return (
-                                        <div key={`numbered-${index}`} className="my-2">
-                                          <strong className="font-bold">{parts[0]}:</strong> {parts[1] || ''}
-                                        </div>
-                                      );
-                                    }
-                                    
-                                    return (
-                                      <div key={`text-${index}`} className="my-1">
-                                        {line}
-                                      </div>
-                                    );
-                                  })}
+
+                            <div className="space-y-6 w-full">
+                              <div className="bg-slate-800/40 rounded-lg p-4 w-full">
+                                <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
+                                  <div className="space-y-3 break-words w-full">
+                                    {renderRichText(illnessResponse, 'purple')}
+                                  </div>
                                 </div>
                               </div>
 
                               {drugsResponse && (
-                                <div className="border-t border-slate-700/50 pt-4">
+                                <div className="border-t border-slate-700/50 pt-4 w-full">
                                   <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
                                     <Pill className="text-blue-300" size={18} />
                                     Treatment Recommendations
                                   </h4>
-                                  <div className="bg-slate-800/30 rounded-lg p-4 text-purple-200 text-sm leading-relaxed">
-                                    {drugsResponse.split('\n').map((line, index) => {
-                                      if (line.trim() === '') return <div key={`empty-${index}`} className="h-1" />;
-                                      if (line.startsWith('**') && line.endsWith('**')) {
-                                        const cleanLine = line.replace(/\*\*/g, '');
-                                        return <div key={`bold-${index}`} className="font-bold text-blue-200 mt-2">{cleanLine}</div>;
-                                      }
-                                      return <div key={`text-${index}`} className="my-1">{line}</div>;
-                                    })}
+                                  <div className="bg-slate-800/40 rounded-lg p-4 w-full">
+                                    <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
+                                      <div className="space-y-3 break-words w-full">
+                                        {renderRichText(drugsResponse, 'blue')}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               )}
 
                               {medicineRecommendations.length > 0 && (
-                                <div className="border-t border-slate-700/50 pt-4">
+                                <div className="border-t border-slate-700/50 pt-4 w-full">
                                   <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
                                     <ShoppingCart className="text-green-300" size={18} />
-                                    Recommended Medications
+                                    Recommended Medications ({medicineRecommendations.length} found)
                                   </h4>
-                                  <div className="grid gap-3">
-                                    {medicineRecommendations.slice(0, 3).map((medicine, index) => (
-                                      <div key={index} className="bg-gradient-to-r from-slate-800/40 to-slate-700/30 border border-slate-600/50 rounded-lg p-4 hover:border-green-400/50 transition-all duration-300 group">
-                                        <div className="flex items-start justify-between mb-3">
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                            <h5 className="font-semibold text-white text-base group-hover:text-green-100 transition-colors">{medicine.brand_name}</h5>
+                                  <div className="w-full">
+                                    <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 pr-2 w-full">
+                                      {medicineRecommendations.map((medicine, index) => (
+                                        <div key={index} className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 border border-slate-600/50 rounded-lg p-4 hover:border-green-400/50 transition-all duration-300 group w-full">
+                                          <div className="flex flex-col gap-3">
+                                            <div className="flex items-center gap-3">
+                                              <div className="w-3 h-3 bg-green-400 rounded-full flex-shrink-0"></div>
+                                              <h5 className="font-semibold text-white text-base group-hover:text-green-100 transition-colors break-words flex-1">
+                                                {medicine.brand_name}
+                                              </h5>
+                                            </div>
+                                            <div className="flex items-start gap-2 text-purple-200">
+                                              <Pill className="w-4 h-4 text-blue-300 flex-shrink-0 mt-0.5" />
+                                              <div className="flex-1 min-w-0">
+                                                <span className="font-medium text-purple-100 block text-sm">Generic Name:</span>
+                                                {medicine.generic_name.length > 40 ? (
+                                                  <Tooltip content={medicine.generic_name} position="top">
+                                                    <span className="text-purple-200 break-words cursor-help hover:text-purple-100 transition-colors">
+                                                      {medicine.generic_name.substring(0, 40)}...
+                                                    </span>
+                                                  </Tooltip>
+                                                ) : (
+                                                  <span className="text-purple-200 break-words">{medicine.generic_name}</span>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <div className="flex items-start gap-2 text-purple-200">
+                                              <Shield className="w-4 h-4 text-blue-300 flex-shrink-0 mt-0.5" />
+                                              <div className="flex-1 min-w-0">
+                                                <span className="font-medium text-purple-100 block text-sm">Manufacturer:</span>
+                                                <span className="text-purple-200 break-words">{medicine.manufacturer}</span>
+                                              </div>
+                                            </div>
                                           </div>
-                                          <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full border border-green-400/30">
-                                            {medicine.product_ndc}
-                                          </span>
                                         </div>
-                                        <div className="space-y-2 text-sm">
-                                          <div className="flex items-center gap-2 text-purple-200">
-                                            <Pill className="w-3 h-3 text-blue-300" />
-                                            <span className="font-medium text-purple-100">Generic:</span> 
-                                            <span className="text-sm truncate">{medicine.generic_name}</span>
-                                          </div>
-                                          <div className="flex items-center gap-2 text-purple-200">
-                                            <Shield className="w-3 h-3 text-blue-300" />
-                                            <span className="font-medium text-purple-100">Manufacturer:</span> 
-                                            <span className="text-sm">{medicine.manufacturer}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  {medicineRecommendations.length > 3 && (
-                                    <div className="mt-3 text-center">
-                                      <span className="text-purple-300 text-sm">
-                                        +{medicineRecommendations.length - 3} more available options
-                                      </span>
+                                      ))}
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
                               )}
+
+                              <div className="bg-slate-800/30 backdrop-blur-sm border border-purple-400/30 rounded-xl p-4 w-full">
+                                <button
+                                  onClick={() => {
+                                    setCurrentStep('finding-products');
+                                    setShowProducts(true);
+                                  }}
+                                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-purple-500/25"
+                                >
+                                  <ShoppingCart size={16} />
+                                  Find Products & Treatments
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        {analysisComplete && (
-                          <div className="bg-slate-800/30 backdrop-blur-sm border border-purple-400/30 rounded-xl p-4 mt-4">
-                            <button
-                              onClick={() => {
-                                setCurrentStep('finding-products');
-                                setShowProducts(true);
-                              }}
-                              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
-                            >
-                              <ShoppingCart size={16} />
-                              Find Products & Treatments
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -688,7 +768,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative text-center transform transition-all duration-500 group-hover:scale-105">
-                      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 animate-pulse">
+                      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                         <Plus
                           className="text-purple-300 group-hover:rotate-90 transition-transform duration-500"
                           size={24}
@@ -702,7 +782,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       </p>
                       <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
                         <span>Begin your diagnostic process</span>
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                       </div>
                     </div>
                   </div>
@@ -715,7 +795,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div className="relative text-center transform transition-all duration-500 group-hover:scale-105">
-                          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 animate-pulse">
+                          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                             <Plus
                               className="text-purple-300 group-hover:rotate-90 transition-transform duration-500"
                               size={24}
@@ -729,193 +809,192 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           </p>
                           <div className="inline-flex items-center gap-2 text-purple-300 text-sm">
                             <span>Begin your diagnostic process</span>
-                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                           </div>
                         </div>
                       </div>
                     )}
 
                     {showAddForm && (
-                  <div className="symptom-form-card transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-top-3">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
-                        <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-500 delay-200">
-                          <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
+                      <div className="symptom-form-card transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-top-3">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
+                            <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-500 delay-200">
+                              <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
+                            </div>
+                            <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
+                              {editingSymptom ? 'Edit Symptom' : 'Start Health Analysis'}
+                            </span>
+                          </h3>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transform hover:scale-110"
+                          >
+                            <X className="text-purple-300" size={20} />
+                          </button>
                         </div>
-                        <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
-                          {editingSymptom ? 'Edit Symptom' : 'Start Health Analysis'}
-                        </span>
-                      </h3>
-                      <button
-                        onClick={handleCancelEdit}
-                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-180 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transform hover:scale-110"
-                      >
-                        <X className="text-purple-300" size={20} />
-                      </button>
-                    </div>
 
-                    <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-600 delay-500">
-                      <div>
-                        <label className="block text-purple-200 text-sm font-medium mb-3">
-                          Symptoms
-                        </label>
-                        <div className="space-y-4">
-                          {symptoms.length > 0 && (
-                            <div className="flex flex-wrap gap-2 p-3 bg-purple-500-10 border border-purple-400-30 rounded-xl">
-                              {symptoms.map((symptom, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 px-3 py-1.5 bg-purple-500-20 border border-purple-400-50 rounded-full text-sm text-purple-200 group hover-bg-purple-500-30 transition-all duration-200"
-                                >
-                                  <span>{symptom.name}</span>
-                                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                                    symptom.severity === 'mild' ? 'bg-green-400-30 text-green-300' :
-                                    symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
-                                    'bg-red-400-30 text-red-300'
-                                  }`}>
-                                    {symptom.severity}
-                                  </span>
+                        <div className="space-y-6 animate-in slide-in-from-bottom-3 duration-600 delay-500">
+                          <div>
+                            <label className="block text-purple-200 text-sm font-medium mb-3">
+                              Symptoms
+                            </label>
+                            <div className="space-y-4">
+                              {symptoms.length > 0 && (
+                                <div className="flex flex-wrap gap-2 p-3 bg-purple-500-10 border border-purple-400-30 rounded-xl">
+                                  {symptoms.map((symptom, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-2 px-3 py-1.5 bg-purple-500-20 border border-purple-400-50 rounded-full text-sm text-purple-200 group hover-bg-purple-500-30 transition-all duration-200"
+                                    >
+                                      <span>{symptom.name}</span>
+                                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${symptom.severity === 'mild' ? 'bg-green-400-30 text-green-300' :
+                                        symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
+                                          'bg-red-400-30 text-red-300'
+                                        }`}>
+                                        {symptom.severity}
+                                      </span>
+                                      <button
+                                        onClick={() => removeFromSymptomList(index)}
+                                        className="p-0.5 rounded-full hover-bg-red-500-40 text-red-400 hover-text-red-300 transition-all duration-200 hover:scale-110"
+                                        title="Remove symptom"
+                                      >
+                                        <X size={12} />
+                                      </button>
+                                    </div>
+                                  ))}
                                   <button
-                                    onClick={() => removeFromSymptomList(index)}
-                                    className="p-0.5 rounded-full hover-bg-red-500-40 text-red-400 hover-text-red-300 transition-all duration-200 hover:scale-110"
-                                    title="Remove symptom"
+                                    onClick={clearSymptomList}
+                                    className="px-2 py-1 text-xs text-purple-300 hover:text-purple-200 underline transition-colors duration-200"
+                                    title="Clear all symptoms"
                                   >
-                                    <X size={12} />
+                                    Clear all
                                   </button>
                                 </div>
-                              ))}
-                              <button
-                                onClick={clearSymptomList}
-                                className="px-2 py-1 text-xs text-purple-300 hover:text-purple-200 underline transition-colors duration-200"
-                                title="Clear all symptoms"
-                              >
-                                Clear all
-                              </button>
+                              )}
+                              <div className="w-full">
+                                <SymptomAutocomplete
+                                  value={newSymptomName}
+                                  onChange={setNewSymptomName}
+                                  onAdd={(selectedValue) => {
+                                    const valueToAdd = selectedValue || newSymptomName.trim();
+                                    if (valueToAdd) {
+                                      addToSymptomList(valueToAdd);
+                                    }
+                                  }}
+                                  placeholder="Type Something... "
+                                  disabled={symptoms.length >= 20}
+                                  severity={newSymptomSeverity}
+                                  onSeverityChange={setNewSymptomSeverity}
+                                />
+                              </div>
                             </div>
-                          )}
-                          <div className="w-full">
-                            <SymptomAutocomplete
-                              value={newSymptomName}
-                              onChange={setNewSymptomName}
-                              onAdd={(selectedValue) => {
-                                const valueToAdd = selectedValue || newSymptomName.trim();
-                                if (valueToAdd) {
-                                  addToSymptomList(valueToAdd);
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <label className="block text-purple-200 text-sm font-medium">
+                                Description
+                              </label>
+                            </div>
+
+                            <textarea
+                              value={newDescription}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value.length <= 500) {
+                                  setNewDescription(value);
+                                } else {
+                                  addToast('Description cannot exceed 500 characters', { type: 'warning', title: 'Character Limit' });
                                 }
                               }}
-                              placeholder="Type Something... "
-                              disabled={symptoms.length >= 20}
-                              severity={newSymptomSeverity}
-                              onSeverityChange={setNewSymptomSeverity}
+                              placeholder="Describe your health concerns in detail..."
+                              maxLength={500}
+                              className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm resize-none text-lg leading-relaxed transition-all duration-300 focus:scale-[1.01]"
+                              rows={6}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.ctrlKey) {
+                                  handleSaveEdit();
+                                }
+                              }}
                             />
+                            <div className="flex justify-between items-center mt-2">
+                              <p className="text-purple-300 text-xs">
+                                {newDescription.length}/500 characters
+                              </p>
+                              <p className="text-purple-300 text-xs">
+                                Press Ctrl+Enter to start analysis
+                              </p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-purple-200 text-sm font-medium mb-3">
+                              Since When
+                            </label>
+                            <input
+                              type="date"
+                              value={newSince}
+                              onChange={(e) => {
+                                setNewSince(e.target.value);
+                              }}
+                              className="text-white w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] date-input"
+                            />
+                            <p className="text-purple-300 text-xs mt-2">
+                              Select when your symptoms started
+                            </p>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <button
+                              onClick={handleSaveEdit}
+                              disabled={
+                                !newDescription.trim() ||
+                                !newSince ||
+                                symptoms.length === 0 ||
+                                isLoading
+                              }
+                              className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
+                            >
+                              {isLoading ? (
+                                <>
+                                  <RefreshCw className="animate-spin" size={20} />
+                                  <span>Starting Analysis...</span>
+                                </>
+                              ) : editingSymptom ? (
+                                <>
+                                  <Edit className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                                  <span>Update Symptom</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                                  <span>Start Analysis</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              onClick={toggleSpeechModal}
+                              disabled={isLoading}
+                              className="py-4 px-4 bg-white-10 hover-bg-purple-500-20 disabled:bg-white-5 disabled:cursor-not-allowed text-purple-300 hover:text-purple-200 disabled:text-purple-400 rounded-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group disabled:hover:scale-100"
+                              title="Use voice input"
+                            >
+                              <Mic
+                                className="transition-colors duration-300"
+                                size={20}
+                              />
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              disabled={isLoading}
+                              className="py-4 px-6 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-purple-200 disabled:text-purple-400 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:cursor-not-allowed"
+                            >
+                              Cancel
+                            </button>
                           </div>
                         </div>
                       </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <label className="block text-purple-200 text-sm font-medium">
-                            Description
-                          </label>
-                        </div>
-                        
-                        <textarea
-                          value={newDescription}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value.length <= 500) {
-                              setNewDescription(value);
-                            } else {
-                              addToast('Description cannot exceed 500 characters', { type: 'warning', title: 'Character Limit' });
-                            }
-                          }}
-                          placeholder="Describe your health concerns in detail..."
-                          maxLength={500}
-                          className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm resize-none text-lg leading-relaxed transition-all duration-300 focus:scale-[1.01]"
-                          rows={6}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && e.ctrlKey) {
-                              handleSaveEdit();
-                            }
-                          }}
-                        />
-                        <div className="flex justify-between items-center mt-2">
-                          <p className="text-purple-300 text-xs">
-                            {newDescription.length}/500 characters
-                          </p>
-                          <p className="text-purple-300 text-xs">
-                            Press Ctrl+Enter to start analysis
-                          </p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-purple-200 text-sm font-medium mb-3">
-                          Since When
-                        </label>
-                        <input
-                          type="date"
-                          value={newSince}
-                          onChange={(e) => {
-                            setNewSince(e.target.value);
-                          }}
-                          className="text-white w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] date-input"
-                        />
-                        <p className="text-purple-300 text-xs mt-2">
-                          Select when your symptoms started
-                        </p>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <button
-                          onClick={handleSaveEdit}
-                          disabled={
-                            !newDescription.trim() || 
-                            !newSince || 
-                            symptoms.length === 0 || 
-                            isLoading
-                          }
-                          className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
-                        >
-                          {isLoading ? (
-                            <>
-                              <RefreshCw className="animate-spin" size={20} />
-                              <span>Starting Analysis...</span>
-                            </>
-                          ) : editingSymptom ? (
-                            <>
-                              <Edit className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
-                              <span>Update Symptom</span>
-                            </>
-                          ) : (
-                            <>
-                              <Play className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
-                              <span>Start Analysis</span>
-                            </>
-                          )}
-                        </button>
-                        <button
-                          onClick={toggleSpeechModal}
-                          disabled={isLoading}
-                          className="py-4 px-4 bg-white-10 hover-bg-purple-500-20 disabled:bg-white-5 disabled:cursor-not-allowed text-purple-300 hover:text-purple-200 disabled:text-purple-400 rounded-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group disabled:hover:scale-100"
-                          title="Use voice input"
-                        >
-                          <Mic 
-                            className="transition-colors duration-300" 
-                            size={20} 
-                          />
-                        </button>
-                        <button
-                          onClick={handleCancelEdit}
-                          disabled={isLoading}
-                          className="py-4 px-6 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-purple-200 disabled:text-purple-400 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:cursor-not-allowed"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    )}
                   </>
                 )}
 
@@ -939,52 +1018,68 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               </div>
             </div>
 
-            <div className="col-span-12 lg:col-span-3">
-              <div className="sticky top-24 space-y-6">
+            <div className="lg:col-span-3">
+              <div className="sticky top-24 space-y-6 w-full">
                 {(showAnalysis || analysisComplete || showProducts) && (
-                  <div className="bg-slate-800-30 backdrop-blur-sm border border-slate-600-30 rounded-xl p-4">
+                  <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-600/30 rounded-xl p-4 w-full">
                     <h4 className="text-white font-medium mb-3 flex items-center gap-2">
                       <Brain className="text-purple-300" size={16} />
-                      Your Symptoms
+                      Your Symptoms ({symptoms.length})
                     </h4>
                     {symptoms.length > 0 ? (
-                      <>
-                        <div className="space-y-2">
+                      <div className="w-full">
+                        <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
                           {symptoms.map((symptom, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg">
-                              <span className="text-purple-200 text-sm">{symptom.name}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300' :
-                                symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
-                                'bg-red-400/30 text-red-300'
-                              }`}>
+                            <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-slate-700/30 rounded-lg border border-slate-600/20 hover:border-purple-400/30 transition-all duration-200">
+                              <span className="text-purple-200 text-sm font-medium break-words flex-1">{symptom.name}</span>
+                              <span className={`text-xs px-2 py-1 rounded-full font-medium text-center flex-shrink-0 ${symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300 border border-green-400/50' :
+                                symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300 border border-amber-400/50' :
+                                  'bg-red-400/30 text-red-300 border border-red-400/50'
+                                }`}>
                                 {symptom.severity}
                               </span>
                             </div>
                           ))}
                         </div>
                         {(showAnalysis || showProducts) && (
-                          <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
-                            <p className="text-purple-200 text-xs">
-                              <strong>Since:</strong> {new Date(newSince).toLocaleDateString()}
-                            </p>
-                            <p className="text-purple-200 text-xs mt-1">
-                              <strong>Description:</strong> {newDescription}
-                            </p>
+                          <div className="mt-4 p-3 bg-slate-700/20 rounded-lg border border-slate-600/30 w-full">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-3 h-3 text-purple-300 flex-shrink-0" />
+                                <p className="text-purple-200 text-xs">
+                                  <span className="font-medium">Since:</span> {new Date(newSince).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <Edit3 className="w-3 h-3 text-purple-300 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-purple-200 text-xs">
+                                    <span className="font-medium">Description:</span>
+                                  </p>
+                                  <p className="text-purple-300 text-xs mt-1 break-words leading-relaxed">
+                                    {newDescription.length > 100 ? `${newDescription.substring(0, 100)}...` : newDescription}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         )}
-                      </>
+                      </div>
                     ) : (
-                      <p className="text-purple-300 text-sm">No symptoms added yet</p>
+                      <div className="text-center py-4">
+                        <p className="text-purple-300 text-sm">No symptoms added yet</p>
+                      </div>
                     )}
                   </div>
                 )}
-                
-                <RecommendedProducts
-                  symptoms={symptoms}
-                  isVisible={showProducts}
-                  medicineRecommendations={medicineRecommendations}
-                />
+
+                <div className="w-full">
+                  <RecommendedProducts
+                    symptoms={symptoms}
+                    isVisible={showProducts}
+                    medicineRecommendations={medicineRecommendations}
+                  />
+                </div>
               </div>
             </div>
           </div>

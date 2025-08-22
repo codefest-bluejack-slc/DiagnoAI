@@ -36,17 +36,19 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   
-  // Use AI recommendations if available, otherwise fall back to default medicines
   const medicines = medicineRecommendations.length > 0 
-    ? [...new Set(medicineRecommendations.map(med => med.brand_name))] // Remove duplicates
+    ? [...new Set(medicineRecommendations.map(med => med.brand_name))]
     : ['Bowel Sode', 'BHI Diarrhea', 'Pepto-Bismol Chewable, TRAVEL BASIX', 'Ver'];
   
   const apiKey = import.meta.env.VITE_SERPAPI_KEY;
 
   useEffect(() => {
-    if (isVisible && medicines.length > 0) {
+    if (isVisible && medicines.length > 0 && !productsLoaded) {
       loadProductsFromAPI();
+      setProductsLoaded(true);
+
     }
   }, [isVisible, medicines]);
 
@@ -125,13 +127,14 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
               className="w-8 h-8 rounded object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).nextElementSibling!.textContent = '💊';
+                const fallbackDiv = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                if (fallbackDiv) fallbackDiv.classList.remove('hidden');
               }}
             />
-          ) : (
-            <span>💊</span>
-          )}
-          <span className="hidden">💊</span>
+          ) : null}
+          <div className={product.thumbnail ? 'hidden' : 'flex items-center justify-center w-8 h-8 bg-blue-500/20 rounded'}>
+            <Pill className="text-blue-400" size={16} />
+          </div>
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
           <div>
@@ -214,7 +217,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             <div className="flex items-center gap-3">
               <ShoppingCart className="text-purple-300" size={24} />
               <h2 className="text-2xl font-bold text-white">Recommended Products</h2>
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             </div>
             <button
               onClick={() => setIsModalOpen(false)}
@@ -311,7 +314,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
                 </span>
               )}
             </div>
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}

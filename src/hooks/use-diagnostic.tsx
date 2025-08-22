@@ -25,9 +25,9 @@ export const useDiagnostic = () => {
 
   const USE_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true';
 
-  if (USE_TEST_MODE) {
-    console.log('Diagnostic hook initialized in TEST MODE');
-  }
+  // if (USE_TEST_MODE) {
+  //   console.log('Diagnostic hook initialized in TEST MODE');
+  // }
 
   useEffect(() => {
     loadHistoryFromBackend();
