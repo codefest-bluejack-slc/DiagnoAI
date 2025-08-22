@@ -277,7 +277,13 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
             let addedSymptoms = 0;
             processedSymptoms.forEach((symptom) => {
               if (addedSymptoms < 10) {
+                let addedSymptoms = 0;
+            processedSymptoms.forEach((symptom) => {
+              if (addedSymptoms < 10) {
                 addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe');
+                addedSymptoms++;
+              }
+            });
                 addedSymptoms++;
               }
             });
@@ -293,7 +299,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                 }
               );
             } else if (structuredData.symptoms.length > 0) {
-              const attemptedSymptoms = structuredData.symptoms.map((s: any) => s.name).join(', ');
               const attemptedSymptoms = structuredData.symptoms.map((s: any) => s.name).join(', ');
               addToast(
                 `No matches found for: ${attemptedSymptoms}. Please add them manually using the autocomplete.`, 
@@ -394,14 +399,6 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
       </div>
 
       <Navbar />
-
-      {import.meta.env.VITE_TEST_MODE === 'true' && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
-            🧪 Test Mode Active
-          </div>
-        </div>
-      )}
 
       <HistoryModal
         isOpen={isHistoryModalOpen}

@@ -39,7 +39,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   
   // Use AI recommendations if available, otherwise fall back to default medicines
   const medicines = medicineRecommendations.length > 0 
-    ? medicineRecommendations.map(med => med.brand_name)
+    ? [...new Set(medicineRecommendations.map(med => med.brand_name))] // Remove duplicates
     : ['Bowel Sode', 'BHI Diarrhea', 'Pepto-Bismol Chewable, TRAVEL BASIX', 'Ver'];
   
   const apiKey = import.meta.env.VITE_SERPAPI_KEY;
@@ -229,7 +229,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             <div className="flex flex-wrap gap-2 mb-6">
               {medicines.map((medicine, index) => (
                 <button
-                  key={medicine}
+                  key={`tab-${index}-${medicine}`}
                   onClick={() => setActiveTab(index)}
                   className={`px-4 py-2 text-sm rounded-lg transition-all duration-300 ${
                     activeTab === index
@@ -325,7 +325,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
       <div className="flex flex-wrap gap-1 mb-4">
         {medicines.map((medicine, index) => (
           <button
-            key={medicine}
+            key={`mini-tab-${index}-${medicine}`}
             onClick={() => setActiveTab(index)}
             className={`px-2 py-1 text-xs rounded-lg transition-all duration-300 ${
               activeTab === index
