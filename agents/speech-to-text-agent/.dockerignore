@@ -28,10 +28,6 @@ ENV
 .DS_Store
 Thumbs.db
 
-# Documentation
-README.md
-*.md
-
 # Docker files
 Dockerfile
 .dockerignore
