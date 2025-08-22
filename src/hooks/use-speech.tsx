@@ -79,6 +79,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       });
 
       const result = response.data;
+      // const result = {"text": "I have been sick for around 3 days after eating a lot of seafood, the symptoms include a mild headache, high fever, and high diarrhea. The symptoms started on august 10"}
       console.log("hasil transcribe", result);
       setTranscript(result.text);
 
@@ -87,13 +88,13 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
           const diagnosisResponse = await DiagnosisService.getUnstructuredDiagnosis({
             text: result.text
           });
-          
+
+          console.log("diagnosisResponse", diagnosisResponse);
+
           const structuredData = {
-            description: result.text,
-            symptoms: [],
-            since: new Date().toISOString().split('T')[0],
-            diagnosis: diagnosisResponse.diagnosis,
-            recommendations: diagnosisResponse.recommendation_agent_response?.answer || ''
+            description: diagnosisResponse.description,
+            symptoms: diagnosisResponse.symptoms || [],
+            since: diagnosisResponse.since || new Date().toISOString().split('T')[0],
           };
           
           setStructuredData(structuredData);

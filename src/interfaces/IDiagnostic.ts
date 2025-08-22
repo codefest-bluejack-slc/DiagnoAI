@@ -10,6 +10,12 @@ export interface IHealthAssessment {
   since: string;
 }
 
+export interface IDiagnostic {
+  description: string;
+  symptoms: ISymptom[];
+  since: string;
+}
+
 export interface IDiagnosticPageProps {}
 
 export interface IDiagnosticStep {
