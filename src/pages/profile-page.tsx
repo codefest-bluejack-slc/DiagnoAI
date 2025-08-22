@@ -29,8 +29,8 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState<User>(me || {
     id: Principal.anonymous(),
     bio: "",
-    email: "",
-    name: "",
+    email: "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    name: "womp womp",
     profilePicture: []
   } as User);
 

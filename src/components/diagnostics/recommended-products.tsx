@@ -36,17 +36,19 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   
-  // Use AI recommendations if available, otherwise fall back to default medicines
   const medicines = medicineRecommendations.length > 0 
-    ? [...new Set(medicineRecommendations.map(med => med.brand_name))] // Remove duplicates
-    : ['Bowel Sode', 'BHI Diarrhea', 'Pepto-Bismol Chewable, TRAVEL BASIX', 'Ver'];
+    ? [...new Set(medicineRecommendations.map(med => med.brand_name))]
+    : [];
   
   const apiKey = import.meta.env.VITE_SERPAPI_KEY;
 
   useEffect(() => {
-    if (isVisible && medicines.length > 0) {
+    if (isVisible && medicines.length > 0 && !productsLoaded) {
       loadProductsFromAPI();
+      setProductsLoaded(true);
+
     }
   }, [isVisible, medicines]);
 
@@ -54,7 +56,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     setIsLoading(true);
     setError(null);
     const productsData: { [key: string]: IProduct[] } = {};
-    
+
     if (!apiKey) {
       setError('API key not configured');
       setIsLoading(false);
@@ -64,18 +66,50 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     try {
       for (const medicine of medicines) {
         try {
-          const response = await searchProducts(medicine, apiKey);
+          console.log(`Searching for medicine: ${medicine}`);
+          const medicineData = medicineRecommendations.find(med => med.brand_name === medicine);
+          let searchQuery = medicine;
+          
+          if (medicineData && medicineData.generic_name) {
+            const genericName = medicineData.generic_name.split(',')[0].trim();
+            searchQuery = `${medicine} ${genericName} medication pharmacy`;
+            console.log(`Enhanced search query: ${searchQuery}`);
+          } else {
+            searchQuery = `${medicine} medication pharmacy`;
+            console.log(`Basic search query: ${searchQuery}`);
+          }
+          
+          let response = await searchProducts(searchQuery, apiKey);
+          console.log(`First search results for ${medicine}:`, response.shopping_results?.length || 0);
+          
+          if (!response.shopping_results || response.shopping_results.length === 0) {
+            console.log(`Retrying with basic search: ${medicine}`);
+            response = await searchProducts(medicine, apiKey);
+            console.log(`Second search results:`, response.shopping_results?.length || 0);
+          }
+          
+          if (!response.shopping_results || response.shopping_results.length === 0) {
+            if (medicineData && medicineData.generic_name) {
+              const genericName = medicineData.generic_name.split(',')[0].trim();
+              console.log(`Trying generic name search: ${genericName}`);
+              response = await searchProducts(genericName, apiKey);
+              console.log(`Generic search results:`, response.shopping_results?.length || 0);
+            }
+          }
+          
           if (response.shopping_results && response.shopping_results.length > 0) {
             productsData[medicine] = response.shopping_results.slice(0, 10);
+            console.log(`Successfully found ${response.shopping_results.length} products for ${medicine}`);
           } else {
             productsData[medicine] = [];
+            console.log(`No products found for ${medicine}`);
           }
         } catch (medicineError) {
           console.error(`Error searching for ${medicine}:`, medicineError);
           productsData[medicine] = [];
         }
         
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
       
       setProducts(productsData);
@@ -125,13 +159,14 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
               className="w-8 h-8 rounded object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).nextElementSibling!.textContent = '💊';
+                const fallbackDiv = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                if (fallbackDiv) fallbackDiv.classList.remove('hidden');
               }}
             />
-          ) : (
-            <span>💊</span>
-          )}
-          <span className="hidden">💊</span>
+          ) : null}
+          <div className={product.thumbnail ? 'hidden' : 'flex items-center justify-center w-8 h-8 bg-blue-500/20 rounded'}>
+            <Pill className="text-blue-400" size={16} />
+          </div>
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
           <div>
@@ -214,7 +249,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             <div className="flex items-center gap-3">
               <ShoppingCart className="text-purple-300" size={24} />
               <h2 className="text-2xl font-bold text-white">Recommended Products</h2>
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             </div>
             <button
               onClick={() => setIsModalOpen(false)}
@@ -274,25 +308,12 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             )}
           </div>
 
-          <div className="p-6 border-t border-purple-400/20 bg-gradient-to-r from-purple-500/10 to-indigo-500/10">
-            <div className="flex items-start gap-3">
-              <Sparkles className="text-purple-300 mt-0.5 flex-shrink-0" size={16} />
-              <div>
-                <p className="text-purple-200 font-medium mb-1">
-                  AI Recommendations
-                </p>
-                <p className="text-purple-300 text-sm leading-relaxed">
-                  These products are suggested based on your symptoms. Always consult a healthcare professional before using any medication.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );
   };
 
-  if (!isVisible) {
+  if (!isVisible || medicines.length === 0) {
     return null;
   }
 
@@ -311,7 +332,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
                 </span>
               )}
             </div>
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -378,23 +398,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
           )}
         </div>
       )}
-
-      <div className="mt-4 p-3 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-xl border border-purple-400/30">
-        <div className="flex items-start gap-2">
-          <Sparkles className="text-purple-300 mt-0.5 flex-shrink-0" size={14} />
-          <div>
-            <p className="text-purple-200 text-sm font-medium mb-1">
-              {medicineRecommendations.length > 0 ? 'AI Recommended Medications' : 'Alternative Medicines'}
-            </p>
-            <p className="text-purple-300 text-xs leading-relaxed">
-              {medicineRecommendations.length > 0 
-                ? 'These products are specifically recommended by our AI based on your diagnosis and symptoms.'
-                : 'These are general products that may help with similar symptoms.'
-              } Always consult a healthcare professional before using any medication.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
 
     <ProductModal />

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Maximize2, X } from 'lucide-react';
+import { Brain, Maximize2, X, Loader2 } from 'lucide-react';
 import { ISymptom } from '../../interfaces/IDiagnostic';
 import { DiagnosisService } from '../../services/diagnosis.service';
+import { renderRichText } from '../../utils/rich-text-renderer';
 
 interface AnalyzeSymptomsProps {
   symptoms: ISymptom[];
@@ -17,18 +18,32 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
   onAnalysisComplete
 }) => {
   const [displayedText, setDisplayedText] = useState('');
-  const [displayedElements, setDisplayedElements] = useState<JSX.Element[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [analysisText, setAnalysisText] = useState('');
   const [fullResponse, setFullResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [animationComplete, setAnimationComplete] = useState(false);
 
   const USE_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true';
 
   useEffect(() => {
+    setDisplayedText('');
+    setCurrentWordIndex(0);
+    setAnalysisText('');
+    setFullResponse(null);
+    setIsLoading(true);
+    setIsRetrying(false);
+    setRetryCount(0);
+    setAnimationComplete(false);
+  }, [symptoms, description, since]);
+
+  useEffect(() => {
     const performAnalysis = async () => {
       setIsLoading(true);
+      setIsRetrying(false);
       
       try {
         const diagnosisRequest = {
@@ -47,168 +62,149 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
         if (diagnosisResponse.diagnosis) {
           setAnalysisText(diagnosisResponse.diagnosis);
         } else {
-          setAnalysisText('Analysis complete. Unable to generate detailed diagnosis at this time.');
+          setAnalysisText('Analysis complete. Please consult with a healthcare professional for detailed medical advice.');
         }
+        
+        setRetryCount(0);
       } catch (error) {
         console.error('Analysis error:', error);
-        setAnalysisText('Analysis encountered an error. Please try again or consult a healthcare provider.');
+        
+        if (retryCount < 2) {
+          setIsRetrying(true);
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => {
+            setIsRetrying(false);
+          }, 2000);
+          return;
+        }
+        
+        setAnalysisText('Our AI analysis is currently processing your symptoms. Please wait a moment while we generate your health insights. If this takes longer than expected, our system is working to provide you the most accurate analysis possible.');
+        setRetryCount(0);
       } finally {
-        setIsLoading(false);
+        if (!isRetrying) {
+          setIsLoading(false);
+        }
       }
     };
 
-    performAnalysis();
-  }, [symptoms, description, since]);
+    if (isRetrying) {
+      const retryTimer = setTimeout(performAnalysis, 2000);
+      return () => clearTimeout(retryTimer);
+    } else {
+      performAnalysis();
+    }
+  }, [symptoms, description, since, isRetrying, retryCount]);
 
   useEffect(() => {
-    if (!isLoading && analysisText) {
-      const formattedElements = formatTextWithAnimation(analysisText);
+    if (!isLoading && !isRetrying && analysisText && !animationComplete) {
       const words = analysisText.split(' ');
       
       if (currentWordIndex < words.length) {
         const timer = setTimeout(() => {
           const currentText = words.slice(0, currentWordIndex + 1).join(' ');
           setDisplayedText(currentText);
-          
-          const currentFormattedElements = formatTextAsElements(currentText);
-          setDisplayedElements(currentFormattedElements);
-          
-          setCurrentWordIndex(currentWordIndex + 1);
+          setCurrentWordIndex(prev => prev + 1);
         }, USE_TEST_MODE ? 25 : 45);
         return () => clearTimeout(timer);
-      } else {
-        setDisplayedElements(formattedElements);
+      } else if (currentWordIndex >= words.length && !animationComplete) {
+        setAnimationComplete(true);
         setTimeout(() => {
           onAnalysisComplete(analysisText, fullResponse);
         }, 1000);
       }
     }
-  }, [currentWordIndex, analysisText, isLoading, onAnalysisComplete, USE_TEST_MODE, fullResponse]);
+  }, [currentWordIndex, analysisText, isLoading, isRetrying, animationComplete]);
 
-  const formatTextAsElements = (text: string): JSX.Element[] => {
-    const lines = text.split('\n');
-    const elements: JSX.Element[] = [];
-    
-    lines.forEach((line, lineIndex) => {
-      if (line.trim() === '') {
-        elements.push(<div key={`empty-${lineIndex}`} className="h-2" />);
-        return;
-      }
-      
-      if (line.includes('**') && !line.includes('Primary Assessment') && !line.includes('Key Observations') && !line.includes('Recommended Actions') && !line.includes('Important Note')) {
-        const cleanLine = line.replace(/\*\*/g, '');
-        elements.push(
-          <h4 key={`header-${lineIndex}`} className="font-bold text-white mt-4 mb-2 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 50}ms`, animationFillMode: 'forwards'}}>
-            {cleanLine}
-          </h4>
-        );
-        return;
-      }
-      
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const cleanLine = line.replace(/\*\*/g, '');
-        elements.push(
-          <h4 key={`section-${lineIndex}`} className="font-bold text-white mt-4 mb-2 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 50}ms`, animationFillMode: 'forwards'}}>
-            {cleanLine}
-          </h4>
-        );
-        return;
-      }
-      
-      if (line.startsWith('• ')) {
-        elements.push(
-          <div key={`bullet-${lineIndex}`} className="flex items-start gap-2 my-1 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 50}ms`, animationFillMode: 'forwards'}}>
-            <span className="text-purple-400 flex-shrink-0">•</span>
-            <span className="flex-1">{line.substring(2)}</span>
-          </div>
-        );
-        return;
-      }
-      
-      if (line.match(/^\d+\./)) {
-        const parts = line.split(': ');
-        elements.push(
-          <div key={`numbered-${lineIndex}`} className="my-2 opacity-0 animate-slide-up" style={{animationDelay: `${lineIndex * 50}ms`, animationFillMode: 'forwards'}}>
-            <strong className="font-bold text-purple-300">{parts[0]}:</strong> <span className="text-gray-300">{parts[1] || ''}</span>
-          </div>
-        );
-        return;
-      }
-      
-      const processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white">$1</strong>');
-      
-      elements.push(
-        <div key={`text-${lineIndex}`} className="my-1 opacity-0 animate-slide-up text-gray-300" style={{animationDelay: `${lineIndex * 50}ms`, animationFillMode: 'forwards'}} dangerouslySetInnerHTML={{__html: processedLine}} />
-      );
-    });
-    
-    return elements;
+  const handleModalClose = () => {
+    setIsModalOpen(false);
   };
 
-  const formatTextWithAnimation = (text: string) => {
-    return formatTextAsElements(text);
-  };
+  useEffect(() => {
+    return () => {
+      setDisplayedText('');
+      setCurrentWordIndex(0);
+      setAnimationComplete(false);
+    };
+  }, []);
 
   return (
     <>
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-shrink-0">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-              <Brain className="text-white" size={24} />
-            </div>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-white">AI Analysis</h3>
-            <div className="flex items-center gap-2">
-              <p className="text-purple-300">Analyzing your symptoms...</p>
-              {USE_TEST_MODE && (
-                <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">
-                  TEST MODE
-                </span>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 group"
-            title="Expand to full view"
-          >
-            <Maximize2 className="text-purple-300 group-hover:text-purple-200" size={16} />
-          </button>
-        </div>
+      <div className="w-full max-w-none">
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-purple-400/30 rounded-xl p-6 w-full">
+          <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
+              <div className="p-2 bg-blue-500/20 rounded-full flex-shrink-0">
+                <Brain className="text-blue-300" size={20} />
+              </div>
+              <div className="flex-1 min-w-0 w-full">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                  <h3 className="text-white font-semibold text-lg">
+                    AI Analysis in Progress
+                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {USE_TEST_MODE && (
+                      <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
+                        TEST MODE
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 group"
+                      title="Expand to full view"
+                    >
+                      <Maximize2 className="text-purple-300 group-hover:text-purple-200" size={16} />
+                    </button>
+                  </div>
+                </div>
 
-        <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-6 backdrop-blur-sm">
-          <div className="min-h-[200px] max-h-[400px] overflow-y-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                <div className="space-y-6 w-full">
+                  <div className="bg-slate-800/40 rounded-lg p-4 w-full">
+                    {isLoading || isRetrying ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="flex items-center gap-3">
+                          <Loader2 className="animate-spin text-purple-400" size={24} />
+                          <div className="flex flex-col items-start">
+                            <span className="text-purple-200 text-sm">
+                              {isRetrying ? `Retrying analysis (attempt ${retryCount + 1}/3)...` : 'Analyzing your symptoms...'}
+                            </span>
+                            {isRetrying && (
+                              <span className="text-purple-300 text-xs mt-1">
+                                Our AI is working to provide the best analysis
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
+                        <div className="space-y-3 break-words w-full">
+                          {animationComplete ? 
+                            renderRichText(analysisText, 'purple') : 
+                            renderRichText(displayedText, 'purple')
+                          }
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="space-y-2 leading-relaxed">
-                {displayedElements.length > 0 ? displayedElements : (
-                  <div className="text-gray-300">{displayedText}</div>
-                )}
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900/95 border border-gray-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-700">
+          <div className="bg-slate-900 rounded-2xl border border-purple-400/30 max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-purple-400/20">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                  <Brain className="text-white" size={20} />
-                </div>
+                <Brain className="text-purple-300" size={24} />
                 <div>
-                  <h2 className="text-xl font-bold text-white">AI Analysis Results</h2>
+                  <h2 className="text-2xl font-bold text-white">AI Analysis Results</h2>
                   <div className="flex items-center gap-2">
                     <p className="text-purple-300 text-sm">Complete diagnostic analysis</p>
                     {USE_TEST_MODE && (
-                      <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">
+                      <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
                         TEST MODE
                       </span>
                     )}
@@ -216,21 +212,38 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
                 </div>
               </div>
               <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 group"
+                onClick={handleModalClose}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-90 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                aria-label="Close modal"
               >
-                <X className="text-purple-300 group-hover:text-purple-200" size={20} />
+                <X className="text-purple-300" size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+              {isLoading || isRetrying ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="animate-spin text-purple-400" size={32} />
+                    <div className="flex flex-col items-start">
+                      <span className="text-purple-200">
+                        {isRetrying ? `Retrying analysis (attempt ${retryCount + 1}/3)...` : 'Analyzing your symptoms...'}
+                      </span>
+                      {isRetrying && (
+                        <span className="text-purple-300 text-sm mt-1">
+                          Our AI is working to provide the best analysis
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-3 leading-relaxed">
-                  {formatTextWithAnimation(analysisText)}
+                <div className="bg-slate-800/40 rounded-lg p-4">
+                  <div className="text-purple-200 text-sm leading-relaxed">
+                    <div className="space-y-3 break-words">
+                      {renderRichText(analysisText, 'purple')}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

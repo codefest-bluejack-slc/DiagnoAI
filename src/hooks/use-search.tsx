@@ -61,16 +61,6 @@ export const useSearch = ({
           console.log('Settings clicked');
         },
       },
-      {
-        id: '6',
-        title: 'Login',
-        description: 'Sign in to your account',
-        icon: <LogIn size={16} />,
-        action: () => {
-          onClose?.();
-          console.log('Login clicked');
-        },
-      },
     ],
     [navigateTo, onClose],
   );

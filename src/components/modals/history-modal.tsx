@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, History, RefreshCw, Calendar, FileText, ChevronRight } from 'lucide-react';
+import { X, History, RefreshCw, Calendar, FileText, ChevronRight, User, Stethoscope, Pill } from 'lucide-react';
 import { IHistoryModalProps } from '../../interfaces/IHistoryModal';
 import Tooltip from '../common/tooltip';
 
@@ -127,87 +127,209 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                   >
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-2 transition-colors group-hover:text-purple-300 text-purple-100">
-                          {item.description || item.title}
+                        <h3 className="font-semibold text-sm mb-2 transition-colors group-hover:text-purple-300 text-purple-100">
+                          {item.diagnosis || `Assessment ${item.id.slice(0, 8)}...`}
                         </h3>
-                        <div className="flex items-center gap-2 text-sm mb-3 text-purple-300">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDate(item.since || item.date || '')}</span>
+                        <div className="flex items-center gap-4 text-sm mb-3">
+                          <div className="flex items-center gap-1 text-purple-300">
+                            <User className="w-4 h-4" />
+                            <span>{item.username}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-purple-300">
+                            <Calendar className="w-4 h-4" />
+                            <span>ID: {item.id.slice(0, 8)}...</span>
+                          </div>
                         </div>
                       </div>
-                      <div 
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-transform duration-200 group-hover:scale-105 ${
-                          item.status === 'completed' 
-                            ? 'bg-green-500/20 text-green-400 border border-green-400/50' 
-                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/50'
-                        }`}
-                      >
-                        {item.status}
+                      <div className="px-3 py-1.5 rounded-full text-xs font-medium transition-transform duration-200 group-hover:scale-105 bg-green-500/20 text-green-400 border border-green-400/50">
+                        completed
                       </div>
                     </div>
 
+                    {item.diagnosis && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-emerald-400" />
+                          <span className="text-sm font-medium text-purple-300">
+                            AI Diagnosis Result:
+                          </span>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-400/30 rounded-lg p-3">
+                          <p className="text-sm text-emerald-200 leading-relaxed">
+                            {item.diagnosis.length > 200 
+                              ? `${item.diagnosis.slice(0, 200)}...` 
+                              : item.diagnosis}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {!item.diagnosis && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm font-medium text-purple-300">
+                            Diagnosis Status:
+                          </span>
+                        </div>
+                        <div className="bg-gray-500/10 border border-gray-400/30 rounded-lg p-3">
+                          <p className="text-sm text-gray-300">
+                            No diagnosis available for this assessment
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <FileText className="w-4 h-4 text-indigo-400" />
+                        <Stethoscope className="w-4 h-4 text-indigo-400" />
                         <span className="text-sm font-medium text-purple-300">
-                          Symptoms:
+                          Symptoms ({item.symptoms.length}):
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {(item.symptoms || []).slice(0, 3).map((symptom, idx) => (
+                        {item.symptoms.slice(0, 4).map((symptom, idx) => (
                           <Tooltip
-                            key={idx}
-                            content={`Symptom: ${typeof symptom === 'string' ? symptom : symptom.name} - Severity: ${typeof symptom === 'string' ? 'Unknown' : symptom.severity} - Reported on ${formatDate(item.since || item.date || '')}`}
+                            key={symptom.id}
+                            content={`Symptom: ${symptom.name} - Severity: ${symptom.severity}`}
                             position="top"
                           >
                             <span
                               className={`px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105 ${
-                                typeof symptom === 'string' 
-                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-400/50'
-                                  : symptom.severity === 'mild' 
-                                    ? 'bg-green-500/20 text-green-300 border border-green-400/50'
-                                    : symptom.severity === 'moderate'
-                                      ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
-                                      : 'bg-red-500/20 text-red-300 border border-red-400/50'
+                                symptom.severity === 'mild' 
+                                  ? 'bg-green-500/20 text-green-300 border border-green-400/50'
+                                  : symptom.severity === 'moderate'
+                                    ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
+                                    : 'bg-red-500/20 text-red-300 border border-red-400/50'
                               }`}
                             >
-                              {typeof symptom === 'string' ? symptom : symptom.name}
+                              {symptom.name}
                             </span>
                           </Tooltip>
                         ))}
-                        {(item.symptoms || []).length > 3 && (
+                        {item.symptoms.length > 4 && (
                           <Tooltip
-                            content={`Additional symptoms: ${(item.symptoms || []).slice(3).map(s => typeof s === 'string' ? s : s.name).join(', ')}`}
+                            content={`Additional symptoms: ${item.symptoms.slice(4).map(s => s.name).join(', ')}`}
                             position="top"
                           >
                             <span className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105 bg-slate-700/70 text-purple-200 border border-slate-600/50">
-                              +{(item.symptoms || []).length - 3} more
+                              +{item.symptoms.length - 4} more
                             </span>
                           </Tooltip>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-purple-500/20">
-                      <div className="flex items-center gap-2">
-                        <span 
-                          className={`w-3 h-3 rounded-full ${
-                            item.severity === 'mild' ? 'bg-green-400' :
-                            item.severity === 'moderate' ? 'bg-yellow-400' : 'bg-red-400'
-                          }`}
-                        ></span>
-                        <Tooltip
-                          content={`Assessment: ${item.description || item.diagnosis || 'No diagnosis'} - Overall Severity: ${item.severity.charAt(0).toUpperCase() + item.severity.slice(1)}`}
-                          position="top"
-                        >
-                          <span className="text-sm font-medium cursor-help text-purple-200">
-                            {item.diagnosis || 'Assessment'}
+                    {item.medicines.length > 0 ? (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Pill className="w-4 h-4 text-cyan-400" />
+                          <span className="text-sm font-medium text-purple-300">
+                            Recommended Medicines ({item.medicines.length}):
                           </span>
-                        </Tooltip>
+                        </div>
+                        <div className="space-y-2">
+                          {item.medicines.slice(0, 3).map((medicine, idx) => (
+                            <div key={idx} className="bg-cyan-500/10 border border-cyan-400/30 rounded-lg p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-cyan-200 mb-1">{medicine.brand_name}</h4>
+                                  <p className="text-xs text-cyan-300/80 mb-1">Generic: {medicine.generic_name}</p>
+                                  <p className="text-xs text-cyan-300/60">Manufacturer: {medicine.manufacturer}</p>
+                                </div>
+                                {medicine.product_ndc && (
+                                  <span className="text-xs bg-cyan-600/20 text-cyan-300 px-2 py-1 rounded">
+                                    NDC: {medicine.product_ndc}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                          {item.medicines.length > 3 && (
+                            <div className="text-center">
+                              <span className="text-xs text-purple-300 bg-slate-700/50 px-3 py-1 rounded-full">
+                                +{item.medicines.length - 3} more medicines available
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <ChevronRight 
-                        className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200 text-indigo-400" 
-                      />
+                    ) : (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Pill className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm font-medium text-purple-300">
+                            Medicine Recommendations:
+                          </span>
+                        </div>
+                        <div className="bg-gray-500/10 border border-gray-400/30 rounded-lg p-3">
+                          <p className="text-sm text-gray-300">
+                            No medicine recommendations available for this assessment
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {item.medicine_response ? (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-orange-400" />
+                          <span className="text-sm font-medium text-purple-300">
+                            AI Medicine Analysis:
+                          </span>
+                        </div>
+                        <div className="bg-orange-500/10 border border-orange-400/30 rounded-lg p-3">
+                          <p className="text-sm text-orange-200 leading-relaxed">
+                            {item.medicine_response.length > 300 
+                              ? `${item.medicine_response.slice(0, 300)}...` 
+                              : item.medicine_response}
+                          </p>
+                          {item.medicine_response.length > 300 && (
+                            <button className="text-xs text-orange-300 hover:text-orange-200 mt-2 underline">
+                              Show full response
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm font-medium text-purple-300">
+                            Medicine Analysis:
+                          </span>
+                        </div>
+                        <div className="bg-gray-500/10 border border-gray-400/30 rounded-lg p-3">
+                          <p className="text-sm text-gray-300">
+                            No AI medicine analysis available for this assessment
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-3 border-t border-purple-500/20">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                          <span className="text-xs text-purple-300">{item.symptoms.length} symptoms</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                          <span className="text-xs text-purple-300">{item.medicines.length} medicines</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                          <span className="text-xs text-purple-300">{item.diagnosis ? 'diagnosed' : 'pending'}</span>
+                        </div>
+                      </div>
+                      <Tooltip
+                        content="Click to view full assessment details"
+                        position="top"
+                      >
+                        <ChevronRight 
+                          className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200 text-indigo-400" 
+                        />
+                      </Tooltip>
                     </div>
                   </div>
                 ))}

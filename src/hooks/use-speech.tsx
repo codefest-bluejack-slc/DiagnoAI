@@ -26,9 +26,9 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
 
   const USE_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true';
 
-  if (USE_TEST_MODE) {
-    console.log('Speech hook initialized in TEST MODE');
-  }
+  // if (USE_TEST_MODE) {
+  //   console.log('Speech hook initialized in TEST MODE');
+  // }
 
   const TEST_SPEECH_DATA = {
     description: "Symptoms experienced after eating a large amount of seafood.",
@@ -62,7 +62,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       setTimeout(() => {
         setTranscript(TEST_SPEECH_DATA.description);
         setStructuredData(TEST_SPEECH_DATA);
-        console.log("Using test data for speech processing", TEST_SPEECH_DATA);
+        // console.log("Using test data for speech processing", TEST_SPEECH_DATA);
         setIsProcessing(false);
       }, 2000);
       return;
@@ -72,13 +72,14 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
     formData.append('file', blob, 'recording.webm');
 
     try {
-      const response = await axios.post(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
+      // const response = await axios.post(endpoint, formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //   }
+      // });
 
-      const result = response.data;
+      // const result = response.data;
+      const result = {"text": "I have been sick for around 3 days after eating a lot of seafood, the symptoms include a mild headache, high fever, and high diarrhea. The symptoms started on august 10"}
       console.log("hasil transcribe", result);
       setTranscript(result.text);
 
@@ -87,13 +88,13 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
           const diagnosisResponse = await DiagnosisService.getUnstructuredDiagnosis({
             text: result.text
           });
-          
+
+          console.log("diagnosisResponse", diagnosisResponse);
+
           const structuredData = {
-            description: result.text,
-            symptoms: [],
-            since: new Date().toISOString().split('T')[0],
-            diagnosis: diagnosisResponse.diagnosis,
-            recommendations: diagnosisResponse.recommendation_agent_response?.answer || ''
+            description: diagnosisResponse.description,
+            symptoms: diagnosisResponse.symptoms || [],
+            since: diagnosisResponse.since || new Date().toISOString().split('T')[0],
           };
           
           setStructuredData(structuredData);
