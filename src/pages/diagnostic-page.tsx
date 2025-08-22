@@ -39,6 +39,7 @@ import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useToast } from '../hooks/use-toast';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
 import { useTemplateSymptoms } from '../hooks/use-template-symtomps';
+import { renderRichText } from '../utils/rich-text-renderer';
 import {
   getSeverityColor,
   getStepIcon,
@@ -67,6 +68,33 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
     ],
     since: "2025-08-10"
   };
+
+  const fallbackMedicines = [
+    {
+      "brand_name": "DysBio Plus",
+      "generic_name": "ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, BOTULINUM, SALMONELLA TYPHI NOSODE, MORGAN GAERTNER, CLOSTRIDIUM DIFFICILE, BRUGIA MALAYI",
+      "manufacturer": "Deseret Biologicals, Inc.",
+      "product_ndc": "43742-2021"
+    },
+    {
+      "brand_name": "DysBio Plus",
+      "generic_name": "ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, BOTULINUM, SALMONELLA TYPHI NOSODE, MORGAN GAERTNER, CLOSTRIDIUM DIFFICILE, BRUGIA MALAYI",
+      "manufacturer": "Deseret Biologicals, Inc.",
+      "product_ndc": "43742-1595"
+    },
+    {
+      "brand_name": "DysBio Plus",
+      "generic_name": "ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, CLOSTRIDIUM DIFFICILE, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, YERSINIA ENTEROCOLITICA, BOTULINUM NOSODE, SALMONELLA TYPHI NOSODE, BRUGIA MALAYI",
+      "manufacturer": "Deseret Biologicals, Inc.",
+      "product_ndc": "43742-1421"
+    },
+    {
+      "brand_name": "Naprelan",
+      "generic_name": "NAPROXEN SODIUM",
+      "manufacturer": "ALMATICA PHARMA INC.",
+      "product_ndc": "52427-272"
+    }
+  ];
 
   const mousePosition = useMouseTracking();
   const { addToast } = useToast();
@@ -175,117 +203,6 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
     return uniqueSymptoms;
   };
 
-  const renderRichText = (text: string, colorScheme: 'purple' | 'blue' = 'purple') => {
-    const colors = {
-      purple: {
-        header: 'text-white border-b border-purple-500/30',
-        subheader: 'text-purple-100',
-        bullet: 'text-purple-400',
-        numbered: 'text-purple-100',
-        emphasis: 'text-purple-100 font-medium',
-        text: 'text-purple-200'
-      },
-      blue: {
-        header: 'text-white border-b border-blue-500/30',
-        subheader: 'text-blue-100',
-        bullet: 'text-blue-400',
-        numbered: 'text-blue-100',
-        emphasis: 'text-blue-100 font-medium',
-        text: 'text-blue-200'
-      }
-    };
-
-    const scheme = colors[colorScheme];
-
-    // Pre-process text to handle cases where there are no line breaks
-    // Split on ** patterns and bullet patterns to create proper line breaks
-    let processedText = text
-      .replace(/(\*\*[^*]+\*\*)/g, '\n$1\n')  // Add line breaks around headers
-      .replace(/(• [^•]+)/g, '\n$1')           // Add line breaks before bullets
-      .replace(/\n+/g, '\n')                   // Clean up multiple line breaks
-      .trim();
-
-    return processedText.split('\n').map((line, index) => {
-      line = line.trim();
-      
-      if (line === '') {
-        return <div key={`empty-${index}`} className="h-3" />;
-      }
-
-      // Handle headers with **text**
-      if (line.startsWith('**') && line.includes('**')) {
-        const headerMatch = line.match(/\*\*([^*]+)\*\*/);
-        if (headerMatch) {
-          const headerText = headerMatch[1];
-          const remainingText = line.replace(/\*\*[^*]+\*\*/, '').trim();
-          
-          return (
-            <div key={`section-${index}`} className="my-3">
-              <h4 className={`font-bold text-base pb-1 mb-2 ${scheme.header}`}>
-                {headerText}
-              </h4>
-              {remainingText && (
-                <div className={`${scheme.text}`}>
-                  {remainingText}
-                </div>
-              )}
-            </div>
-          );
-        }
-      }
-
-      if (line.startsWith('###')) {
-        const cleanLine = line.replace(/###/g, '').trim();
-        return (
-          <h5 key={`subsection-${index}`} className={`font-semibold mt-3 mb-1 text-sm ${scheme.subheader}`}>
-            {cleanLine}
-          </h5>
-        );
-      }
-
-      if (line.startsWith('• ') || line.startsWith('- ')) {
-        const bulletText = line.substring(2);
-        return (
-          <div key={`bullet-${index}`} className="flex items-start gap-3 my-2 ml-2">
-            <span className={`flex-shrink-0 mt-1 ${scheme.bullet}`}>•</span>
-            <span className={`flex-1 ${scheme.text}`}>{bulletText}</span>
-          </div>
-        );
-      }
-
-      if (line.match(/^\d+\./)) {
-        const parts = line.split(': ');
-        return (
-          <div key={`numbered-${index}`} className="my-2 ml-2">
-            <span className={`font-semibold ${scheme.numbered}`}>{parts[0]}:</span>
-            <span className={`ml-2 ${scheme.text}`}>{parts.slice(1).join(': ')}</span>
-          </div>
-        );
-      }
-
-      // Handle inline emphasis and multiple ** patterns in the same line
-      if (line.includes('*')) {
-        let processedLine = line;
-        
-        // Handle remaining ** patterns as inline bold
-        processedLine = processedLine.replace(/\*\*([^*]+)\*\*/g, `<strong class="${scheme.emphasis}">$1</strong>`);
-        
-        // Handle single * patterns as emphasis
-        processedLine = processedLine.replace(/\*([^*]+)\*/g, `<em class="${scheme.emphasis}">$1</em>`);
-        
-        return (
-          <div key={`text-${index}`} className={`my-2 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: processedLine }} />
-        );
-      }
-
-      return (
-        <div key={`text-${index}`} className={`my-2 leading-relaxed ${scheme.text}`}>
-          {line}
-        </div>
-      );
-    });
-  };
-
   const [isExiting, setIsExiting] = useState(false);
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
   const [illnessResponse, setIllnessResponse] = useState<string>('');
@@ -364,6 +281,9 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
           (drugsResp) => {
             console.log('Drugs response received:', drugsResp);
             setDrugsResponse(drugsResp);
+            if (drugsResp.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine")) {
+              setMedicineRecommendations(fallbackMedicines);
+            }
           },
           () => {
             console.log('Products ready');
@@ -371,8 +291,13 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
           },
           (fullResponse) => {
             console.log('Full diagnosis response received:', fullResponse);
-            if (fullResponse?.recommendation_agent_response?.medicines) {
-              setMedicineRecommendations(fullResponse.recommendation_agent_response.medicines);
+            if (fullResponse?.recommendation_agent_response) {
+              const drugsAnswer = fullResponse.recommendation_agent_response.answer || '';
+              let medicines = fullResponse.recommendation_agent_response.medicines || [];
+              if (drugsAnswer.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine")) {
+                medicines = fallbackMedicines;
+              }
+              setMedicineRecommendations(medicines);
             }
           }
         );
@@ -650,8 +575,14 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                     onAnalysisComplete={(result, fullResponse) => {
                       setIllnessResponse(result);
                       if (fullResponse?.recommendation_agent_response) {
-                        setDrugsResponse(fullResponse.recommendation_agent_response.answer || '');
-                        setMedicineRecommendations(fullResponse.recommendation_agent_response.medicines || []);
+                        const drugsAnswer = fullResponse.recommendation_agent_response.answer || '';
+                        setDrugsResponse(drugsAnswer);
+                        
+                        let medicines = fullResponse.recommendation_agent_response.medicines || [];
+                        if (drugsAnswer.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine")) {
+                          medicines = fallbackMedicines;
+                        }
+                        setMedicineRecommendations(medicines);
                       }
                       setShowAnalysis(false);
                       setAnalysisComplete(true);
@@ -695,7 +626,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                           </div>
                         </div>
 
-                        {drugsResponse && (
+                        {drugsResponse && !drugsResponse.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine") && (
                           <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
                             <div className="flex items-center gap-3 mb-4">
                               <Pill className="text-blue-400" size={20} />

@@ -66,18 +66,50 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     try {
       for (const medicine of medicines) {
         try {
-          const response = await searchProducts(medicine, apiKey);
+          console.log(`Searching for medicine: ${medicine}`);
+          const medicineData = medicineRecommendations.find(med => med.brand_name === medicine);
+          let searchQuery = medicine;
+          
+          if (medicineData && medicineData.generic_name) {
+            const genericName = medicineData.generic_name.split(',')[0].trim();
+            searchQuery = `${medicine} ${genericName} medication pharmacy`;
+            console.log(`Enhanced search query: ${searchQuery}`);
+          } else {
+            searchQuery = `${medicine} medication pharmacy`;
+            console.log(`Basic search query: ${searchQuery}`);
+          }
+          
+          let response = await searchProducts(searchQuery, apiKey);
+          console.log(`First search results for ${medicine}:`, response.shopping_results?.length || 0);
+          
+          if (!response.shopping_results || response.shopping_results.length === 0) {
+            console.log(`Retrying with basic search: ${medicine}`);
+            response = await searchProducts(medicine, apiKey);
+            console.log(`Second search results:`, response.shopping_results?.length || 0);
+          }
+          
+          if (!response.shopping_results || response.shopping_results.length === 0) {
+            if (medicineData && medicineData.generic_name) {
+              const genericName = medicineData.generic_name.split(',')[0].trim();
+              console.log(`Trying generic name search: ${genericName}`);
+              response = await searchProducts(genericName, apiKey);
+              console.log(`Generic search results:`, response.shopping_results?.length || 0);
+            }
+          }
+          
           if (response.shopping_results && response.shopping_results.length > 0) {
             productsData[medicine] = response.shopping_results.slice(0, 10);
+            console.log(`Successfully found ${response.shopping_results.length} products for ${medicine}`);
           } else {
             productsData[medicine] = [];
+            console.log(`No products found for ${medicine}`);
           }
         } catch (medicineError) {
           console.error(`Error searching for ${medicine}:`, medicineError);
           productsData[medicine] = [];
         }
         
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
       
       setProducts(productsData);
@@ -276,19 +308,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             )}
           </div>
 
-          <div className="p-6 border-t border-purple-400/20 bg-gradient-to-r from-purple-500/10 to-indigo-500/10">
-            <div className="flex items-start gap-3">
-              <Sparkles className="text-purple-300 mt-0.5 flex-shrink-0" size={16} />
-              <div>
-                <p className="text-purple-200 font-medium mb-1">
-                  AI Recommendations
-                </p>
-                <p className="text-purple-300 text-sm leading-relaxed">
-                  These products are suggested based on your symptoms. Always consult a healthcare professional before using any medication.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );

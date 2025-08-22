@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Brain, Maximize2, X, Loader2 } from 'lucide-react';
 import { ISymptom } from '../../interfaces/IDiagnostic';
 import { DiagnosisService } from '../../services/diagnosis.service';
+import { renderRichText } from '../../utils/rich-text-renderer';
 
 interface AnalyzeSymptomsProps {
   symptoms: ISymptom[];
@@ -28,92 +29,16 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
 
   const USE_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true';
 
-  const renderRichText = (text: string, isAnimating: boolean = false) => {
-    const colors = {
-      header: 'text-white border-b border-purple-500/30',
-      subheader: 'text-purple-100',
-      bullet: 'text-purple-400',
-      numbered: 'text-purple-100',
-      emphasis: 'text-purple-100 font-medium',
-      text: 'text-purple-200'
-    };
-
-    return text.split('\n').map((line, index) => {
-      if (line.trim() === '') {
-        return <div key={`empty-${index}`} className="h-3" />;
-      }
-
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const cleanLine = line.replace(/\*\*/g, '');
-        return (
-          <h4 
-            key={`section-${index}`} 
-            className={`font-bold mt-4 mb-2 text-base pb-1 ${colors.header}`}
-          >
-            {cleanLine}
-          </h4>
-        );
-      }
-
-      if (line.startsWith('###')) {
-        const cleanLine = line.replace(/###/g, '').trim();
-        return (
-          <h5 
-            key={`subsection-${index}`} 
-            className={`font-semibold mt-3 mb-1 text-sm ${colors.subheader}`}
-          >
-            {cleanLine}
-          </h5>
-        );
-      }
-
-      if (line.startsWith('• ') || line.startsWith('- ')) {
-        const bulletText = line.substring(2);
-        return (
-          <div 
-            key={`bullet-${index}`} 
-            className="flex items-start gap-3 my-2 ml-2"
-          >
-            <span className={`flex-shrink-0 mt-1 ${colors.bullet}`}>•</span>
-            <span className={`flex-1 ${colors.text}`}>{bulletText}</span>
-          </div>
-        );
-      }
-
-      if (line.match(/^\d+\./)) {
-        const parts = line.split(': ');
-        return (
-          <div 
-            key={`numbered-${index}`} 
-            className="my-2 ml-2"
-          >
-            <span className={`font-semibold ${colors.numbered}`}>{parts[0]}:</span>
-            <span className={`ml-2 ${colors.text}`}>{parts.slice(1).join(': ')}</span>
-          </div>
-        );
-      }
-
-      if (line.includes('*') && !line.startsWith('**')) {
-        const formattedLine = line.replace(/\*(.*?)\*/g, `<em class="${colors.emphasis}">$1</em>`);
-        return (
-          <div 
-            key={`text-${index}`} 
-            className={`my-2 leading-relaxed ${colors.text}`} 
-            dangerouslySetInnerHTML={{ __html: formattedLine }} 
-          />
-        );
-      }
-
-      return (
-        <div 
-          key={`text-${index}`} 
-          className={`my-2 leading-relaxed ${colors.text}`}
-        >
-          {line}
-        </div>
-      );
-    });
-  };
+  useEffect(() => {
+    setDisplayedText('');
+    setCurrentWordIndex(0);
+    setAnalysisText('');
+    setFullResponse(null);
+    setIsLoading(true);
+    setIsRetrying(false);
+    setRetryCount(0);
+    setAnimationComplete(false);
+  }, [symptoms, description, since]);
 
   useEffect(() => {
     const performAnalysis = async () => {
@@ -178,21 +103,29 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
         const timer = setTimeout(() => {
           const currentText = words.slice(0, currentWordIndex + 1).join(' ');
           setDisplayedText(currentText);
-          setCurrentWordIndex(currentWordIndex + 1);
+          setCurrentWordIndex(prev => prev + 1);
         }, USE_TEST_MODE ? 25 : 45);
         return () => clearTimeout(timer);
-      } else {
+      } else if (currentWordIndex >= words.length && !animationComplete) {
         setAnimationComplete(true);
         setTimeout(() => {
           onAnalysisComplete(analysisText, fullResponse);
         }, 1000);
       }
     }
-  }, [currentWordIndex, analysisText, isLoading, isRetrying, onAnalysisComplete, USE_TEST_MODE, fullResponse, animationComplete]);
+  }, [currentWordIndex, analysisText, isLoading, isRetrying, animationComplete]);
 
   const handleModalClose = () => {
     setIsModalOpen(false);
   };
+
+  useEffect(() => {
+    return () => {
+      setDisplayedText('');
+      setCurrentWordIndex(0);
+      setAnimationComplete(false);
+    };
+  }, []);
 
   return (
     <>
@@ -246,8 +179,8 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
                       <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
                         <div className="space-y-3 break-words w-full">
                           {animationComplete ? 
-                            renderRichText(analysisText) : 
-                            renderRichText(displayedText)
+                            renderRichText(analysisText, 'purple') : 
+                            renderRichText(displayedText, 'purple')
                           }
                         </div>
                       </div>
@@ -308,7 +241,7 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
                 <div className="bg-slate-800/40 rounded-lg p-4">
                   <div className="text-purple-200 text-sm leading-relaxed">
                     <div className="space-y-3 break-words">
-                      {renderRichText(analysisText)}
+                      {renderRichText(analysisText, 'purple')}
                     </div>
                   </div>
                 </div>
