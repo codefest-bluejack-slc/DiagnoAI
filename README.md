@@ -1,54 +1,90 @@
-# Vite + React + Motoko
+# 📊 DiagnoAI
 
-### Get started directly in your browser:
+---
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/rvanasa/vite-react-motoko)
+## 👥 Team Introduction
+We are a passionate team of software engineers and AI enthusiasts dedicated to improving healthcare accessibility through technology.  
 
-This template gives you everything you need to build a full-stack Web3 application on the [Internet Computer](https://internetcomputer.org/).
+- **William Christian**
+- **Marvel Collin**
+- **Daniel Adamlu**
+- **Steven Liementha**
+- **Paul Tsai Adinata**
 
-For an example of a real-world dapp built using this starter project, check out the [source code](https://github.com/dfinity/feedback) for DFINITY's [Developer Experience Feedback Board](https://dx.internetcomputer.org/).
+Our team combines **technical expertise in AI & web development** with a strong motivation to solve real-world healthcare challenges.
 
-## 📦 Create a New Project
+---
 
-Make sure that [Node.js](https://nodejs.org/en/) `>= 16` and [`dfx`](https://internetcomputer.org/docs/current/developer-docs/build/install-upgrade-remove) `>= 0.14` are installed on your system.
+## ❗ Problem Statement & Motivation
+- Many people **experience symptoms but lack access to immediate medical advice**.  
+- Searching symptoms online often leads to **confusing or misleading results**.  
+- Self-medication without guidance can be **unsafe and harmful**.  
+- There is no **integrated solution** that helps users go from **symptom check → medicine recommendation → purchase**.  
 
-Run the following commands in a new, empty project directory:
+💡 **Motivation:**  
+We aim to create a platform that provides **safe, accessible, and structured health guidance**, empowering users with knowledge while connecting them to trusted medicine sources.
 
-```sh
-npx degit rvanasa/vite-react-motoko # Download this starter project
-dfx start --clean --background # Run dfx in the background
-npm run setup # Install packages, deploy canisters, and generate type bindings
+---
 
-npm start # Start the development server
-```
+## 💡 Solution Description
+**DiagnoAI** is a **web-based healthcare assistant** that integrates AI-powered diagnosis, medicine recommendation, and a medicine marketplace.  
 
-When ready, run `dfx deploy --network ic` to deploy your application to the Internet Computer.
+1. **Diagnosis Agent** 🧠  
+   - Accepts user symptom descriptions.  
+   - Provides a probable **diagnosis** with structured output.  
 
-## 🛠️ Technology Stack
+2. **Recommendation Agent** 💊  
+   - Suggests **relevant medicines** based on the diagnosis.  
+   - Includes **guidelines on how to use each medicine safely**.  
 
-- [Vite](https://vitejs.dev/): high-performance tooling for front-end web development
-- [React](https://reactjs.org/): a component-based UI library
-- [TypeScript](https://www.typescriptlang.org/): JavaScript extended with syntax for types
-- [Sass](https://sass-lang.com/): an extended syntax for CSS stylesheets
-- [Prettier](https://prettier.io/): code formatting for a wide range of supported languages
-- [Motoko](https://github.com/dfinity/motoko#readme): a safe and simple programming language for the Internet Computer
-- [Mops](https://mops.one): an on-chain community package manager for Motoko
-- [mo-dev](https://github.com/dfinity/motoko-dev-server#readme): a live reload development server for Motoko
-- [@ic-reactor](https://github.com/B3Pay/ic-reactor): A suite of JavaScript libraries for seamless frontend development on the Internet Computer
+3. **Medicine Marketplace** 🛒  
+   - Allows users to **find, compare, and purchase** medicines from trusted pharmacies.  
+   - Creates a **one-stop solution**: from diagnosis → treatment guidance → purchase.  
 
-## 📚 Documentation
+---
 
-- [Vite developer docs](https://vitejs.dev/guide/)
-- [React quick start guide](https://react.dev/learn)
-- [Internet Computer docs](https://internetcomputer.org/docs/current/developer-docs/ic-overview)
-- [`dfx.json` reference schema](https://internetcomputer.org/docs/current/references/dfx-json-reference/)
-- [Motoko developer docs](https://internetcomputer.org/docs/current/developer-docs/build/cdks/motoko-dfinity/motoko/)
-- [Mops usage instructions](https://j4mwm-bqaaa-aaaam-qajbq-cai.ic0.app/#/docs/install)
-- [@ic-reactor/react](https://b3pay.github.io/ic-reactor/modules/react.html)
+## 💰 Business Model
+DiagnoAI will generate revenue through multiple channels:  
 
-## 💡 Tips and Tricks
+1. **Commission-based Marketplace**  
+   - Earn a small commission from every medicine purchase made via the app.  
 
-- Customize your project's code style by editing the `.prettierrc` file and then running `npm run format`.
-- Reduce the latency of update calls by passing the `--emulator` flag to `dfx start`.
-- Install a Motoko package by running `npx ic-mops add <package-name>`. Here is a [list of available packages](https://mops.one/).
-- Split your frontend and backend console output by running `npm run frontend` and `npm run backend` in separate terminals.
+2. **Pharmacy Partnerships**  
+   - Collaborate with local pharmacies for **visibility and distribution**, charging for premium placement.  
+
+3. **Subscription Model (Premium Users)**  
+   - Free tier: Basic diagnosis + recommendations.  
+   - Premium tier: Detailed reports, extended disease coverage, priority support.  
+
+4. **B2B Model** **** 
+   - Offer integration with **telemedicine platforms, clinics, and insurance providers**.  
+
+---
+
+## 🗺️ Future Roadmap
+To expand the value and usability of **DiagnoAI**, we plan to add:  
+
+- **Search best hospital for the disease near the customer’s location** 🏥  
+  Helping users not only find out what they may be suffering from, but also guiding them to the **nearest specialized hospitals**.  
+
+- **Chat with doctors** 👩‍⚕️👨‍⚕️  
+  Integrating a direct **doctor consultation feature** so users can confirm AI suggestions with real professionals.  
+
+---
+
+## 🚀 Closing
+**DiagnoAI** is more than just an app—it’s a **healthcare ecosystem** that empowers people with knowledge, guidance, and access.  
+Together, we can **bridge the gap between diagnosis, treatment, and medicine availability**.  
+
+---
+
+## 🔗 Important Links
+
+#### Pitch Deck Video Link
+    https://dummylink
+
+#### Website Documentation
+    https://dummylink
+
+#### Demo Video
+    https://dummylink
