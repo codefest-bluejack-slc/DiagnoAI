@@ -24,7 +24,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [structuredData, setStructuredData] = useState<any | null>(null);
 
-  const USE_TEST_MODE = true;
+  const USE_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true';
 
   if (USE_TEST_MODE) {
     console.log('Speech hook initialized in TEST MODE');
@@ -87,8 +87,17 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
           const diagnosisResponse = await DiagnosisService.getUnstructuredDiagnosis({
             text: result.text
           });
-          setStructuredData(diagnosisResponse);
-          console.log("structured data from diagnosis", diagnosisResponse);
+          
+          const structuredData = {
+            description: result.text,
+            symptoms: [],
+            since: new Date().toISOString().split('T')[0],
+            diagnosis: diagnosisResponse.diagnosis,
+            recommendations: diagnosisResponse.recommendation_agent_response?.answer || ''
+          };
+          
+          setStructuredData(structuredData);
+          console.log("structured data from diagnosis", structuredData);
         } catch (diagnosisError) {
           console.warn("Failed to get structured diagnosis:", diagnosisError);
         }

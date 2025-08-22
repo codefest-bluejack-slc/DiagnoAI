@@ -22,7 +22,7 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
     resetRecording,
   } = useSpeech('http://localhost:8002/transcribe');
 
-  const isTestMode = true;
+  const isTestMode = import.meta.env.VITE_TEST_MODE === 'true';
 
   useEffect(() => {
     if (isOpen) {
@@ -115,7 +115,7 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                   </h2>
                   {isTestMode && (
                     <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
-                      TEST MODE
+                      LAGI TEST MODE BANG
                     </span>
                   )}
                 </div>

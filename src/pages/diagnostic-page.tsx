@@ -147,6 +147,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
   const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
   const [illnessResponse, setIllnessResponse] = useState<string>('');
   const [drugsResponse, setDrugsResponse] = useState<string>('');
+  const [medicineRecommendations, setMedicineRecommendations] = useState<any[]>([]);
   const [showProducts, setShowProducts] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -224,6 +225,12 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
           () => {
             console.log('Products ready');
             setShowProducts(true);
+          },
+          (fullResponse) => {
+            console.log('Full diagnosis response received:', fullResponse);
+            if (fullResponse?.recommendation_agent_response?.medicines) {
+              setMedicineRecommendations(fullResponse.recommendation_agent_response.medicines);
+            }
           }
         );
       } else if (newSymptomName.trim()) {
@@ -246,6 +253,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
     setAnalysisComplete(false);
     setIllnessResponse('');
     setDrugsResponse('');
+    setMedicineRecommendations([]);
     setShowProducts(false);
   };
 
@@ -269,7 +277,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
             let addedSymptoms = 0;
             processedSymptoms.forEach((symptom) => {
               if (addedSymptoms < 10) {
-                addToSymptomList(symptom.name, symptom.severity);
+                addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe');
                 addedSymptoms++;
               }
             });
@@ -285,7 +293,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                 }
               );
             } else if (structuredData.symptoms.length > 0) {
-              const attemptedSymptoms = structuredData.symptoms.map(s => s.name).join(', ');
+              const attemptedSymptoms = structuredData.symptoms.map((s: any) => s.name).join(', ');
               addToast(
                 `No matches found for: ${attemptedSymptoms}. Please add them manually using the autocomplete.`, 
                 { 
@@ -386,6 +394,14 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
 
       <Navbar />
 
+      {import.meta.env.VITE_TEST_MODE === 'true' && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+            🧪 Test Mode Active
+          </div>
+        </div>
+      )}
+
       <HistoryModal
         isOpen={isHistoryModalOpen}
         onClose={toggleHistoryModal}
@@ -421,9 +437,17 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
               <h1 className="text-4xl font-bold text-white">
                 AI Diagnostic Assistant
               </h1>
+              {import.meta.env.VITE_TEST_MODE === 'true' && (
+                <span className="ml-3 px-3 py-1 text-sm bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
+                  LAGI TEST MODE BANG
+                </span>
+              )}
             </div>
             <p className="text-purple-200 text-lg max-w-2xl mx-auto">
-              Share your symptoms and receive comprehensive AI-powered health insights
+              {import.meta.env.VITE_TEST_MODE === 'true' 
+                ? 'Testing environment - using mock data for demonstration purposes'
+                : 'Share your symptoms and receive comprehensive AI-powered health insights'
+              }
             </p>
             <div className="flex items-center justify-center gap-2 mt-3">
             </div>
@@ -491,93 +515,172 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                     symptoms={symptoms}
                     description={newDescription}
                     since={newSince}
-                    onAnalysisComplete={(result) => {
+                    onAnalysisComplete={(result, fullResponse) => {
                       setIllnessResponse(result);
+                      if (fullResponse?.recommendation_agent_response) {
+                        setDrugsResponse(fullResponse.recommendation_agent_response.answer || '');
+                        setMedicineRecommendations(fullResponse.recommendation_agent_response.medicines || []);
+                      }
                       setShowAnalysis(false);
                       setAnalysisComplete(true);
                     }}
                   />
                 ) : analysisComplete && illnessResponse ? (
-                  <div className="bg-slate-800-50 backdrop-blur-sm border border-purple-400-30 rounded-xl p-6">
-                    <div className="bg-slate-900-50 rounded-xl p-6 border border-slate-700-50">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="p-2 bg-green-500-20 rounded-full">
-                          <Brain className="text-green-300" size={20} />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-white font-semibold">
-                              Analysis Complete
-                            </h3>
-                            <button
-                              onClick={() => {
-                                setAnalysisComplete(false);
-                                setIllnessResponse('');
-                                setShowAddForm(true);
-                              }}
-                              className="text-purple-300 hover:text-purple-200 text-sm underline transition-colors"
-                            >
-                              Start New Analysis
-                            </button>
+                  <div className="space-y-6">
+                    <div className="bg-slate-800/50 backdrop-blur-sm border border-purple-400/30 rounded-xl p-6">
+                      <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="p-2 bg-green-500/20 rounded-full">
+                            <Brain className="text-green-300" size={20} />
                           </div>
-                          <div className="text-purple-200 text-sm leading-relaxed max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
-                            <div className="space-y-1">
-                              {illnessResponse.split('\n').map((line, index) => {
-                                if (line.trim() === '') {
-                                  return <div key={`empty-${index}`} className="h-2" />;
-                                }
-                                
-                                if (line.startsWith('**') && line.endsWith('**')) {
-                                  const cleanLine = line.replace(/\*\*/g, '');
-                                  return (
-                                    <h4 key={`section-${index}`} className="font-bold text-white mt-4 mb-2">
-                                      {cleanLine}
-                                    </h4>
-                                  );
-                                }
-                                
-                                if (line.startsWith('• ')) {
-                                  return (
-                                    <div key={`bullet-${index}`} className="flex items-start gap-2 my-1">
-                                      <span className="text-purple-400 flex-shrink-0">•</span>
-                                      <span className="flex-1">{line.substring(2)}</span>
-                                    </div>
-                                  );
-                                }
-                                
-                                if (line.match(/^\d+\./)) {
-                                  const parts = line.split(': ');
-                                  return (
-                                    <div key={`numbered-${index}`} className="my-2">
-                                      <strong className="font-bold">{parts[0]}:</strong> {parts[1] || ''}
-                                    </div>
-                                  );
-                                }
-                                
-                                return (
-                                  <div key={`text-${index}`} className="my-1">
-                                    {line}
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-white font-semibold text-lg">
+                                🔍 AI Diagnosis Complete
+                              </h3>
+                              <div className="flex items-center gap-2">
+                                {import.meta.env.VITE_TEST_MODE === 'true' && (
+                                  <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
+                                    TEST MODE
+                                  </span>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    setAnalysisComplete(false);
+                                    setIllnessResponse('');
+                                    setMedicineRecommendations([]);
+                                    setShowAddForm(true);
+                                  }}
+                                  className="text-purple-300 hover:text-purple-200 text-sm underline transition-colors"
+                                >
+                                  Start New Analysis
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-6">
+                              <div className="text-purple-200 text-sm leading-relaxed max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
+                                <div className="space-y-2">
+                                  {illnessResponse.split('\n').map((line, index) => {
+                                    if (line.trim() === '') {
+                                      return <div key={`empty-${index}`} className="h-2" />;
+                                    }
+                                    
+                                    if (line.startsWith('**') && line.endsWith('**')) {
+                                      const cleanLine = line.replace(/\*\*/g, '');
+                                      return (
+                                        <h4 key={`section-${index}`} className="font-bold text-white mt-4 mb-2 text-base">
+                                          {cleanLine}
+                                        </h4>
+                                      );
+                                    }
+                                    
+                                    if (line.startsWith('• ')) {
+                                      return (
+                                        <div key={`bullet-${index}`} className="flex items-start gap-2 my-1">
+                                          <span className="text-purple-400 flex-shrink-0">•</span>
+                                          <span className="flex-1">{line.substring(2)}</span>
+                                        </div>
+                                      );
+                                    }
+                                    
+                                    if (line.match(/^\d+\./)) {
+                                      const parts = line.split(': ');
+                                      return (
+                                        <div key={`numbered-${index}`} className="my-2">
+                                          <strong className="font-bold">{parts[0]}:</strong> {parts[1] || ''}
+                                        </div>
+                                      );
+                                    }
+                                    
+                                    return (
+                                      <div key={`text-${index}`} className="my-1">
+                                        {line}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {drugsResponse && (
+                                <div className="border-t border-slate-700/50 pt-4">
+                                  <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                                    <Pill className="text-blue-300" size={18} />
+                                    Treatment Recommendations
+                                  </h4>
+                                  <div className="bg-slate-800/30 rounded-lg p-4 text-purple-200 text-sm leading-relaxed">
+                                    {drugsResponse.split('\n').map((line, index) => {
+                                      if (line.trim() === '') return <div key={`empty-${index}`} className="h-1" />;
+                                      if (line.startsWith('**') && line.endsWith('**')) {
+                                        const cleanLine = line.replace(/\*\*/g, '');
+                                        return <div key={`bold-${index}`} className="font-bold text-blue-200 mt-2">{cleanLine}</div>;
+                                      }
+                                      return <div key={`text-${index}`} className="my-1">{line}</div>;
+                                    })}
                                   </div>
-                                );
-                              })}
+                                </div>
+                              )}
+
+                              {medicineRecommendations.length > 0 && (
+                                <div className="border-t border-slate-700/50 pt-4">
+                                  <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                                    <ShoppingCart className="text-green-300" size={18} />
+                                    Recommended Medications
+                                  </h4>
+                                  <div className="grid gap-3">
+                                    {medicineRecommendations.slice(0, 3).map((medicine, index) => (
+                                      <div key={index} className="bg-gradient-to-r from-slate-800/40 to-slate-700/30 border border-slate-600/50 rounded-lg p-4 hover:border-green-400/50 transition-all duration-300 group">
+                                        <div className="flex items-start justify-between mb-3">
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                            <h5 className="font-semibold text-white text-base group-hover:text-green-100 transition-colors">{medicine.brand_name}</h5>
+                                          </div>
+                                          <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full border border-green-400/30">
+                                            {medicine.product_ndc}
+                                          </span>
+                                        </div>
+                                        <div className="space-y-2 text-sm">
+                                          <div className="flex items-center gap-2 text-purple-200">
+                                            <Pill className="w-3 h-3 text-blue-300" />
+                                            <span className="font-medium text-purple-100">Generic:</span> 
+                                            <span className="text-sm truncate">{medicine.generic_name}</span>
+                                          </div>
+                                          <div className="flex items-center gap-2 text-purple-200">
+                                            <Shield className="w-3 h-3 text-blue-300" />
+                                            <span className="font-medium text-purple-100">Manufacturer:</span> 
+                                            <span className="text-sm">{medicine.manufacturer}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  {medicineRecommendations.length > 3 && (
+                                    <div className="mt-3 text-center">
+                                      <span className="text-purple-300 text-sm">
+                                        +{medicineRecommendations.length - 3} more available options
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
+                        {analysisComplete && (
+                          <div className="bg-slate-800/30 backdrop-blur-sm border border-purple-400/30 rounded-xl p-4 mt-4">
+                            <button
+                              onClick={() => {
+                                setCurrentStep('finding-products');
+                                setShowProducts(true);
+                              }}
+                              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
+                            >
+                              <ShoppingCart size={16} />
+                              Find Products & Treatments
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      {analysisComplete && (
-                        <div className="bg-slate-800-30 backdrop-blur-sm border border-purple-400-30 rounded-xl p-4">
-                          <button
-                            onClick={() => {
-                              setCurrentStep('finding-products');
-                              setShowProducts(true);
-                            }}
-                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
-                          >
-                            <ShoppingCart size={16} />
-                            Find Products & Treatments
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ) : !showAddForm ? (
@@ -850,12 +953,12 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                       <>
                         <div className="space-y-2">
                           {symptoms.map((symptom, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-slate-700-30 rounded-lg">
+                            <div key={index} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg">
                               <span className="text-purple-200 text-sm">{symptom.name}</span>
                               <span className={`text-xs px-2 py-1 rounded-full ${
-                                symptom.severity === 'mild' ? 'bg-green-400-30 text-green-300' :
+                                symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300' :
                                 symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
-                                'bg-red-400-30 text-red-300'
+                                'bg-red-400/30 text-red-300'
                               }`}>
                                 {symptom.severity}
                               </span>
@@ -863,7 +966,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                           ))}
                         </div>
                         {(showAnalysis || showProducts) && (
-                          <div className="mt-4 p-3 bg-slate-700-20 rounded-lg">
+                          <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
                             <p className="text-purple-200 text-xs">
                               <strong>Since:</strong> {new Date(newSince).toLocaleDateString()}
                             </p>
@@ -882,6 +985,7 @@ export default function DiagnosticPage({}: IDiagnosticPageProps) {
                 <RecommendedProducts
                   symptoms={symptoms}
                   isVisible={showProducts}
+                  medicineRecommendations={medicineRecommendations}
                 />
               </div>
             </div>

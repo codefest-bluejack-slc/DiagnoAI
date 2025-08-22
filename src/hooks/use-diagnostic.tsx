@@ -23,6 +23,12 @@ export const useDiagnostic = () => {
   const { symptomService, historyService } = useService();
   const { addToast } = useToast();
 
+  const USE_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true';
+
+  if (USE_TEST_MODE) {
+    console.log('Diagnostic hook initialized in TEST MODE');
+  }
+
   useEffect(() => {
     loadHistoryFromBackend();
   }, []);
@@ -188,7 +194,8 @@ export const useDiagnostic = () => {
   const startDiagnostic = async (
     onIllnessFound?: (response: string) => void,
     onDrugsFound?: (response: string) => void,
-    onProductsReady?: () => void
+    onProductsReady?: () => void,
+    onFullResponse?: (response: any) => void
   ) => {
     if (!newDescription.trim()) {
       addToast('Description is required', { type: 'warning', title: 'Validation Error' });
@@ -243,7 +250,13 @@ export const useDiagnostic = () => {
       };
 
       try {
-        const diagnosisResponse = await DiagnosisService.getStructuredDiagnosis(diagnosisRequest);
+        let diagnosisResponse;
+        
+        diagnosisResponse = await DiagnosisService.getStructuredDiagnosis(diagnosisRequest);
+        
+        if (onFullResponse) {
+          onFullResponse(diagnosisResponse);
+        }
         
         if (onIllnessFound && diagnosisResponse.diagnosis) {
           onIllnessFound(diagnosisResponse.diagnosis);
@@ -253,7 +266,7 @@ export const useDiagnostic = () => {
           setCurrentStep('finding-drugs');
           addToast('Searching for suitable medications...', { type: 'success' });
           
-          const drugsResponse = generateDrugsResponse(symptoms);
+          const drugsResponse = diagnosisResponse.recommendation_agent_response?.answer || generateDrugsResponse(symptoms);
           
           setTimeout(() => {
             if (onDrugsFound) {
@@ -273,7 +286,7 @@ export const useDiagnostic = () => {
               }, 1000);
             }, 2000);
           }, 2000);
-        }, 3000);
+        }, USE_TEST_MODE ? 3000 : 3000);
       } catch (diagnosisError) {
         console.warn('Diagnosis service unavailable, using fallback:', diagnosisError);
         

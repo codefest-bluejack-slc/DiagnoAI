@@ -18,11 +18,18 @@ import { searchProducts } from '../../services/medicine.service';
 interface RecommendedProductsProps {
   symptoms: Array<{ name: string; severity: 'mild' | 'moderate' | 'severe' }>;
   isVisible: boolean;
+  medicineRecommendations?: Array<{
+    brand_name: string;
+    generic_name: string;
+    manufacturer: string;
+    product_ndc: string;
+  }>;
 }
 
 export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   symptoms,
   isVisible,
+  medicineRecommendations = [],
 }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [products, setProducts] = useState<{ [key: string]: IProduct[] }>({});
@@ -30,15 +37,18 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const medicines = ['Bowel Sode', 'BHI Diarrhea', 'Pepto-Bismol Chewable, TRAVEL BASIX', 'Ver'];
+  // Use AI recommendations if available, otherwise fall back to default medicines
+  const medicines = medicineRecommendations.length > 0 
+    ? medicineRecommendations.map(med => med.brand_name)
+    : ['Bowel Sode', 'BHI Diarrhea', 'Pepto-Bismol Chewable, TRAVEL BASIX', 'Ver'];
   
-  const apiKey = process.env.VITE_SERPAPI_KEY;
+  const apiKey = import.meta.env.VITE_SERPAPI_KEY;
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && medicines.length > 0) {
       loadProductsFromAPI();
     }
-  }, [isVisible]);
+  }, [isVisible, medicines]);
 
   const loadProductsFromAPI = async () => {
     setIsLoading(true);
@@ -292,7 +302,15 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <ShoppingCart className="text-purple-300" size={20} />
-            <h4 className="text-white font-semibold">Recommended Products</h4>
+            <div className="flex flex-col">
+              <h4 className="text-white font-semibold">Recommended Products</h4>
+              {medicineRecommendations.length > 0 && (
+                <span className="text-xs text-green-300 flex items-center gap-1">
+                  <Sparkles size={10} />
+                  AI Powered
+                </span>
+              )}
+            </div>
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           </div>
           <button
@@ -366,10 +384,13 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
           <Sparkles className="text-purple-300 mt-0.5 flex-shrink-0" size={14} />
           <div>
             <p className="text-purple-200 text-sm font-medium mb-1">
-              AI Recommendations
+              {medicineRecommendations.length > 0 ? 'AI Recommended Medications' : 'Alternative Medicines'}
             </p>
             <p className="text-purple-300 text-xs leading-relaxed">
-              These products are suggested based on your symptoms. Always consult a healthcare professional before using any medication.
+              {medicineRecommendations.length > 0 
+                ? 'These products are specifically recommended by our AI based on your diagnosis and symptoms.'
+                : 'These are general products that may help with similar symptoms.'
+              } Always consult a healthcare professional before using any medication.
             </p>
           </div>
         </div>

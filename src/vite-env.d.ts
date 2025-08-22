@@ -1,5 +1,15 @@
 /// <reference types="vite/client" />
 
+interface ImportMetaEnv {
+  readonly VITE_SERPAPI_KEY: string
+  readonly VITE_FORWARD_DIAGNOSTIC: string
+  readonly VITE_TEST_MODE: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
 // Speech Recognition API Types
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;

@@ -70,6 +70,10 @@
   animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+.animate-slide-up {
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 .animation-delay-150 {
   animation-delay: 150ms;
 }
