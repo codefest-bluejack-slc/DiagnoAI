@@ -57,6 +57,9 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     setError(null);
     const productsData: { [key: string]: IProduct[] } = {};
     
+    // temp untuk test doang
+    setIsLoading(false);
+
     if (!apiKey) {
       setError('API key not configured');
       setIsLoading(false);
@@ -217,7 +220,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             <div className="flex items-center gap-3">
               <ShoppingCart className="text-purple-300" size={24} />
               <h2 className="text-2xl font-bold text-white">Recommended Products</h2>
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             </div>
             <button
               onClick={() => setIsModalOpen(false)}
@@ -314,7 +316,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
                 </span>
               )}
             </div>
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -381,23 +382,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
           )}
         </div>
       )}
-
-      <div className="mt-4 p-3 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-xl border border-purple-400/30">
-        <div className="flex items-start gap-2">
-          <Sparkles className="text-purple-300 mt-0.5 flex-shrink-0" size={14} />
-          <div>
-            <p className="text-purple-200 text-sm font-medium mb-1">
-              {medicineRecommendations.length > 0 ? 'AI Recommended Medications' : 'Alternative Medicines'}
-            </p>
-            <p className="text-purple-300 text-xs leading-relaxed">
-              {medicineRecommendations.length > 0 
-                ? 'These products are specifically recommended by our AI based on your diagnosis and symptoms.'
-                : 'These are general products that may help with similar symptoms.'
-              } Always consult a healthcare professional before using any medication.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
 
     <ProductModal />

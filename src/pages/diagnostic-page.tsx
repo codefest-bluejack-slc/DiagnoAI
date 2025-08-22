@@ -159,24 +159,47 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         bullet: 'text-blue-400',
         numbered: 'text-blue-100',
         emphasis: 'text-blue-100 font-medium',
-        text: 'text-purple-200'
+        text: 'text-blue-200'
       }
     };
 
     const scheme = colors[colorScheme];
 
-    return text.split('\n').map((line, index) => {
-      if (line.trim() === '') {
+    // Pre-process text to handle cases where there are no line breaks
+    // Split on ** patterns and bullet patterns to create proper line breaks
+    let processedText = text
+      .replace(/(\*\*[^*]+\*\*)/g, '\n$1\n')  // Add line breaks around headers
+      .replace(/(• [^•]+)/g, '\n$1')           // Add line breaks before bullets
+      .replace(/\n+/g, '\n')                   // Clean up multiple line breaks
+      .trim();
+
+    return processedText.split('\n').map((line, index) => {
+      line = line.trim();
+      
+      if (line === '') {
         return <div key={`empty-${index}`} className="h-3" />;
       }
 
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const cleanLine = line.replace(/\*\*/g, '');
-        return (
-          <h4 key={`section-${index}`} className={`font-bold mt-4 mb-2 text-base pb-1 ${scheme.header}`}>
-            {cleanLine}
-          </h4>
-        );
+      // Handle headers with **text**
+      if (line.startsWith('**') && line.includes('**')) {
+        const headerMatch = line.match(/\*\*([^*]+)\*\*/);
+        if (headerMatch) {
+          const headerText = headerMatch[1];
+          const remainingText = line.replace(/\*\*[^*]+\*\*/, '').trim();
+          
+          return (
+            <div key={`section-${index}`} className="my-3">
+              <h4 className={`font-bold text-base pb-1 mb-2 ${scheme.header}`}>
+                {headerText}
+              </h4>
+              {remainingText && (
+                <div className={`${scheme.text}`}>
+                  {remainingText}
+                </div>
+              )}
+            </div>
+          );
+        }
       }
 
       if (line.startsWith('###')) {
@@ -208,10 +231,18 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         );
       }
 
-      if (line.includes('*') && !line.startsWith('**')) {
-        const formattedLine = line.replace(/\*(.*?)\*/g, `<em class="${scheme.emphasis}">$1</em>`);
+      // Handle inline emphasis and multiple ** patterns in the same line
+      if (line.includes('*')) {
+        let processedLine = line;
+        
+        // Handle remaining ** patterns as inline bold
+        processedLine = processedLine.replace(/\*\*([^*]+)\*\*/g, `<strong class="${scheme.emphasis}">$1</strong>`);
+        
+        // Handle single * patterns as emphasis
+        processedLine = processedLine.replace(/\*([^*]+)\*/g, `<em class="${scheme.emphasis}">$1</em>`);
+        
         return (
-          <div key={`text-${index}`} className={`my-2 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedLine }} />
+          <div key={`text-${index}`} className={`my-2 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: processedLine }} />
         );
       }
 
@@ -597,123 +628,114 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                 ) : analysisComplete && illnessResponse ? (
                   <div className="w-full max-w-none">
                     <div className="bg-slate-800/50 backdrop-blur-sm border border-purple-400/30 rounded-xl p-6 w-full">
-                      <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50 w-full">
-                        <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
-                          <div className="p-2 bg-green-500/20 rounded-full flex-shrink-0">
-                            <Brain className="text-green-300" size={20} />
-                          </div>
-                          <div className="flex-1 min-w-0 w-full">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-                              <h3 className="text-white font-semibold text-lg">
-                                AI Diagnosis Complete
-                              </h3>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {import.meta.env.VITE_TEST_MODE === 'true' && (
-                                  <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
-                                    TEST MODE
-                                  </span>
-                                )}
-                                <button
-                                  onClick={() => {
-                                    setAnalysisComplete(false);
-                                    setIllnessResponse('');
-                                    setMedicineRecommendations([]);
-                                    setShowAddForm(true);
-                                  }}
-                                  className="text-purple-300 hover:text-purple-200 text-sm underline transition-colors"
-                                >
-                                  Start New Analysis
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="space-y-6 w-full">
-                              <div className="bg-slate-800/40 rounded-lg p-4 w-full">
-                                <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
-                                  <div className="space-y-3 break-words w-full">
-                                    {renderRichText(illnessResponse, 'purple')}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {drugsResponse && (
-                                <div className="border-t border-slate-700/50 pt-4 w-full">
-                                  <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                                    <Pill className="text-blue-300" size={18} />
-                                    Treatment Recommendations
-                                  </h4>
-                                  <div className="bg-slate-800/40 rounded-lg p-4 w-full">
-                                    <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
-                                      <div className="space-y-3 break-words w-full">
-                                        {renderRichText(drugsResponse, 'blue')}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-green-500/20 rounded-full flex-shrink-0">
+                          <Brain className="text-green-300" size={24} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <h3 className="text-white font-bold text-xl">
+                              AI Diagnosis Complete
+                            </h3>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {import.meta.env.VITE_TEST_MODE === 'true' && (
+                                <span className="px-3 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300 font-medium">
+                                  TEST MODE
+                                </span>
                               )}
-
-                              {medicineRecommendations.length > 0 && (
-                                <div className="border-t border-slate-700/50 pt-4 w-full">
-                                  <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                                    <ShoppingCart className="text-green-300" size={18} />
-                                    Recommended Medications ({medicineRecommendations.length} found)
-                                  </h4>
-                                  <div className="w-full">
-                                    <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 pr-2 w-full">
-                                      {medicineRecommendations.map((medicine, index) => (
-                                        <div key={index} className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 border border-slate-600/50 rounded-lg p-4 hover:border-green-400/50 transition-all duration-300 group w-full">
-                                          <div className="flex flex-col gap-3">
-                                            <div className="flex items-center gap-3">
-                                              <div className="w-3 h-3 bg-green-400 rounded-full flex-shrink-0"></div>
-                                              <h5 className="font-semibold text-white text-base group-hover:text-green-100 transition-colors break-words flex-1">
-                                                {medicine.brand_name}
-                                              </h5>
-                                            </div>
-                                            <div className="flex items-start gap-2 text-purple-200">
-                                              <Pill className="w-4 h-4 text-blue-300 flex-shrink-0 mt-0.5" />
-                                              <div className="flex-1 min-w-0">
-                                                <span className="font-medium text-purple-100 block text-sm">Generic Name:</span>
-                                                {medicine.generic_name.length > 40 ? (
-                                                  <Tooltip content={medicine.generic_name} position="top">
-                                                    <span className="text-purple-200 break-words cursor-help hover:text-purple-100 transition-colors">
-                                                      {medicine.generic_name.substring(0, 40)}...
-                                                    </span>
-                                                  </Tooltip>
-                                                ) : (
-                                                  <span className="text-purple-200 break-words">{medicine.generic_name}</span>
-                                                )}
-                                              </div>
-                                            </div>
-                                            <div className="flex items-start gap-2 text-purple-200">
-                                              <Shield className="w-4 h-4 text-blue-300 flex-shrink-0 mt-0.5" />
-                                              <div className="flex-1 min-w-0">
-                                                <span className="font-medium text-purple-100 block text-sm">Manufacturer:</span>
-                                                <span className="text-purple-200 break-words">{medicine.manufacturer}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="bg-slate-800/30 backdrop-blur-sm border border-purple-400/30 rounded-xl p-4 w-full">
-                                <button
-                                  onClick={() => {
-                                    setCurrentStep('finding-products');
-                                    setShowProducts(true);
-                                  }}
-                                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-purple-500/25"
-                                >
-                                  <ShoppingCart size={16} />
-                                  Find Products & Treatments
-                                </button>
-                              </div>
                             </div>
                           </div>
                         </div>
+                      </div>
+
+                      <div className="space-y-8">
+                        <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
+                          <div className="flex items-center gap-3 mb-4">
+                            <Stethoscope className="text-purple-400" size={20} />
+                            <h4 className="text-white font-semibold text-lg">
+                              AI Diagnosis Results
+                            </h4>
+                          </div>
+                          <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
+                            <div className="space-y-3">
+                              {renderRichText(illnessResponse, 'purple')}
+                            </div>
+                          </div>
+                        </div>
+
+                        {drugsResponse && (
+                          <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
+                            <div className="flex items-center gap-3 mb-4">
+                              <Pill className="text-blue-400" size={20} />
+                              <h4 className="text-white font-semibold text-lg">
+                                Treatment Recommendations
+                              </h4>
+                            </div>
+                            <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/50 scrollbar-track-slate-700/20">
+                              <div className="space-y-3">
+                                {renderRichText(drugsResponse, 'blue')}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {medicineRecommendations.length > 0 && (
+                          <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
+                            <div className="flex items-center gap-3 mb-4">
+                              <ShoppingCart className="text-green-400" size={20} />
+                              <h4 className="text-white font-semibold text-lg">
+                                Recommended Medications
+                              </h4>
+                              <span className="px-2 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-green-300 text-xs font-medium">
+                                {medicineRecommendations.length} found
+                              </span>
+                            </div>
+                            <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-green-500/50 scrollbar-track-slate-700/20">
+                              <div className="grid grid-cols-1 gap-4 pr-2">
+                                {medicineRecommendations.map((medicine, index) => (
+                                  <div key={index} className="bg-slate-800/60 border border-slate-600/50 rounded-lg p-4 hover:border-green-400/50 transition-all duration-300 group">
+                                    <div className="space-y-3">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                                        <h5 className="font-semibold text-white text-base group-hover:text-green-100 transition-colors">
+                                          {medicine.brand_name}
+                                        </h5>
+                                      </div>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-5">
+                                        <div className="flex items-start gap-2">
+                                          <Pill className="w-4 h-4 text-blue-300 flex-shrink-0 mt-1" />
+                                          <div className="flex-1 min-w-0">
+                                            <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
+                                              Generic Name
+                                            </span>
+                                            {medicine.generic_name.length > 40 ? (
+                                              <Tooltip content={medicine.generic_name} position="top">
+                                                <span className="text-purple-200 text-sm cursor-help hover:text-purple-100 transition-colors">
+                                                  {medicine.generic_name.substring(0, 40)}...
+                                                </span>
+                                              </Tooltip>
+                                            ) : (
+                                              <span className="text-purple-200 text-sm">{medicine.generic_name}</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                          <Shield className="w-4 h-4 text-blue-300 flex-shrink-0 mt-1" />
+                                          <div className="flex-1 min-w-0">
+                                            <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
+                                              Manufacturer
+                                            </span>
+                                            <span className="text-purple-200 text-sm">{medicine.manufacturer}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
