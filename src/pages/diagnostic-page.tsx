@@ -151,8 +151,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         bullet: 'text-purple-400',
         numbered: 'text-purple-100',
         emphasis: 'text-purple-100 font-medium',
-        text: 'text-purple-200',
-        bold: 'text-white font-bold'
+        text: 'text-purple-200'
       },
       blue: {
         header: 'text-white border-b border-blue-500/30',
@@ -160,8 +159,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         bullet: 'text-blue-400',
         numbered: 'text-blue-100',
         emphasis: 'text-blue-100 font-medium',
-        text: 'text-purple-200',
-        bold: 'text-white font-bold'
+        text: 'text-purple-200'
       }
     };
 
@@ -172,15 +170,6 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         return <div key={`empty-${index}`} className="h-3" />;
       }
 
-      // Handle full line bold headers (like **Recommended Medication:** DysBio Plus)
-      if (line.includes('**') && line.match(/\*\*([^*]+)\*\*/)) {
-        const formattedLine = line.replace(/\*\*([^*]+)\*\*/g, `<span class="${scheme.bold}">$1</span>`);
-        return (
-          <div key={`bold-line-${index}`} className={`my-2 leading-relaxed ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedLine }} />
-        );
-      }
-
-      // Handle traditional full line bold headers
       if (line.startsWith('**') && line.endsWith('**')) {
         const cleanLine = line.replace(/\*\*/g, '');
         return (
@@ -190,7 +179,6 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         );
       }
 
-      // Handle markdown subheadings
       if (line.startsWith('###')) {
         const cleanLine = line.replace(/###/g, '').trim();
         return (
@@ -200,19 +188,8 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         );
       }
 
-      // Handle bullet points
       if (line.startsWith('• ') || line.startsWith('- ')) {
         const bulletText = line.substring(2);
-        // Check if bullet text contains bold formatting
-        if (bulletText.includes('**')) {
-          const formattedBullet = bulletText.replace(/\*\*([^*]+)\*\*/g, `<span class="${scheme.bold}">$1</span>`);
-          return (
-            <div key={`bullet-${index}`} className="flex items-start gap-3 my-2 ml-2">
-              <span className={`flex-shrink-0 mt-1 ${scheme.bullet}`}>•</span>
-              <span className={`flex-1 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedBullet }} />
-            </div>
-          );
-        }
         return (
           <div key={`bullet-${index}`} className="flex items-start gap-3 my-2 ml-2">
             <span className={`flex-shrink-0 mt-1 ${scheme.bullet}`}>•</span>
@@ -221,38 +198,23 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
         );
       }
 
-      // Handle numbered lists
       if (line.match(/^\d+\./)) {
         const parts = line.split(': ');
-        const numberPart = parts[0];
-        const restPart = parts.slice(1).join(': ');
-        
-        if (restPart && restPart.includes('**')) {
-          const formattedRest = restPart.replace(/\*\*([^*]+)\*\*/g, `<span class="${scheme.bold}">$1</span>`);
-          return (
-            <div key={`numbered-${index}`} className="my-2 ml-2">
-              <span className={`font-semibold ${scheme.numbered}`}>{numberPart}:</span>
-              <span className={`ml-2 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedRest }} />
-            </div>
-          );
-        }
         return (
           <div key={`numbered-${index}`} className="my-2 ml-2">
-            <span className={`font-semibold ${scheme.numbered}`}>{numberPart}:</span>
-            <span className={`ml-2 ${scheme.text}`}>{restPart}</span>
+            <span className={`font-semibold ${scheme.numbered}`}>{parts[0]}:</span>
+            <span className={`ml-2 ${scheme.text}`}>{parts.slice(1).join(': ')}</span>
           </div>
         );
       }
 
-      // Handle single asterisk emphasis (italic)
-      if (line.includes('*') && !line.includes('**')) {
-        const formattedLine = line.replace(/\*([^*]+)\*/g, `<em class="${scheme.emphasis}">$1</em>`);
+      if (line.includes('*') && !line.startsWith('**')) {
+        const formattedLine = line.replace(/\*(.*?)\*/g, `<em class="${scheme.emphasis}">$1</em>`);
         return (
           <div key={`text-${index}`} className={`my-2 ${scheme.text}`} dangerouslySetInnerHTML={{ __html: formattedLine }} />
         );
       }
 
-      // Regular text
       return (
         <div key={`text-${index}`} className={`my-2 leading-relaxed ${scheme.text}`}>
           {line}
@@ -395,13 +357,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
             let addedSymptoms = 0;
             processedSymptoms.forEach((symptom) => {
               if (addedSymptoms < 10) {
-                let addedSymptoms = 0;
-                processedSymptoms.forEach((symptom) => {
-                  if (addedSymptoms < 10) {
-                    addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe');
-                    addedSymptoms++;
-                  }
-                });
+                addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe');
                 addedSymptoms++;
               }
             });
