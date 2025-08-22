@@ -79,9 +79,9 @@ export class DiagnosisService {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`Diagnosis API attempt ${attempt}/${maxRetries} to ${this.BASE_URL}diagnosis/from-symptoms`);
+        console.log(`Diagnosis API attempt ${attempt}/${maxRetries} to ${this.BASE_URL}/diagnosis/from-symptoms`);
         
-        const response = await axios.post(`${this.BASE_URL}diagnosis/from-symptoms`, request, {
+        const response = await axios.post(`${this.BASE_URL}/diagnosis/from-symptoms`, request, {
           headers: {
             'Content-Type': 'application/json',
           },

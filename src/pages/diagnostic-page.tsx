@@ -47,6 +47,27 @@ import {
 import '../styles/diagnostic-page.css';
 
 export default function DiagnosticPage({ }: IDiagnosticPageProps) {
+  const USE_DEFAULT_DATA = true;
+  
+  const defaultData = {
+    description: "I have been sick for around 3 days after eating a lot of seafood",
+    symptoms: [
+      {
+        name: "headache",
+        severity: "mild" as const
+      },
+      {
+        name: "fever", 
+        severity: "severe" as const
+      },
+      {
+        name: "diarrhea",
+        severity: "severe" as const
+      }
+    ],
+    since: "2025-08-10"
+  };
+
   const mousePosition = useMouseTracking();
   const { addToast } = useToast();
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -93,6 +114,17 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   } = useDiagnostic();
 
   const { findBestMatches } = useTemplateSymptoms();
+
+  useEffect(() => {
+    if (USE_DEFAULT_DATA) {
+      setNewDescription(defaultData.description);
+      setNewSince(defaultData.since);
+      
+      defaultData.symptoms.forEach(symptom => {
+        addToSymptomList(symptom.name, symptom.severity);
+      });
+    }
+  }, []);
 
   const convertSeverity = (severity: string): string => {
     const severityMap: { [key: string]: string } = {
