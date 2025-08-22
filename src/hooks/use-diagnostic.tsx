@@ -52,7 +52,7 @@ export const useDiagnostic = () => {
       await testConnection();
       
       const historyData = await historyService.getMyHistories();
-      // setHistory(historyData);
+      setHistory(historyData);
       
       setConnectionStatus('connected');
     } catch (error) {
@@ -90,7 +90,7 @@ export const useDiagnostic = () => {
     onSuccess: (data) => {
       console.log('History fetched successfully:', data);
       if (data) {
-        // setHistory(data);
+        setHistory(data);
       }
     },
     onError: (error) => {
@@ -475,25 +475,29 @@ export const useDiagnostic = () => {
     return 0;
   };
 
-  const addToHistory = (description: string, diagnosis: string,username : string) => {
-    const newHistoryItem: IHistoryItem = {
-      id: Date.now().toString(),
-      since: new Date().toISOString().split('T')[0],
-      description: description || '',
-      symptoms: symptoms,
-      diagnosis: diagnosis || '',
-      status: 'completed',
-      severity: symptoms.length > 0 ? symptoms[0].severity : 'mild'
-    };
+  const addToHistory = (description: string, diagnosis: string, username: string) => {
+    const assessmentId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     
     const assessment: IHealthAssessment = {
-      id: newHistoryItem.id,
-      description: newHistoryItem.description || '',
+      id: assessmentId,
+      description: description || '',
       symptoms: symptoms,
-      since: newHistoryItem.since || ''
+      since: newSince || new Date().toISOString().split('T')[0]
     };
     
     addHistoryMutation.mutate({assessment, username});
+    
+    for (const symptom of symptoms) {
+      const symptomData = {
+        symptom: {
+          name: symptom.name,
+          severity: symptom.severity,
+          historyId: assessmentId
+        },
+        username: username
+      };
+      addSymptomMutation.mutate(symptomData);
+    }
   };
 
   const clearHistory = async () => {

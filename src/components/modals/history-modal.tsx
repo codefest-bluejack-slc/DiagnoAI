@@ -128,11 +128,11 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg mb-2 transition-colors group-hover:text-purple-300 text-purple-100">
-                          {item.description || item.title}
+                          {item.diagnosis || `Assessment ${item.id.slice(0, 8)}`}
                         </h3>
                         <div className="flex items-center gap-2 text-sm mb-3 text-purple-300">
                           <Calendar className="w-4 h-4" />
-                          <span>{formatDate(item.since || item.date || '')}</span>
+                          <span>{formatDate(item.date || '')}</span>
                         </div>
                       </div>
                       <div 
@@ -157,27 +157,25 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                         {(item.symptoms || []).slice(0, 3).map((symptom, idx) => (
                           <Tooltip
                             key={idx}
-                            content={`Symptom: ${typeof symptom === 'string' ? symptom : symptom.name} - Severity: ${typeof symptom === 'string' ? 'Unknown' : symptom.severity} - Reported on ${formatDate(item.since || item.date || '')}`}
+                            content={`Symptom: ${symptom.name} - Severity: ${symptom.severity}`}
                             position="top"
                           >
                             <span
                               className={`px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105 ${
-                                typeof symptom === 'string' 
-                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-400/50'
-                                  : symptom.severity === 'mild' 
-                                    ? 'bg-green-500/20 text-green-300 border border-green-400/50'
-                                    : symptom.severity === 'moderate'
-                                      ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
-                                      : 'bg-red-500/20 text-red-300 border border-red-400/50'
+                                symptom.severity === 'mild' 
+                                  ? 'bg-green-500/20 text-green-300 border border-green-400/50'
+                                  : symptom.severity === 'moderate'
+                                    ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
+                                    : 'bg-red-500/20 text-red-300 border border-red-400/50'
                               }`}
                             >
-                              {typeof symptom === 'string' ? symptom : symptom.name}
+                              {symptom.name}
                             </span>
                           </Tooltip>
                         ))}
                         {(item.symptoms || []).length > 3 && (
                           <Tooltip
-                            content={`Additional symptoms: ${(item.symptoms || []).slice(3).map(s => typeof s === 'string' ? s : s.name).join(', ')}`}
+                            content={`Additional symptoms: ${(item.symptoms || []).slice(3).map(s => s.name).join(', ')}`}
                             position="top"
                           >
                             <span className="px-3 py-1 text-xs rounded-full cursor-help transition-all duration-200 hover:scale-105 bg-slate-700/70 text-purple-200 border border-slate-600/50">
@@ -197,7 +195,7 @@ export const HistoryModal: React.FC<IHistoryModalProps> = ({
                           }`}
                         ></span>
                         <Tooltip
-                          content={`Assessment: ${item.description || item.diagnosis || 'No diagnosis'} - Overall Severity: ${item.severity.charAt(0).toUpperCase() + item.severity.slice(1)}`}
+                          content={`Assessment: ${item.diagnosis || 'No diagnosis'} - Overall Severity: ${item.severity ? item.severity.charAt(0).toUpperCase() + item.severity.slice(1) : 'Unknown'}`}
                           position="top"
                         >
                           <span className="text-sm font-medium cursor-help text-purple-200">

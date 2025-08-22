@@ -4,7 +4,7 @@ import { _SERVICE as HistoryCanisterService, HistoryResponse, History } from "..
 import { canisterId as historyCanisterId, createActor as createHistoryActor } from "../declarations/history";
 import { canisterId as symptomCanisterId } from "../declarations/symptom";
 import { IHealthAssessment } from "../interfaces/IDiagnostic";
-import { IHistoryItem } from "../interfaces/IHistoryModal";
+import { IHistoryItem, IMedicine } from "../interfaces/IHistoryModal";
 
 export class HistoryService extends BaseService<HistoryCanisterService> {
 
@@ -26,7 +26,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
         }
     }
 
-    public async getMyHistories(){
+    public async getMyHistories(): Promise<IHistoryItem[]> {
         try {
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
@@ -42,11 +42,22 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                         if ('ok' in historyWithSymptoms) {
                             return {
                                 id: history.id,
-                                diagnosis: history.diagnosis ? history.diagnosis[0] : undefined,
+                                userId: history.userId.toString(),
+                                username: history.username,
+                                diagnosis: history.diagnosis,
+                                medicine_response: history.medicine_response,
+                                medicines: history.medicines.map((med: any) => ({
+                                    brand_name: med.brand_name,
+                                    generic_name: med.generic_name,
+                                    manufacturer: med.manufacturer,
+                                    product_ndc: med.product_ncd
+                                })),
                                 symptoms: historyWithSymptoms.ok.symptoms.map(symptom => ({
                                     name: symptom.name,
                                     severity: symptom.severity as 'mild' | 'moderate' | 'severe'
-                                }))
+                                })),
+                                status: 'completed' as const,
+                                severity: this.calculateOverallSeverity(historyWithSymptoms.ok.symptoms)
                             };
                         }
                     } catch (error) {
@@ -55,8 +66,19 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                     
                     return {
                         id: history.id,
-                        diagnosis: history.diagnosis ? history.diagnosis[0] : undefined,
-                        symptoms: []
+                        userId: history.userId.toString(),
+                        username: history.username,
+                        diagnosis: history.diagnosis,
+                        medicine_response: history.medicine_response,
+                        medicines: history.medicines.map((med: any) => ({
+                            brand_name: med.brand_name,
+                            generic_name: med.generic_name,
+                            manufacturer: med.manufacturer,
+                            product_ndc: med.product_ncd
+                        })),
+                        symptoms: [],
+                        status: 'completed' as const,
+                        severity: 'mild' as const
                     };
                 });
                 
@@ -70,7 +92,13 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
         }
     }
 
-    public async addHistory(username: string,assessment: IHealthAssessment): Promise<History | null> {
+    private calculateOverallSeverity(symptoms: any[]): 'mild' | 'moderate' | 'severe' {
+        if (symptoms.some(s => s.severity === 'severe')) return 'severe';
+        if (symptoms.some(s => s.severity === 'moderate')) return 'moderate';
+        return 'mild';
+    }
+
+    public async addHistory(username: string, assessment: IHealthAssessment): Promise<History | null> {
         try {
             const principal = await BaseService.getCallerPrincipal();
             if (principal.isAnonymous()) {
@@ -81,7 +109,7 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
                 id: assessment.id,
                 userId: principal,
                 username: username,
-                diagnosis : "",
+                diagnosis: "",
                 medicines: [],
                 medicine_response: "",
             };
@@ -93,7 +121,42 @@ export class HistoryService extends BaseService<HistoryCanisterService> {
             }
             return null;
         } catch (error) {
-            console.error("error bang dari add history", error);
+            console.error("error from add history", error);
+            throw error;
+        }
+    }
+
+    public async updateHistoryWithDiagnosis(id: string, diagnosis: string, medicineResponse: string, medicines: IMedicine[]): Promise<boolean> {
+        try {
+            const principal = await BaseService.getCallerPrincipal();
+            if (principal.isAnonymous()) {
+                throw new Error("User is not authenticated");
+            }
+
+            const existingHistory = await this.getHistoryById(id);
+            if (!existingHistory) {
+                return false;
+            }
+
+            const updatedHistory: History = {
+                id: id,
+                userId: principal,
+                username: existingHistory.username,
+                diagnosis: diagnosis,
+                medicines: medicines.map(med => ({
+                    brand_name: med.brand_name,
+                    generic_name: med.generic_name,
+                    manufacturer: med.manufacturer,
+                    product_ncd: med.product_ndc
+                })),
+                medicine_response: medicineResponse,
+            };
+
+            const response = await this.actor.updateHistory(id, updatedHistory);
+            console.log(response);
+            return response;
+        } catch (error) {
+            console.error(error);
             throw error;
         }
     }

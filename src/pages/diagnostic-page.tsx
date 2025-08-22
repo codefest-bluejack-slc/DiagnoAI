@@ -39,6 +39,7 @@ import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useToast } from '../hooks/use-toast';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
 import { useTemplateSymptoms } from '../hooks/use-template-symtomps';
+import { useService } from '../hooks/use-service';
 import { renderRichText } from '../utils/rich-text-renderer';
 import {
   getSeverityColor,
@@ -98,6 +99,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
 
   const mousePosition = useMouseTracking();
   const { addToast } = useToast();
+  const { historyService } = useService();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -574,18 +576,61 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                     since={newSince}
                     onAnalysisComplete={(result, fullResponse) => {
                       setIllnessResponse(result);
+                      let finalMedicines = [];
+                      let finalDrugsResponse = '';
+                      
                       if (fullResponse?.recommendation_agent_response) {
                         const drugsAnswer = fullResponse.recommendation_agent_response.answer || '';
                         setDrugsResponse(drugsAnswer);
+                        finalDrugsResponse = drugsAnswer;
                         
                         let medicines = fullResponse.recommendation_agent_response.medicines || [];
                         if (drugsAnswer.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine")) {
                           medicines = fallbackMedicines;
                         }
                         setMedicineRecommendations(medicines);
+                        finalMedicines = medicines;
                       }
                       setShowAnalysis(false);
                       setAnalysisComplete(true);
+                      
+                      try {
+                        const username = 'user';
+                        const assessmentId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                        
+                        const assessment = {
+                          id: assessmentId,
+                          description: newDescription || '',
+                          symptoms: symptoms,
+                          since: newSince || new Date().toISOString().split('T')[0]
+                        };
+                        
+                        addToHistory(newDescription, result, username);
+                        
+                        setTimeout(async () => {
+                          try {
+                            if (historyService && finalMedicines.length > 0) {
+                              await historyService.updateHistoryWithDiagnosis(
+                                assessmentId,
+                                result,
+                                finalDrugsResponse,
+                                finalMedicines.map((med: any) => ({
+                                  brand_name: med.brand_name || '',
+                                  generic_name: med.generic_name || '',
+                                  manufacturer: med.manufacturer || '',
+                                  product_ndc: med.product_ndc || med.product_ncd || ''
+                                }))
+                              );
+                            }
+                          } catch (updateError) {
+                            console.error('Failed to update history with diagnosis:', updateError);
+                          }
+                        }, 1000);
+                        
+                      } catch (error) {
+                        console.error('Failed to save to history:', error);
+                        addToast('Analysis completed but failed to save to history', { type: 'warning' });
+                      }
                     }}
                   />
                 ) : analysisComplete && illnessResponse ? (

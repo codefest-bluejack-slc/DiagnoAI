@@ -7,7 +7,7 @@ module {
         brand_name: Text;
         generic_name: Text;
         manufacturer: Text;
-        product_ncd: Text;
+        product_ndc: Text;
     };
 
     public type History = {
