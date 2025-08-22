@@ -1,74 +1,90 @@
-# 📊 DiagnoAI
+# DiagnoAI 🏥🤖
 
----
+## Introduction  
+**DiagnoAI** is an AI-powered healthcare assistant designed to provide end-to-end support for users seeking medical guidance. The application integrates intelligent agents with a medicine marketplace to deliver:  
+1. **Diagnosis** from symptoms.  
+2. **Personalized treatment recommendations.**  
+3. **Easy access to purchase trusted medicines.**
 
-## 👥 Team Introduction
-We are a passionate team of software engineers and AI enthusiasts dedicated to improving healthcare accessibility through technology.  
+The system is powered by **Fetch.ai** library and **Internet Computer Protocol (ICP)** for decentralized application using **Internet Identity**.  
 
-- **William Christian**
-- **Marvel Collin**
-- **Daniel Adamlu**
-- **Steven Liementha**
-- **Paul Tsai Adinata**
-
-Our team combines **technical expertise in AI & web development** with a strong motivation to solve real-world healthcare challenges.
-
----
-
-## ❗ Problem Statement & Motivation
-- Many people **experience symptoms but lack access to immediate medical advice**.  
-- Searching symptoms online often leads to **confusing or misleading results**.  
-- Self-medication without guidance can be **unsafe and harmful**.  
-- There is no **integrated solution** that helps users go from **symptom check → medicine recommendation → purchase**.  
-
-💡 **Motivation:**  
-We aim to create a platform that provides **safe, accessible, and structured health guidance**, empowering users with knowledge while connecting them to trusted medicine sources.
-
----
-
-## 💡 Solution Description
-**DiagnoAI** is a **web-based healthcare assistant** that integrates AI-powered diagnosis, medicine recommendation, and a medicine marketplace.  
-
+### AI Agents  
 1. **Diagnosis Agent** 🧠  
    - Accepts user symptom descriptions.  
    - Provides a probable **diagnosis** with structured output.  
 
 2. **Recommendation Agent** 💊  
    - Suggests **relevant medicines** based on the diagnosis.  
-   - Includes **guidelines on how to use each medicine safely**.  
+   - Provides **guidelines on safe usage** for each medicine.  
 
-3. **Medicine Marketplace** 🛒  
-   - Allows users to **find, compare, and purchase** medicines from trusted pharmacies.  
-   - Creates a **one-stop solution**: from diagnosis → treatment guidance → purchase.  
-
----
-
-## 💰 Business Model
-DiagnoAI will generate revenue through multiple channels:  
-
-1. **Commission-based Marketplace**  
-   - Earn a small commission from every medicine purchase made via the app.  
-
-2. **Pharmacy Partnerships**  
-   - Collaborate with local pharmacies for **visibility and distribution**, charging for premium placement.  
-
-3. **Subscription Model (Premium Users)**  
-   - Free tier: Basic diagnosis + recommendations.  
-   - Premium tier: Detailed reports, extended disease coverage, priority support.  
-
-4. **B2B Model** **** 
-   - Offer integration with **telemedicine platforms, clinics, and insurance providers**.  
+### Medicine Marketplace 
+   - Users can **find, compare, and purchase** medicines from trusted pharmacies.  
+   - Offers a **seamless pipeline**: diagnosis → treatment guidance → medicine purchase.  
 
 ---
 
-## 🗺️ Future Roadmap
-To expand the value and usability of **DiagnoAI**, we plan to add:  
+## Architecture Description  
 
-- **Search best hospital for the disease near the customer’s location** 🏥  
-  Helping users not only find out what they may be suffering from, but also guiding them to the **nearest specialized hospitals**.  
+- **Frontend:** React for building a user-friendly web interface.  
+- **Backend:** Motoko (deployed on ICP) to handle decentralized data and backend application
+- **AI Layer:** Python-based agents using **Fetch.ai** libraries for agentic AI functionality.  
 
-- **Chat with doctors** 👩‍⚕️👨‍⚕️  
-  Integrating a direct **doctor consultation feature** so users can confirm AI suggestions with real professionals.  
+---
+
+## Build and Deployment Instructions (Local Development)
+
+#### 1. Deploy ICP Canisters  
+Run the following command to create and deploy all canisters, and start the local connection:  
+```bash
+npm run setup
+```
+
+#### 2. Start the Frontend
+Once canisters are deployed, start the React frontend with:
+```bash
+npm start
+```
+
+#### 3. Run AI Agents + Services
+All AI agents are built with Python and containerized using Docker.
+Navigate to the agents/ directory and run:
+```bash
+docker compose up --build
+```
+This will:
+
+- Launch all AI agents (Diagnosis Agent & Recommendation Agent).
+- Start the Elasticsearch server used for medicine search functionality.
+---
+
+## ICP Features Used  
+
+### Internet Identity (ICP-native Authentication)
+
+- **Self-sovereign login** via passkeys (WebAuthn, TPM-backed, biometric, or hardware keys)—no usernames/passwords needed.
+- **Per-dapp pseudonymous identities**: each user-dapp pair gets a unique principal to preserve privacy.
+- **Developer-friendly integration**: use `@dfinity/auth-client` + `whoami()` Motoko query for smooth identity flow.
+- **Secure and time-limited delegations**: handle sessions robustly without excessive user friction.
+
+---
+
+## Fetch.ai Features Used  
+
+- **uAgents Library** ⚙️  
+  - Enables building AI-driven agents with communication capabilities.  
+  - Used for the Diagnosis Agent and Recommendation Agent.  
+
+- **ASI:One Deployment** 🌐  
+  - Used to **serve AI models on the internet**, making them accessible to the internet without directly using them from the application **DiagnoAI**
+
+
+---
+
+## Challenges Faced During the Hackathon 🚧  
+
+- **AI Testing Limitations:** Due to restrictions and quota limits on the Gemini API key, testing and validating the AI agents in real scenarios was challenging.  
+- **Hardware Constraints:** Handling large datasets caused significant performance issues on our development machines, resulting in lags and slower iteration cycles.  
+- **Steep Learning Curve:** The project required adopting multiple new technologies and libraries (ICP, Fetch.ai, Elasticsearch, etc.), which increased development time as the team had to learn and experiment on the fly.  
 
 ---
 
