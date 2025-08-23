@@ -35,13 +35,8 @@ async def start_application(ctx: Context):
         ctx.logger.error(e)
         traceback.print_exc()
 
-pending_response: asyncio.Future[RecommendationAgentResponse] | None = None
-
 @agent.on_rest_post("/diagnosis/from-symptoms", request=DiagnosisFromSymptomsRequest, response=DiagnosisResponse)
 async def diagnosis_from_symptoms(ctx: Context, req: DiagnosisFromSymptomsRequest) -> DiagnosisResponse:
-    # global pending_response
-    # pending_response = asyncio.get_event_loop().create_future()
-
     ctx.logger.info(f"Received REST request: {req}")
     diagnosis = await get_diagnosis(ctx, req)
 
@@ -49,11 +44,7 @@ async def diagnosis_from_symptoms(ctx: Context, req: DiagnosisFromSymptomsReques
 
 @agent.on_message(model=RecommendationAgentResponse)
 async def receive_message_recommendation(ctx: Context, sender: str, data: RecommendationAgentResponse) -> DiagnosisResponse:
-    global pending_response
     ctx.logger.info(f"Got response from AI agent: {data.answer}")
-
-    if pending_response and not pending_response.done():
-        pending_response.set_result(data)
 
 @agent.on_rest_post("/diagnosis/get_structure", request=DiagonsisRawRequest, response=StringResponse)
 async def diagnosis_from_symptoms(ctx: Context, req: DiagonsisRawRequest) -> StringResponse:
@@ -168,5 +159,4 @@ async def handle_ack(_ctx: Context, sender: str, msg: ChatAcknowledgement):
 agent.include(protocol, publish_manifest=True)
 
 if __name__ == "__main__":
-    # main()
     agent.run()
