@@ -22,7 +22,11 @@ async def get_diagnosis(ctx: Context, request: DiagnosisFromSymptomsRequest) -> 
         documents=documents
     )
 
-    return DiagnosisResponse(diagnosis=str(result), recommendation_agent_response=None)
+    disease = documents[0].name
+    res = await get_recommended_medicine(ctx, disease=disease)
+    print(f"Get Recommended Medicine At Get Diagnosis: {res}")
+
+    return DiagnosisResponse(diagnosis=str(result), recommendation_agent_response=res)
 
 def clean_llm_json(raw: str) -> str:
     """
@@ -120,7 +124,7 @@ async def get_recommended_medicine(ctx: Context, disease: str) -> Recommendation
         print(f"Requesting medicine for disease: {disease}")
 
         reply, status = await ctx.send_and_receive (
-            'agent1qgjequt609avltyjtg6xwzt87u7qu0e0666j72kygqu02tamh2ya2x53ksn',
+            'agent1qf6c3hmq7l83fepc9u5z86m65m7khul6wnaschjgjp2de8vc8jwfxu8w0m7',
             message,
             response_type=RecommendationAgentResponse
         )
