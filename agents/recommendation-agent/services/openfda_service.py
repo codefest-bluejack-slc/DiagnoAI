@@ -10,6 +10,9 @@ class OpenFDAService:
         self.es_host = EnvLoader.get_str("OPENFDA_URL")
         self.es_client = Elasticsearch(self.es_host, request_timeout=30)
         self.index_name = EnvLoader.get_str("OPENFDA_INDEX")
+        
+        self.seen_brand_names: Set[str] = set()
+        self.seen_generic_names: Set[str] = set()
 
     def check_connection(self) -> bool:
         max_retries = 30
@@ -60,6 +63,9 @@ class OpenFDAService:
 
         print(f"Creating new index '{self.index_name}'...")
         self.es_client.indices.create(index=self.index_name, body=mapping)
+        
+        self.seen_brand_names.clear()
+        self.seen_generic_names.clear()
 
     def _normalize_name(self, name_list):
         if not name_list:
@@ -75,32 +81,28 @@ class OpenFDAService:
             return
 
         records = data.get('results', [])
-        print(f"Found {len(records)} records in the JSON file.")
-
-        seen_brands: Set[str] = set()
-        seen_generics: Set[str] = set()
-        duplicates_removed = 0
+        print(f"Processing {len(records)} records from {file_path}...")
 
         for record in records:
             openfda = record.get('openfda', {})
             
-            brand_names = self._normalize_name(openfda.get('brand_name', []))
-            generic_names = self._normalize_name(openfda.get('generic_name', []))
+            brand_names = openfda.get('brand_name', [])
+            generic_names = openfda.get('generic_name', [])
             
-            is_duplicate = False
+            normalized_brand_names = {name.lower().strip() for name in brand_names if name and name.strip()}
+            normalized_generic_names = {name.lower().strip() for name in generic_names if name and name.strip()}
             
-            if brand_names and brand_names.intersection(seen_brands):
-                is_duplicate = True
-            
-            if generic_names and generic_names.intersection(seen_generics):
-                is_duplicate = True
-            
-            if is_duplicate:
-                duplicates_removed += 1
+            if not normalized_brand_names and not normalized_generic_names:
                 continue
             
-            seen_brands.update(brand_names)
-            seen_generics.update(generic_names)
+            if normalized_brand_names & self.seen_brand_names:
+                continue
+                
+            if normalized_generic_names & self.seen_generic_names:
+                continue
+            
+            self.seen_brand_names.update(normalized_brand_names)
+            self.seen_generic_names.update(normalized_generic_names)
 
             text_fields_to_combine = [
                 'indications_and_usage', 'dosage_and_administration', 'warnings',
@@ -146,7 +148,7 @@ class OpenFDAService:
             end_time = time.time()
             duration = end_time - start_time
 
-            print(f"Indexing complete.")
+            print(f"Indexing complete for {file_path}")
             print(f"   - Successfully indexed documents: {success}")
             print(f"   - Failed documents: {len(errors)}")
             print(f"   - Duration: {duration:.2f} seconds")
