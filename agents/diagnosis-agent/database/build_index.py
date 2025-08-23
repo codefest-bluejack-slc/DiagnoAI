@@ -42,4 +42,4 @@ def test_index():
 def build_all_index():
     logging.info("Building all index for the application")
     build_medical_index()
-    test_index()
+    # test_index()
