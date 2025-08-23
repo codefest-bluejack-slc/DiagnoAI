@@ -14,6 +14,7 @@ from uagents import Context, Protocol, Agent
 from uagents_core.contrib.protocols.chat import (
     ChatAcknowledgement,
     ChatMessage,
+    StartSessionContent,
     TextContent,
     chat_protocol_spec,
 )
@@ -129,6 +130,15 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
         sender,
         ChatAcknowledgement(timestamp=datetime.now(), acknowledged_msg_id=msg.msg_id),
     )
+
+    print(f"======= RECEIVED MESSAGE =======")
+    print(msg.content)
+
+    if isinstance(msg.content, list) and len(msg.content) > 0:
+        if isinstance(msg.content[0], StartSessionContent):
+            return
+    elif isinstance(msg.content, StartSessionContent):
+        return
 
     text = ""
     for item in msg.content:
