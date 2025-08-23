@@ -24,12 +24,12 @@ class RecommendationService:
             {medicine_info}
 
             **Instructions:**
-            1.  Analyze the user's query to understand their illness and symptoms.
-            2.  Carefully read the provided context documents.
-            3.  Prescribe a suitable medicine from the available medicines that addresses the user's needs.
-            4.  Present the prescription in the EXACT format specified below.
-            5.  If multiple drugs from the context are suitable, list the best one first and briefly mention the others as alternatives.
-            6.  If no document in the context is a suitable match for the user's query, you MUST respond with "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine." Do not use outside knowledge.
+            1. Analyze the user's query to understand their illness and symptoms.
+            2. Carefully read the provided context documents.
+            3. Prescribe a suitable medicine from the available medicines that addresses the user's needs.
+            4. Present the prescription in the EXACT format specified below.
+            5. If multiple drugs from the context are suitable, list the best one first and briefly mention the others as alternatives.
+            6. If no document in the context is a suitable match for the user's query, you MUST respond with "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine." Do not use outside knowledge.
 
             ---
 
@@ -46,20 +46,38 @@ class RecommendationService:
             **Output Format:**
             Follow this EXACT format with proper formatting:
 
-            **Recommended Medication:** [Drug's Brand Name]
-            **Medical Name:** [Generic Name]
-            **Manufacturer:** [Manufacturer Name]
-            **Active Ingredients:** [List active ingredients cleanly, separated by commas]
-            **Route of Administration:** [Use proper case: Oral, Topical, Injection, etc. - NOT ALL CAPS]
-            **Primary Use:** [Briefly describe what it's for, based on the context]
-            **Important Warnings:** [Summarize the most critical warnings from the context, especially from 'boxed_warning' or 'warnings' sections]
-            **Contraindications:** [When NOT to use this medicine]
-            **Dosage and Administration:** [Summarize the dosage instructions from the context]
-            **Alternative Options:** [If applicable, list other suitable medicines from the available list as: "Brand Name - Brief indication" - avoid repetitive descriptions]
+            **Recommended Medication:** [Drug's Brand Name]  
 
-            **Formatting Guidelines:**
-            - Use proper sentence case, not ALL CAPS
-            - List alternative options using concise and avoid repetitive descriptions, avoid using commas when listing them
+            **Medical Name:** [Generic Name]  
+
+            **Manufacturer:** [Manufacturer Name]  
+
+            **Active Ingredients:** [List of ingredients seperated by commas]
+
+            **Route of Administration:** [Oral, Topical, Injection, etc.]  
+
+            **Primary Use:** [Brief description]  
+
+            **Important Warnings:**  
+            - [Warning 1]  
+            - [Warning 2]  
+
+            **Contraindications:**  
+            - [Contraindication 1]  
+            - [Contraindication 2]  
+
+            **Dosage and Administration:**  
+            - [Instruction 1]  
+            - [Instruction 2]  
+
+            **Alternative Options:**  
+            - [Brand Name] - [Brief indication]  
+            - [Brand Name] - [Brief indication]  
+
+            **Formatting Guidelines:**  
+            - Use proper sentence case, not ALL CAPS  
+            - Always use bullet points when listing multiple items (warnings, contraindications, dosage steps, alternatives), except for ingredients
+            - If a section has no content, completely omit that section from the output
         """).strip()
         return prompt
 
