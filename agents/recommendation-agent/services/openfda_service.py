@@ -2,7 +2,7 @@ from config import EnvLoader
 import json
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from typing import Iterator, Dict, Any
+from typing import Iterator, Dict, Any, Set
 import time
 
 class OpenFDAService:
@@ -61,6 +61,11 @@ class OpenFDAService:
         print(f"Creating new index '{self.index_name}'...")
         self.es_client.indices.create(index=self.index_name, body=mapping)
 
+    def _normalize_name(self, name_list):
+        if not name_list:
+            return set()
+        return {name.lower().strip() for name in name_list if name and name.strip()}
+
     def _generate_documents(self, file_path: str) -> Iterator[Dict[str, Any]]:
         try:
             with open(file_path, 'r') as f:
@@ -72,7 +77,31 @@ class OpenFDAService:
         records = data.get('results', [])
         print(f"Found {len(records)} records in the JSON file.")
 
+        seen_brands: Set[str] = set()
+        seen_generics: Set[str] = set()
+        duplicates_removed = 0
+
         for record in records:
+            openfda = record.get('openfda', {})
+            
+            brand_names = self._normalize_name(openfda.get('brand_name', []))
+            generic_names = self._normalize_name(openfda.get('generic_name', []))
+            
+            is_duplicate = False
+            
+            if brand_names and brand_names.intersection(seen_brands):
+                is_duplicate = True
+            
+            if generic_names and generic_names.intersection(seen_generics):
+                is_duplicate = True
+            
+            if is_duplicate:
+                duplicates_removed += 1
+                continue
+            
+            seen_brands.update(brand_names)
+            seen_generics.update(generic_names)
+
             text_fields_to_combine = [
                 'indications_and_usage', 'dosage_and_administration', 'warnings',
                 'active_ingredient', 'inactive_ingredient', 'purpose', 'description',
@@ -85,8 +114,6 @@ class OpenFDAService:
                 content = record.get(field)
                 if content and isinstance(content, list):
                     searchable_content.extend(content)
-
-            openfda = record.get('openfda', {})
 
             processed_doc = {
                 "_index": self.index_name,
