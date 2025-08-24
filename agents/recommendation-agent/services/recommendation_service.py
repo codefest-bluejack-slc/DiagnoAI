@@ -29,7 +29,7 @@ class RecommendationService:
             3. Prescribe a suitable medicine from the available medicines that addresses the user's needs.
             4. Present the prescription in the EXACT format specified below.
             5. If multiple drugs from the context are suitable, list the best one first and briefly mention the others as alternatives.
-            6. If no document in the context is a suitable match for the user's query, you MUST respond with "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine." Do not use outside knowledge.
+            6. If no document in the context is a suitable match for the user's query, you MUST respond with "I'm sorry, I can't find a suitable medicine for your situation. Please consult with a doctor or healthcare professional for proper advice." Do not use outside knowledge.
 
             ---
 

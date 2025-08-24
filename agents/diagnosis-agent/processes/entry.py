@@ -126,7 +126,8 @@ async def get_recommended_medicine(ctx: Context, disease: str) -> Recommendation
         reply, status = await ctx.send_and_receive (
             'agent1qf6c3hmq7l83fepc9u5z86m65m7khul6wnaschjgjp2de8vc8jwfxu8w0m7',
             message,
-            response_type=RecommendationAgentResponse
+            response_type=RecommendationAgentResponse,
+            timeout=60
         )
         
         print(f"Get Recommended Medicine Status: {status}")
