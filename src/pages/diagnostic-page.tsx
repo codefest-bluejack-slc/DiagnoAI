@@ -512,23 +512,6 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
 
       <Navbar />
 
-      <button
-        onClick={toggleHistoryModal}
-        className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group history-button backdrop-blur-sm border"
-      >
-        {isLoading ? (
-          <RefreshCw
-            className="animate-spin transition-transform duration-300 text-purple-300"
-            size={20}
-          />
-        ) : (
-          <History
-            className="group-hover:rotate-12 transition-transform duration-300 text-purple-300"
-            size={20}
-          />
-        )}
-      </button>
-
       <main className="main-content pt-20">
         {/* History Detail Modal */}
         <HistoryDetailModal
