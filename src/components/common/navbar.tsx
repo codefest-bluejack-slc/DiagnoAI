@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Home, Search, Activity, Store, LogIn, User } from 'lucide-react';
-import diagnoaiLogo from '../../assets/diagnoai_logo.png';
+import diagnoaiLogo from '../../assets/logo.svg';
 import Tooltip from './tooltip';
 import SearchModal from '../modals/search-modal';
 import { useModal } from '../../hooks/use-modal';
