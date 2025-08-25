@@ -31,3 +31,11 @@ def process_documents(request: DiagnosisFromSymptomsRequest, documents: List[Dia
     print(f"prompt: {prompt}")
 
     return gemini_llm.answer(prompt)
+
+def get_title_from_result(result: str) -> str:
+    prompt = "".join([
+        'Can you make me a title from the sentence below\n',
+        result
+    ])
+
+    return gemini_llm.answer(prompt)

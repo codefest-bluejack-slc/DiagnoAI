@@ -3,7 +3,7 @@ import re
 import asyncio
 from models import DiagnosisFromSymptomsRequest, DiagnosisResponse, DiagonsisRawRequest, Symptom, RecommendationAgentResponse, RecommendationAgentRequest
 from processes.fetch_documents import fetch_documents
-from processes.process_documents import process_documents
+from processes.process_documents import process_documents, get_title_from_result
 from llm import gemini_llm
 from uagents.query import send_sync_message
 from helpers import env_helper
@@ -22,11 +22,13 @@ async def get_diagnosis(ctx: Context, request: DiagnosisFromSymptomsRequest) -> 
         documents=documents
     )
 
+    title = get_title_from_result(result)
+
     disease = documents[0].name
     res = await get_recommended_medicine(ctx, disease=disease)
     print(f"Get Recommended Medicine At Get Diagnosis: {res}")
 
-    return DiagnosisResponse(diagnosis=str(result), recommendation_agent_response=res)
+    return DiagnosisResponse(diagnosis=str(result), recommendation_agent_response=res, title=title)
 
 def clean_llm_json(raw: str) -> str:
     """
