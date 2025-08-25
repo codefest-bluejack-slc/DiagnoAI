@@ -34,7 +34,7 @@ def process_documents(request: DiagnosisFromSymptomsRequest, documents: List[Dia
 
 def get_title_from_result(result: str) -> str:
     prompt = "".join([
-        'Can you make me a title from the sentence below\n',
+        'Can you make me a title from the sentence below (just the title)\n\n',
         result
     ])
 
