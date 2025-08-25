@@ -12,7 +12,8 @@ interface FeatureCard {
   icon: React.ComponentType<LucideProps>;
   borderColor: string;
   iconBg: string;
-}export default function InfoSection() {
+}
+export default function InfoSection() {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [draggedCard, setDraggedCard] = useState<number | null>(null);
 
@@ -30,47 +31,51 @@ interface FeatureCard {
       onDragStart: handleDragStart,
       onDragEnd: handleDragEnd,
       constrainToParent: true,
-      containerSelector: '.info-section-container'
+      containerSelector: '.info-section-container',
     });
   };
 
-    const features: FeatureCard[] = [
+  const features: FeatureCard[] = [
     {
       id: 1,
       title: 'AI Diagnosis',
       subtitle: 'Smart Health Assessment',
-      description: 'Advanced AI-powered diagnostic system for accurate health insights',
+      description:
+        'Advanced AI-powered diagnostic system for accurate health insights',
       icon: Microscope,
       borderColor: 'var(--primary-purple)',
-      iconBg: 'var(--primary-purple-100)'
+      iconBg: 'var(--primary-purple-100)',
     },
     {
       id: 2,
       title: 'Symptom Analysis',
       subtitle: 'Comprehensive Evaluation',
-      description: 'Detailed symptom tracking and analysis for better health monitoring',
+      description:
+        'Detailed symptom tracking and analysis for better health monitoring',
       icon: BarChart3,
       borderColor: 'var(--secondary-pink)',
-      iconBg: 'var(--secondary-pink-100)'
+      iconBg: 'var(--secondary-pink-100)',
     },
     {
       id: 3,
       title: 'Health History',
       subtitle: 'Medical Records',
-      description: 'Secure storage and management of your complete medical history',
+      description:
+        'Secure storage and management of your complete medical history',
       icon: FileText,
       borderColor: 'var(--tertiary-indigo)',
-      iconBg: 'var(--tertiary-indigo-100)'
+      iconBg: 'var(--tertiary-indigo-100)',
     },
     {
       id: 4,
       title: 'Medicine Guide',
       subtitle: 'Treatment Recommendations',
-      description: 'Personalized medicine recommendations based on your health profile',
+      description:
+        'Personalized medicine recommendations based on your health profile',
       icon: Pill,
       borderColor: 'var(--success-green)',
-      iconBg: 'var(--success-green-100)'
-    }
+      iconBg: 'var(--success-green-100)',
+    },
   ];
 
   return (
@@ -80,7 +85,7 @@ interface FeatureCard {
           {features.map((feature) => {
             const dragHandlers = createDragHandlers(feature.id);
             const isDragged = draggedCard === feature.id;
-            
+
             return (
               <div
                 key={feature.id}
@@ -92,22 +97,23 @@ interface FeatureCard {
                 onMouseDown={dragHandlers.onMouseDown}
                 onTouchStart={dragHandlers.onTouchStart}
               >
-              <div className="info-card-header">
-                <div 
-                  className="info-card-icon"
-                  style={{ backgroundColor: feature.iconBg }}
-                >
-                  <feature.icon size={24} className="text-white" />
+                <div className="info-card-header">
+                  <div
+                    className="info-card-icon"
+                    style={{ backgroundColor: feature.iconBg }}
+                  >
+                    <feature.icon size={24} className="text-white" />
+                  </div>
+                  <div className="info-card-titles">
+                    <div className="info-card-subtitle">{feature.subtitle}</div>
+                    <h3 className="info-card-title">{feature.title}</h3>
+                  </div>
                 </div>
-                <div className="info-card-titles">
-                  <div className="info-card-subtitle">{feature.subtitle}</div>
-                  <h3 className="info-card-title">{feature.title}</h3>
-                </div>
+
+                <p className="info-card-description">{feature.description}</p>
               </div>
-              
-              <p className="info-card-description">{feature.description}</p>
-            </div>
-          )})}
+            );
+          })}
         </div>
       </div>
     </section>

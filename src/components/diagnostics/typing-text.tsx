@@ -7,10 +7,10 @@ interface TypingTextProps {
   onComplete?: () => void;
 }
 
-export const TypingText: React.FC<TypingTextProps> = ({ 
-  text, 
-  speed = 50, 
-  onComplete 
+export const TypingText: React.FC<TypingTextProps> = ({
+  text,
+  speed = 50,
+  onComplete,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -19,8 +19,8 @@ export const TypingText: React.FC<TypingTextProps> = ({
   useEffect(() => {
     if (currentIndex < text.length) {
       const timer = setTimeout(() => {
-        setDisplayedText(prev => prev + text[currentIndex]);
-        setCurrentIndex(prev => prev + 1);
+        setDisplayedText((prev) => prev + text[currentIndex]);
+        setCurrentIndex((prev) => prev + 1);
       }, speed);
 
       return () => clearTimeout(timer);
@@ -47,9 +47,10 @@ export const TypingText: React.FC<TypingTextProps> = ({
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-purple-200 text-sm font-medium">AI DiagnoAssistant</span>
-            <div className="flex gap-1">
-            </div>
+            <span className="text-purple-200 text-sm font-medium">
+              AI DiagnoAssistant
+            </span>
+            <div className="flex gap-1"></div>
           </div>
           <div className="text-purple-100 text-sm leading-relaxed whitespace-pre-wrap">
             {formatText(displayedText)}

@@ -1,21 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Star, 
-  ShoppingCart, 
-  ExternalLink, 
-  Package, 
-  Truck, 
-  Shield, 
+import {
+  ArrowLeft,
+  Star,
+  ShoppingCart,
+  ExternalLink,
+  Package,
+  Truck,
+  Shield,
   Share2,
   ChevronLeft,
   ChevronRight,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
 import { IProductDetails } from '../interfaces/IProduct';
-import { getProductDetails, getProductFromCache } from '../services/medicine.service';
+import {
+  getProductDetails,
+  getProductFromCache,
+} from '../services/medicine.service';
 import useMouseTracking from '../hooks/use-mouse-tracking';
 import Navbar from '../components/common/navbar';
 import { useToastContext } from '../contexts/toast-context';
@@ -37,7 +40,7 @@ export default function ProductPage() {
       delay: Math.random() * 3,
       duration: 3 + Math.random() * 4,
       size: 0.1 + Math.random() * 0.2,
-    }))
+    })),
   );
 
   const SERPAPI_KEY = import.meta.env.VITE_SERPAPI_KEY;
@@ -56,16 +59,25 @@ export default function ProductPage() {
 
       try {
         setIsLoading(true);
-        
+
         const productDetails = await getProductDetails(productId, SERPAPI_KEY);
         setProduct(productDetails);
         setError(null);
       } catch (err) {
         console.error('Error fetching product details:', err);
-        if (err instanceof Error && err.message.includes('Please search for products first')) {
-          setError('Product details not available. Please return to the marketplace and search for products first.');
+        if (
+          err instanceof Error &&
+          err.message.includes('Please search for products first')
+        ) {
+          setError(
+            'Product details not available. Please return to the marketplace and search for products first.',
+          );
         } else {
-          setError(err instanceof Error ? err.message : 'Failed to fetch product details');
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Failed to fetch product details',
+          );
         }
       } finally {
         setIsLoading(false);
@@ -81,14 +93,14 @@ export default function ProductPage() {
 
   const handleImageChange = (direction: 'prev' | 'next') => {
     if (!product?.images?.length) return;
-    
+
     if (direction === 'prev') {
-      setSelectedImageIndex(prev => 
-        prev === 0 ? product.images!.length - 1 : prev - 1
+      setSelectedImageIndex((prev) =>
+        prev === 0 ? product.images!.length - 1 : prev - 1,
       );
     } else {
-      setSelectedImageIndex(prev => 
-        prev === product.images!.length - 1 ? 0 : prev + 1
+      setSelectedImageIndex((prev) =>
+        prev === product.images!.length - 1 ? 0 : prev + 1,
       );
     }
   };
@@ -100,13 +112,13 @@ export default function ProductPage() {
       addToast('Product link copied to clipboard!', {
         type: 'success',
         title: 'Link Copied',
-        duration: 3000
+        duration: 3000,
       });
     } catch (error) {
       addToast('Failed to copy link to clipboard', {
         type: 'error',
         title: 'Copy Failed',
-        duration: 3000
+        duration: 3000,
       });
     }
   };
@@ -117,8 +129,8 @@ export default function ProductPage() {
         key={i}
         size={16}
         className={`${
-          i < Math.floor(rating) 
-            ? 'text-amber-400 fill-current' 
+          i < Math.floor(rating)
+            ? 'text-amber-400 fill-current'
             : 'text-gray-400'
         }`}
       />
@@ -148,8 +160,12 @@ export default function ProductPage() {
               <div className="relative w-16 h-16 mx-auto mb-6">
                 <div className="w-16 h-16 border-4 border-purple-300/30 border-t-purple-300 rounded-full animate-spin"></div>
               </div>
-              <h3 className="text-purple-200 font-medium mb-2">Loading Product Details</h3>
-              <p className="text-purple-300/70 text-sm">Please wait while we fetch the information...</p>
+              <h3 className="text-purple-200 font-medium mb-2">
+                Loading Product Details
+              </h3>
+              <p className="text-purple-300/70 text-sm">
+                Please wait while we fetch the information...
+              </p>
             </div>
           </div>
         </div>
@@ -179,12 +195,15 @@ export default function ProductPage() {
             <div className="text-center">
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
               <h3 className="text-white font-medium mb-2">Product Not Found</h3>
-              <p className="text-red-200 text-sm mb-6">{error || 'Unable to load product details'}</p>
+              <p className="text-red-200 text-sm mb-6">
+                {error || 'Unable to load product details'}
+              </p>
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl text-white font-medium transition-all duration-200 hover:scale-105"
                 style={{
-                  background: 'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))',
+                  background:
+                    'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))',
                 }}
               >
                 <ArrowLeft size={18} />
@@ -197,7 +216,10 @@ export default function ProductPage() {
     );
   }
 
-  const images = product.images && product.images.length > 0 ? product.images : [product.thumbnail];
+  const images =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.thumbnail];
 
   return (
     <div
@@ -280,11 +302,12 @@ export default function ProductPage() {
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = 'https://placehold.co/500x500/1e293b/94a3b8?text=No+Image';
+                      target.src =
+                        'https://placehold.co/500x500/1e293b/94a3b8?text=No+Image';
                     }}
                   />
                 </div>
-                
+
                 {images.length > 1 && (
                   <>
                     <button
@@ -318,8 +341,8 @@ export default function ProductPage() {
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
                       className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                        selectedImageIndex === index 
-                          ? 'border-purple-400' 
+                        selectedImageIndex === index
+                          ? 'border-purple-400'
                           : 'border-transparent'
                       }`}
                     >
@@ -329,7 +352,8 @@ export default function ProductPage() {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = 'https://placehold.co/64x64/1e293b/94a3b8?text=No+Image';
+                          target.src =
+                            'https://placehold.co/64x64/1e293b/94a3b8?text=No+Image';
                         }}
                       />
                     </button>
@@ -352,7 +376,9 @@ export default function ProductPage() {
                       {product.title}
                     </h1>
                     {product.brand && (
-                      <p className="text-purple-300 font-medium">by {product.brand}</p>
+                      <p className="text-purple-300 font-medium">
+                        by {product.brand}
+                      </p>
                     )}
                   </div>
 
@@ -362,7 +388,9 @@ export default function ProductPage() {
                         <div className="flex gap-1">
                           {renderStars(product.rating)}
                         </div>
-                        <span className="text-white font-medium">{product.rating}</span>
+                        <span className="text-white font-medium">
+                          {product.rating}
+                        </span>
                         {product.reviews && product.reviews > 0 && (
                           <span className="text-purple-300 text-sm">
                             ({product.reviews} reviews)
@@ -377,16 +405,22 @@ export default function ProductPage() {
                       <p
                         className="text-3xl font-bold"
                         style={{
-                          background: 'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
+                          background:
+                            'linear-gradient(to right, var(--primary-purple-light), var(--secondary-pink-light))',
                           WebkitBackgroundClip: 'text',
                           color: 'transparent',
                           backgroundClip: 'text',
                         }}
                       >
-                        {product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}$
+                        {product.extracted_price
+                          ? product.extracted_price.toLocaleString('id-ID')
+                          : product.price}
+                        $
                       </p>
                       {product.source && (
-                        <p className="text-purple-300 text-sm mt-1">from {product.source}</p>
+                        <p className="text-purple-300 text-sm mt-1">
+                          from {product.source}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -398,7 +432,8 @@ export default function ProductPage() {
                       rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-white font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-xl"
                       style={{
-                        background: 'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))',
+                        background:
+                          'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))',
                       }}
                     >
                       <ExternalLink size={18} />
@@ -413,7 +448,9 @@ export default function ProductPage() {
                       }}
                       onClick={() => {
                         if (product.product_link || product.link) {
-                          navigator.clipboard.writeText(product.product_link || product.link);
+                          navigator.clipboard.writeText(
+                            product.product_link || product.link,
+                          );
                           addToast('Link copied to clipboard!', {
                             type: 'success',
                             title: 'Copied',
@@ -454,19 +491,25 @@ export default function ProductPage() {
                     {product.availability && (
                       <div className="flex items-center gap-2">
                         <CheckCircle className="text-green-400" size={16} />
-                        <span className="text-purple-200">{product.availability}</span>
+                        <span className="text-purple-200">
+                          {product.availability}
+                        </span>
                       </div>
                     )}
                     {product.shipping_info?.time && (
                       <div className="flex items-center gap-2">
                         <Package className="text-purple-300" size={16} />
-                        <span className="text-purple-200">Delivery: {product.shipping_info.time}</span>
+                        <span className="text-purple-200">
+                          Delivery: {product.shipping_info.time}
+                        </span>
                       </div>
                     )}
                     {product.shipping_info?.free_shipping && (
                       <div className="flex items-center gap-2">
                         <Shield className="text-green-400" size={16} />
-                        <span className="text-purple-200">Free Shipping Available</span>
+                        <span className="text-purple-200">
+                          Free Shipping Available
+                        </span>
                       </div>
                     )}
                   </div>
@@ -483,88 +526,120 @@ export default function ProductPage() {
                 borderColor: 'var(--border-default)',
               }}
             >
-              <h3 className="text-white font-semibold mb-4 text-lg">Product Description</h3>
-              <p className="text-purple-200 leading-relaxed">{product.description}</p>
+              <h3 className="text-white font-semibold mb-4 text-lg">
+                Product Description
+              </h3>
+              <p className="text-purple-200 leading-relaxed">
+                {product.description}
+              </p>
             </div>
           )}
 
-          {product.product_highlights && product.product_highlights.length > 0 && (
-            <div
-              className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl mb-8"
-              style={{
-                background: 'var(--background-glass)',
-                borderColor: 'var(--border-default)',
-              }}
-            >
-              <h3 className="text-white font-semibold mb-4 text-lg">Key Features</h3>
-              <ul className="space-y-2">
-                {product.product_highlights.map((highlight, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <CheckCircle className="text-green-400 mt-0.5 flex-shrink-0" size={16} />
-                    <span className="text-purple-200">{highlight}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {product.specifications && Object.keys(product.specifications).length > 0 && (
-            <div
-              className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl mb-8"
-              style={{
-                background: 'var(--background-glass)',
-                borderColor: 'var(--border-default)',
-              }}
-            >
-              <h3 className="text-white font-semibold mb-4 text-lg">Specifications</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(product.specifications).map(([key, value]) => (
-                  <div key={key} className="flex justify-between py-2 border-b border-white/10">
-                    <span className="text-purple-300 font-medium">{key}:</span>
-                    <span className="text-purple-200">{value}</span>
-                  </div>
-                ))}
+          {product.product_highlights &&
+            product.product_highlights.length > 0 && (
+              <div
+                className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl mb-8"
+                style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)',
+                }}
+              >
+                <h3 className="text-white font-semibold mb-4 text-lg">
+                  Key Features
+                </h3>
+                <ul className="space-y-2">
+                  {product.product_highlights.map((highlight, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <CheckCircle
+                        className="text-green-400 mt-0.5 flex-shrink-0"
+                        size={16}
+                      />
+                      <span className="text-purple-200">{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-          )}
+            )}
 
-          {product.reviews_data && product.reviews_data.recent_reviews && product.reviews_data.recent_reviews.length > 0 && (
-            <div
-              className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl"
-              style={{
-                background: 'var(--background-glass)',
-                borderColor: 'var(--border-default)',
-              }}
-            >
-              <h3 className="text-white font-semibold mb-4 text-lg">Customer Reviews</h3>
-              <div className="space-y-4">
-                {product.reviews_data.recent_reviews.slice(0, 3).map((review, index) => (
-                  <div
-                    key={index}
-                    className="border rounded-xl p-4"
-                    style={{
-                      background: 'var(--background-glass)',
-                      borderColor: 'var(--border-default)',
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex gap-1">
-                          {renderStars(review.rating)}
-                        </div>
-                        <span className="text-white font-medium">{review.author}</span>
+          {product.specifications &&
+            Object.keys(product.specifications).length > 0 && (
+              <div
+                className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl mb-8"
+                style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)',
+                }}
+              >
+                <h3 className="text-white font-semibold mb-4 text-lg">
+                  Specifications
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(product.specifications).map(
+                    ([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex justify-between py-2 border-b border-white/10"
+                      >
+                        <span className="text-purple-300 font-medium">
+                          {key}:
+                        </span>
+                        <span className="text-purple-200">{value}</span>
                       </div>
-                      <span className="text-purple-300 text-sm">{review.date}</span>
-                    </div>
-                    {review.title && (
-                      <h4 className="text-white font-medium mb-1">{review.title}</h4>
-                    )}
-                    <p className="text-purple-200">{review.text}</p>
-                  </div>
-                ))}
+                    ),
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+          {product.reviews_data &&
+            product.reviews_data.recent_reviews &&
+            product.reviews_data.recent_reviews.length > 0 && (
+              <div
+                className="backdrop-blur-xl border rounded-2xl p-6 shadow-2xl"
+                style={{
+                  background: 'var(--background-glass)',
+                  borderColor: 'var(--border-default)',
+                }}
+              >
+                <h3 className="text-white font-semibold mb-4 text-lg">
+                  Customer Reviews
+                </h3>
+                <div className="space-y-4">
+                  {product.reviews_data.recent_reviews
+                    .slice(0, 3)
+                    .map((review, index) => (
+                      <div
+                        key={index}
+                        className="border rounded-xl p-4"
+                        style={{
+                          background: 'var(--background-glass)',
+                          borderColor: 'var(--border-default)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              {renderStars(review.rating)}
+                            </div>
+                            <span className="text-white font-medium">
+                              {review.author}
+                            </span>
+                          </div>
+                          <span className="text-purple-300 text-sm">
+                            {review.date}
+                          </span>
+                        </div>
+                        {review.title && (
+                          <h4 className="text-white font-medium mb-1">
+                            {review.title}
+                          </h4>
+                        )}
+                        <p className="text-purple-200">{review.text}</p>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
         </div>
       </main>
     </div>

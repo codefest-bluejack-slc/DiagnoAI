@@ -22,7 +22,7 @@ interface RecommendedProductsProps {
     brand_name: string;
     generic_name: string;
     manufacturer: string;
-    product_ndc: string;
+    // product_ndc: string;
   }>;
 }
 
@@ -37,18 +37,18 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productsLoaded, setProductsLoaded] = useState(false);
-  
-  const medicines = medicineRecommendations.length > 0 
-    ? [...new Set(medicineRecommendations.map(med => med.brand_name))]
-    : [];
-  
+
+  const medicines =
+    medicineRecommendations.length > 0
+      ? [...new Set(medicineRecommendations.map((med) => med.brand_name))]
+      : [];
+
   const apiKey = import.meta.env.VITE_SERPAPI_KEY;
 
   useEffect(() => {
     if (isVisible && medicines.length > 0 && !productsLoaded) {
       loadProductsFromAPI();
       setProductsLoaded(true);
-
     }
   }, [isVisible, medicines]);
 
@@ -62,14 +62,16 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
       setIsLoading(false);
       return;
     }
-    
+
     try {
       for (const medicine of medicines) {
         try {
           console.log(`Searching for medicine: ${medicine}`);
-          const medicineData = medicineRecommendations.find(med => med.brand_name === medicine);
+          const medicineData = medicineRecommendations.find(
+            (med) => med.brand_name === medicine,
+          );
           let searchQuery = medicine;
-          
+
           if (medicineData && medicineData.generic_name) {
             const genericName = medicineData.generic_name.split(',')[0].trim();
             searchQuery = `${medicine} ${genericName} medication pharmacy`;
@@ -78,28 +80,50 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             searchQuery = `${medicine} medication pharmacy`;
             console.log(`Basic search query: ${searchQuery}`);
           }
-          
+
           let response = await searchProducts(searchQuery, apiKey);
-          console.log(`First search results for ${medicine}:`, response.shopping_results?.length || 0);
-          
-          if (!response.shopping_results || response.shopping_results.length === 0) {
+          console.log(
+            `First search results for ${medicine}:`,
+            response.shopping_results?.length || 0,
+          );
+
+          if (
+            !response.shopping_results ||
+            response.shopping_results.length === 0
+          ) {
             console.log(`Retrying with basic search: ${medicine}`);
             response = await searchProducts(medicine, apiKey);
-            console.log(`Second search results:`, response.shopping_results?.length || 0);
+            console.log(
+              `Second search results:`,
+              response.shopping_results?.length || 0,
+            );
           }
-          
-          if (!response.shopping_results || response.shopping_results.length === 0) {
+
+          if (
+            !response.shopping_results ||
+            response.shopping_results.length === 0
+          ) {
             if (medicineData && medicineData.generic_name) {
-              const genericName = medicineData.generic_name.split(',')[0].trim();
+              const genericName = medicineData.generic_name
+                .split(',')[0]
+                .trim();
               console.log(`Trying generic name search: ${genericName}`);
               response = await searchProducts(genericName, apiKey);
-              console.log(`Generic search results:`, response.shopping_results?.length || 0);
+              console.log(
+                `Generic search results:`,
+                response.shopping_results?.length || 0,
+              );
             }
           }
-          
-          if (response.shopping_results && response.shopping_results.length > 0) {
+
+          if (
+            response.shopping_results &&
+            response.shopping_results.length > 0
+          ) {
             productsData[medicine] = response.shopping_results.slice(0, 10);
-            console.log(`Successfully found ${response.shopping_results.length} products for ${medicine}`);
+            console.log(
+              `Successfully found ${response.shopping_results.length} products for ${medicine}`,
+            );
           } else {
             productsData[medicine] = [];
             console.log(`No products found for ${medicine}`);
@@ -108,14 +132,16 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
           console.error(`Error searching for ${medicine}:`, medicineError);
           productsData[medicine] = [];
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 150));
+
+        await new Promise((resolve) => setTimeout(resolve, 150));
       }
-      
+
       setProducts(productsData);
     } catch (generalError) {
       console.error('Error loading products:', generalError);
-      setError('Failed to load products. Please check your internet connection and try again.');
+      setError(
+        'Failed to load products. Please check your internet connection and try again.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -153,46 +179,59 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
       <div className="flex items-start gap-3 h-full">
         <div className="text-2xl flex-shrink-0">
           {product.thumbnail ? (
-            <img 
-              src={product.thumbnail} 
+            <img
+              src={product.thumbnail}
               alt={product.title}
               className="w-8 h-8 rounded object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
-                const fallbackDiv = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                const fallbackDiv = (e.target as HTMLImageElement)
+                  .nextElementSibling as HTMLElement;
                 if (fallbackDiv) fallbackDiv.classList.remove('hidden');
               }}
             />
           ) : null}
-          <div className={product.thumbnail ? 'hidden' : 'flex items-center justify-center w-8 h-8 bg-blue-500/20 rounded'}>
+          <div
+            className={
+              product.thumbnail
+                ? 'hidden'
+                : 'flex items-center justify-center w-8 h-8 bg-blue-500/20 rounded'
+            }
+          >
             <Pill className="text-blue-400" size={16} />
           </div>
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
           <div>
             <div className="flex items-start justify-between gap-2 mb-1">
-              <h5 className={`text-purple-200 font-medium ${
-                isCompact ? 'text-sm line-clamp-2' : 'text-base line-clamp-3'
-              }`}>
+              <h5
+                className={`text-purple-200 font-medium ${
+                  isCompact ? 'text-sm line-clamp-2' : 'text-base line-clamp-3'
+                }`}
+              >
                 {product.title}
               </h5>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {getCategoryIcon()}
               </div>
             </div>
-            
-            <p className={`text-purple-300 mb-2 ${
-              isCompact ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2'
-            }`}>
+
+            <p
+              className={`text-purple-300 mb-2 ${
+                isCompact ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2'
+              }`}
+            >
               Available from {product.source}
             </p>
           </div>
-          
+
           <div className="mt-auto">
             <div className="flex items-center justify-between mb-2">
-              <span className={`text-white font-semibold ${
-                isCompact ? 'text-sm' : 'text-base'
-              }`}>
+              <span
+                className={`text-white font-semibold ${
+                  isCompact ? 'text-sm' : 'text-base'
+                }`}
+              >
                 {product.price || 'Price not available'}
               </span>
               <div className="flex items-center gap-1">
@@ -202,12 +241,12 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
                 </span>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-purple-400 text-xs truncate max-w-[100px]">
                 {product.source}
               </span>
-              <button 
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   window.open(product.link, '_blank');
@@ -239,7 +278,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
     };
 
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onKeyDown={handleKeyDown}
         tabIndex={-1}
@@ -248,7 +287,9 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
           <div className="flex items-center justify-between p-6 border-b border-purple-400/20">
             <div className="flex items-center gap-3">
               <ShoppingCart className="text-purple-300" size={24} />
-              <h2 className="text-2xl font-bold text-white">Recommended Products</h2>
+              <h2 className="text-2xl font-bold text-white">
+                Recommended Products
+              </h2>
             </div>
             <button
               onClick={() => setIsModalOpen(false)}
@@ -293,21 +334,28 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[50vh] overflow-y-auto pr-2" style={{
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(147, 51, 234, 0.3) rgba(255, 255, 255, 0.1)'
-              }}>
-                {getCurrentProducts().map((product) => renderProductCard(product, false))}
-                
+              <div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[50vh] overflow-y-auto pr-2"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor:
+                    'rgba(147, 51, 234, 0.3) rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                {getCurrentProducts().map((product) =>
+                  renderProductCard(product, false),
+                )}
+
                 {getCurrentProducts().length === 0 && !isLoading && !error && (
                   <div className="col-span-full text-center py-16">
-                    <p className="text-purple-300 text-lg">No products found for this medicine</p>
+                    <p className="text-purple-300 text-lg">
+                      No products found for this medicine
+                    </p>
                   </div>
                 )}
               </div>
             )}
           </div>
-
         </div>
       </div>
     );
@@ -338,70 +386,83 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 group"
             title="Expand to full view"
           >
-            <Maximize2 className="text-purple-300 group-hover:text-purple-200" size={16} />
+            <Maximize2
+              className="text-purple-300 group-hover:text-purple-200"
+              size={16}
+            />
           </button>
         </div>
 
-      <div className="flex flex-wrap gap-1 mb-4">
-        {medicines.map((medicine, index) => (
-          <button
-            key={`mini-tab-${index}-${medicine}`}
-            onClick={() => setActiveTab(index)}
-            className={`px-2 py-1 text-xs rounded-lg transition-all duration-300 ${
-              activeTab === index
-                ? 'bg-purple-500/30 text-purple-200 border border-purple-400/50'
-                : 'bg-white/5 text-purple-300 hover:bg-white/10 border border-white/10'
-            }`}
+        <div className="flex flex-wrap gap-1 mb-4">
+          {medicines.map((medicine, index) => (
+            <button
+              key={`mini-tab-${index}-${medicine}`}
+              onClick={() => setActiveTab(index)}
+              className={`px-2 py-1 text-xs rounded-lg transition-all duration-300 ${
+                activeTab === index
+                  ? 'bg-purple-500/30 text-purple-200 border border-purple-400/50'
+                  : 'bg-white/5 text-purple-300 hover:bg-white/10 border border-white/10'
+              }`}
+            >
+              {medicine.length > 12
+                ? medicine.substring(0, 12) + '...'
+                : medicine}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-400/30 rounded-lg">
+            <p className="text-red-300 text-sm mb-2">{error}</p>
+            <button
+              onClick={loadProductsFromAPI}
+              className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs rounded-lg transition-all duration-200"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+          </div>
+        ) : (
+          <div
+            className="space-y-3 max-h-80 overflow-y-auto pr-2"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor:
+                'rgba(147, 51, 234, 0.3) rgba(255, 255, 255, 0.1)',
+            }}
           >
-            {medicine.length > 12 ? medicine.substring(0, 12) + '...' : medicine}
-          </button>
-        ))}
+            {getCurrentProducts()
+              .slice(0, 3)
+              .map((product) => renderProductCard(product, true))}
+
+            {getCurrentProducts().length > 3 && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-full p-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/30 rounded-xl text-purple-300 hover:text-purple-200 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <Maximize2 size={16} />
+                View {getCurrentProducts().length - 3} more products
+              </button>
+            )}
+
+            {getCurrentProducts().length === 0 && !isLoading && !error && (
+              <div className="text-center py-8">
+                <p className="text-purple-300 text-sm">
+                  No products found for this medicine
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-400/30 rounded-lg">
-          <p className="text-red-300 text-sm mb-2">{error}</p>
-          <button
-            onClick={loadProductsFromAPI}
-            className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs rounded-lg transition-all duration-200"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
-        </div>
-      ) : (
-        <div className="space-y-3 max-h-80 overflow-y-auto pr-2" style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'rgba(147, 51, 234, 0.3) rgba(255, 255, 255, 0.1)'
-        }}>
-          {getCurrentProducts().slice(0, 3).map((product) => renderProductCard(product, true))}
-          
-          {getCurrentProducts().length > 3 && (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="w-full p-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/30 rounded-xl text-purple-300 hover:text-purple-200 transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              <Maximize2 size={16} />
-              View {getCurrentProducts().length - 3} more products
-            </button>
-          )}
-          
-          {getCurrentProducts().length === 0 && !isLoading && !error && (
-            <div className="text-center py-8">
-              <p className="text-purple-300 text-sm">No products found for this medicine</p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-
-    <ProductModal />
-  </>
+      <ProductModal />
+    </>
   );
 };
 

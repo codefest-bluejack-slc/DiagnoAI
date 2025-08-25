@@ -30,6 +30,7 @@ persistent actor History{
                 let symptomList = await symptomActor.getSymptomsByHistoryId(id);
                 let response: Type.HistoryResponse = {
                     id = history.id;
+                    title = history.title;
                     userId = history.userId;
                     username = history.username;
                     diagnosis = history.diagnosis;

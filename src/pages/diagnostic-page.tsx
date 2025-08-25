@@ -24,17 +24,19 @@ import {
   Mic,
   Pill,
   ShoppingCart,
+  User,
 } from 'lucide-react';
 import Navbar from '../components/common/navbar';
 import Tooltip from '../components/common/tooltip';
 import { SpeechModal } from '../components/modals/speech-modal';
-import { HistoryModal } from '../components/modals/history-modal';
+import HistoryDetailModal from '../components/modals/history-detail-modal';
 import { TypingText } from '../components/diagnostics/typing-text';
 import { RecommendedProducts } from '../components/diagnostics/recommended-products';
 import { AnalyzeSymptoms } from '../components/diagnostics/analyze-symtomps';
 import { SymptomAutocomplete } from '../components/common/symptom-autocomplete';
 import { IDiagnosticPageProps } from '../interfaces/IDiagnostic';
 import { ISymptom, IHealthAssessment } from '../interfaces/IDiagnostic';
+import { IHistoryResponse } from '../interfaces/IHistoryModal';
 import { useDiagnostic } from '../hooks/use-diagnostic';
 import { useToast } from '../hooks/use-toast';
 import { useMouseTracking } from '../hooks/use-mouse-tracking';
@@ -50,51 +52,55 @@ import '../styles/diagnostic-page.css';
 
 export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const USE_DEFAULT_DATA = true;
-  
+
   const defaultData = {
-    description: "I have been sick for around 3 days after eating a lot of seafood",
+    description:
+      'I have been sick for around 3 days after eating a lot of seafood',
     symptoms: [
       {
-        name: "headache",
-        severity: "mild" as const
+        name: 'headache',
+        severity: 'mild' as const,
       },
       {
-        name: "fever", 
-        severity: "severe" as const
+        name: 'fever',
+        severity: 'severe' as const,
       },
       {
-        name: "diarrhea",
-        severity: "severe" as const
-      }
+        name: 'diarrhea',
+        severity: 'severe' as const,
+      },
     ],
-    since: "2025-08-10"
+    since: '2025-08-10',
   };
 
   const fallbackMedicines = [
     {
-      "brand_name": "DysBio Plus",
-      "generic_name": "ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, BOTULINUM, SALMONELLA TYPHI NOSODE, MORGAN GAERTNER, CLOSTRIDIUM DIFFICILE, BRUGIA MALAYI",
-      "manufacturer": "Deseret Biologicals, Inc.",
-      "product_ndc": "43742-2021"
+      brand_name: 'DysBio Plus',
+      generic_name:
+        'ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, BOTULINUM, SALMONELLA TYPHI NOSODE, MORGAN GAERTNER, CLOSTRIDIUM DIFFICILE, BRUGIA MALAYI',
+      manufacturer: 'Deseret Biologicals, Inc.',
+      // "product_ndc": "43742-2021"
     },
     {
-      "brand_name": "DysBio Plus",
-      "generic_name": "ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, BOTULINUM, SALMONELLA TYPHI NOSODE, MORGAN GAERTNER, CLOSTRIDIUM DIFFICILE, BRUGIA MALAYI",
-      "manufacturer": "Deseret Biologicals, Inc.",
-      "product_ndc": "43742-1595"
+      brand_name: 'DysBio Plus',
+      generic_name:
+        'ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, BOTULINUM, SALMONELLA TYPHI NOSODE, MORGAN GAERTNER, CLOSTRIDIUM DIFFICILE, BRUGIA MALAYI',
+      manufacturer: 'Deseret Biologicals, Inc.',
+      // "product_ndc": "43742-1595"
     },
     {
-      "brand_name": "DysBio Plus",
-      "generic_name": "ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, CLOSTRIDIUM DIFFICILE, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, YERSINIA ENTEROCOLITICA, BOTULINUM NOSODE, SALMONELLA TYPHI NOSODE, BRUGIA MALAYI",
-      "manufacturer": "Deseret Biologicals, Inc.",
-      "product_ndc": "43742-1421"
+      brand_name: 'DysBio Plus',
+      generic_name:
+        'ECHINACEA (ANGUSTIFOLIA), ALOE, COLCHICUM AUTUMNALE, COLOCYNTHIS, MERCURIUS CORROSIVUS, NUX VOMICA, ARSENICUM ALBUM, CLOSTRIDIUM DIFFICILE, ACETICUM ACIDUM, CHININUM SULPHURICUM, CHOLERA NOSODE, PROTEUS (VULGARIS), COLIBACILLINUM CUM NATRUM MURIATICUM, HELICOBACTER PYLORI, YERSINIA ENTEROCOLITICA, BOTULINUM NOSODE, SALMONELLA TYPHI NOSODE, BRUGIA MALAYI',
+      manufacturer: 'Deseret Biologicals, Inc.',
+      // "product_ndc": "43742-1421"
     },
     {
-      "brand_name": "Naprelan",
-      "generic_name": "NAPROXEN SODIUM",
-      "manufacturer": "ALMATICA PHARMA INC.",
-      "product_ndc": "52427-272"
-    }
+      brand_name: 'Naprelan',
+      generic_name: 'NAPROXEN SODIUM',
+      manufacturer: 'ALMATICA PHARMA INC.',
+      // "product_ndc": "52427-272"
+    },
   ];
 
   const mousePosition = useMouseTracking();
@@ -104,6 +110,8 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isSpeechModalOpen, setIsSpeechModalOpen] = useState(false);
+  const [isHistoryDetailOpen, setIsHistoryDetailOpen] = useState(false);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<IHistoryResponse | null>(null);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -145,31 +153,20 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
 
   const { findBestMatches } = useTemplateSymptoms();
 
-  // useEffect(() => {
-  //   if (USE_DEFAULT_DATA) {
-  //     setNewDescription(defaultData.description);
-  //     setNewSince(defaultData.since);
-      
-  //     defaultData.symptoms.forEach(symptom => {
-  //       addToSymptomList(symptom.name, symptom.severity);
-  //     });
-  //   }
-  // }, []);
-
   const convertSeverity = (severity: string): string => {
     const severityMap: { [key: string]: string } = {
-      'High': 'severe',
-      'Mild': 'mild',
-      'Medium': 'moderate',
-      'Moderate': 'moderate',
-      'Low': 'mild',
-      'Severe': 'severe',
-      'high': 'severe',
-      'mild': 'mild',
-      'medium': 'moderate',
-      'moderate': 'moderate',
-      'low': 'mild',
-      'severe': 'severe'
+      High: 'severe',
+      Mild: 'mild',
+      Medium: 'moderate',
+      Moderate: 'moderate',
+      Low: 'mild',
+      Severe: 'severe',
+      high: 'severe',
+      mild: 'mild',
+      medium: 'moderate',
+      moderate: 'moderate',
+      low: 'mild',
+      severe: 'severe',
     };
     return severityMap[severity] || 'mild';
   };
@@ -185,31 +182,38 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
       if (bestMatches.length > 0) {
         processedSymptoms.push({
           name: bestMatches[0],
-          severity: convertSeverity(extractedSymptom.severity)
+          severity: convertSeverity(extractedSymptom.severity),
         });
       } else {
-        const partialMatches = findBestMatches(extractedSymptom.name.split(' '));
+        const partialMatches = findBestMatches(
+          extractedSymptom.name.split(' '),
+        );
         if (partialMatches.length > 0) {
           processedSymptoms.push({
             name: partialMatches[0],
-            severity: convertSeverity(extractedSymptom.severity)
+            severity: convertSeverity(extractedSymptom.severity),
           });
         }
       }
     });
 
-    const uniqueSymptoms = processedSymptoms.filter((symptom, index, self) =>
-      index === self.findIndex(s => s.name === symptom.name)
+    const uniqueSymptoms = processedSymptoms.filter(
+      (symptom, index, self) =>
+        index === self.findIndex((s) => s.name === symptom.name),
     );
 
     return uniqueSymptoms;
   };
 
   const [isExiting, setIsExiting] = useState(false);
-  const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(null);
+  const [exitingElement, setExitingElement] = useState<'card' | 'form' | null>(
+    null,
+  );
   const [illnessResponse, setIllnessResponse] = useState<string>('');
   const [drugsResponse, setDrugsResponse] = useState<string>('');
-  const [medicineRecommendations, setMedicineRecommendations] = useState<any[]>([]);
+  const [medicineRecommendations, setMedicineRecommendations] = useState<any[]>(
+    [],
+  );
   const [showProducts, setShowProducts] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -221,7 +225,6 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const handleHideAddForm = () => {
     setShowAddForm(false);
   };
-
 
   const handleEditSymptom = (index: number) => {
     const symptom = symptoms[index];
@@ -239,7 +242,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
       newDescription: newDescription.trim(),
       newSince,
       symptomsCount: symptoms.length,
-      newSymptomName: newSymptomName.trim()
+      newSymptomName: newSymptomName.trim(),
     });
 
     if (editingSymptom !== null) {
@@ -253,17 +256,26 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
       }
     } else {
       if (!newDescription.trim()) {
-        addToast('Please provide a description of your health concerns', { type: 'warning', title: 'Missing Description' });
+        addToast('Please provide a description of your health concerns', {
+          type: 'warning',
+          title: 'Missing Description',
+        });
         return;
       }
 
       if (!newSince) {
-        addToast('Please select when your symptoms started', { type: 'warning', title: 'Missing Date' });
+        addToast('Please select when your symptoms started', {
+          type: 'warning',
+          title: 'Missing Date',
+        });
         return;
       }
 
       if (symptoms.length === 0) {
-        addToast('Please add at least one symptom to proceed', { type: 'warning', title: 'Missing Symptoms' });
+        addToast('Please add at least one symptom to proceed', {
+          type: 'warning',
+          title: 'Missing Symptoms',
+        });
         return;
       }
 
@@ -283,7 +295,11 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
           (drugsResp) => {
             console.log('Drugs response received:', drugsResp);
             setDrugsResponse(drugsResp);
-            if (drugsResp.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine")) {
+            if (
+              drugsResp.includes(
+                "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine",
+              )
+            ) {
               setMedicineRecommendations(fallbackMedicines);
             }
           },
@@ -294,14 +310,20 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
           (fullResponse) => {
             console.log('Full diagnosis response received:', fullResponse);
             if (fullResponse?.recommendation_agent_response) {
-              const drugsAnswer = fullResponse.recommendation_agent_response.answer || '';
-              let medicines = fullResponse.recommendation_agent_response.medicines || [];
-              if (drugsAnswer.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine")) {
+              const drugsAnswer =
+                fullResponse.recommendation_agent_response.answer || '';
+              let medicines =
+                fullResponse.recommendation_agent_response.medicines || [];
+              if (
+                drugsAnswer.includes(
+                  "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine",
+                )
+              ) {
                 medicines = fallbackMedicines;
               }
               setMedicineRecommendations(medicines);
             }
-          }
+          },
         );
       } else if (newSymptomName.trim()) {
         addToSymptomList(newSymptomName.trim());
@@ -331,46 +353,67 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
     setIsSpeechModalOpen(!isSpeechModalOpen);
   };
 
-  const handleSpeechRecording = async (transcribedText: string, structuredData?: any) => {
+  const handleSpeechRecording = async (
+    transcribedText: string,
+    structuredData?: any,
+  ) => {
     try {
       if (transcribedText && transcribedText.trim()) {
-        setNewDescription(prev => prev ? `${prev} ${transcribedText}` : transcribedText);
+        setNewDescription((prev) =>
+          prev ? `${prev} ${transcribedText}` : transcribedText,
+        );
 
         if (structuredData) {
-          console.log('Structured data received from diagnosis:', structuredData);
+          console.log(
+            'Structured data received from diagnosis:',
+            structuredData,
+          );
 
-          if (structuredData.symptoms && Array.isArray(structuredData.symptoms)) {
+          if (
+            structuredData.symptoms &&
+            Array.isArray(structuredData.symptoms)
+          ) {
             console.log('Original symptoms:', structuredData.symptoms);
-            const processedSymptoms = processExtractedSymptoms(structuredData.symptoms);
+            const processedSymptoms = processExtractedSymptoms(
+              structuredData.symptoms,
+            );
             console.log('Processed symptoms:', processedSymptoms);
 
             let addedSymptoms = 0;
             processedSymptoms.forEach((symptom) => {
               if (addedSymptoms < 10) {
-                addToSymptomList(symptom.name, symptom.severity as 'mild' | 'moderate' | 'severe');
+                addToSymptomList(
+                  symptom.name,
+                  symptom.severity as 'mild' | 'moderate' | 'severe',
+                );
                 addedSymptoms++;
               }
             });
 
             if (addedSymptoms > 0) {
-              const symptomList = processedSymptoms.slice(0, addedSymptoms).map(s => s.name).join(', ');
+              const symptomList = processedSymptoms
+                .slice(0, addedSymptoms)
+                .map((s) => s.name)
+                .join(', ');
               addToast(
                 `Auto-selected ${addedSymptoms} symptom${addedSymptoms > 1 ? 's' : ''}: ${symptomList}`,
                 {
                   type: 'success',
                   title: 'Symptoms Auto-Selected',
-                  duration: 6000
-                }
+                  duration: 6000,
+                },
               );
             } else if (structuredData.symptoms.length > 0) {
-              const attemptedSymptoms = structuredData.symptoms.map((s: any) => s.name).join(', ');
+              const attemptedSymptoms = structuredData.symptoms
+                .map((s: any) => s.name)
+                .join(', ');
               addToast(
                 `No matches found for: ${attemptedSymptoms}. Please add them manually using the autocomplete.`,
                 {
                   type: 'warning',
                   title: 'No Matches Found',
-                  duration: 6000
-                }
+                  duration: 6000,
+                },
               );
             }
           }
@@ -385,17 +428,14 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
           {
             type: 'success',
             title: 'Transcription Added',
-            duration: 4000
-          }
+            duration: 4000,
+          },
         );
       } else {
-        addToast(
-          'No text was transcribed from the audio. Please try again.',
-          {
-            type: 'warning',
-            title: 'Transcription Empty'
-          }
-        );
+        addToast('No text was transcribed from the audio. Please try again.', {
+          type: 'warning',
+          title: 'Transcription Empty',
+        });
       }
 
       setIsSpeechModalOpen(false);
@@ -403,7 +443,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
       console.error('Error handling speech transcription:', error);
       addToast('Failed to process transcription. Please try again.', {
         type: 'error',
-        title: 'Transcription Error'
+        title: 'Transcription Error',
       });
     }
   };
@@ -426,8 +466,16 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
+  };
+
+  const handleViewDetail = (id: string) => {
+    const item = history.find((h) => h.id === id);
+    if (item) {
+      setSelectedHistoryItem(item);
+      setIsHistoryDetailOpen(true);
+    }
   };
 
   return (
@@ -464,14 +512,6 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
 
       <Navbar />
 
-      <HistoryModal
-        isOpen={isHistoryModalOpen}
-        onClose={toggleHistoryModal}
-        historyData={history}
-        onClearHistory={clearHistory}
-        isLoading={isLoading}
-      />
-
       <button
         onClick={toggleHistoryModal}
         className="fixed top-20 right-6 p-3 rounded-full transition-all duration-300 z-30 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 group history-button backdrop-blur-sm border"
@@ -490,6 +530,12 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
       </button>
 
       <main className="main-content pt-20">
+        {/* History Detail Modal */}
+        <HistoryDetailModal
+          isOpen={isHistoryDetailOpen}
+          onClose={() => setIsHistoryDetailOpen(false)}
+          item={selectedHistoryItem}
+        />
         <div className="max-w-7xl mx-auto px-6 lg:px-6 pl-20 lg:pl-6">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -508,11 +554,9 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
             <p className="text-purple-200 text-lg max-w-2xl mx-auto">
               {import.meta.env.VITE_TEST_MODE === 'true'
                 ? 'Testing environment - using mock data for demonstration purposes'
-                : 'Share your symptoms and receive comprehensive AI-powered health insights'
-              }
+                : 'Share your symptoms and receive comprehensive AI-powered health insights'}
             </p>
-            <div className="flex items-center justify-center gap-2 mt-3">
-            </div>
+            <div className="flex items-center justify-center gap-2 mt-3"></div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-3">
@@ -523,45 +567,47 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                     Analysis Steps
                   </h3>
                   <div className="space-y-3">
-                    {['input', 'finding-illness', 'finding-products'].map((step, index) => (
-                      <div
-                        key={step}
-                        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 w-full ${currentStep === step
-                          ? 'step-item-active'
-                          : 'step-item-inactive'
-                          }`}
-                      >
+                    {['input', 'finding-illness', 'finding-products'].map(
+                      (step, index) => (
                         <div
-                          className={`p-2 rounded-full flex-shrink-0 ${currentStep === step
-                            ? 'bg-purple-500/30'
-                            : 'bg-white/10'
+                          key={step}
+                          className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 w-full ${currentStep === step
+                            ? 'step-item-active'
+                            : 'step-item-inactive'
                             }`}
                         >
-                          {getStepIcon(step)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={`font-medium text-sm ${currentStep === step
-                              ? 'text-white'
-                              : 'text-purple-200'
+                          <div
+                            className={`p-2 rounded-full flex-shrink-0 ${currentStep === step
+                              ? 'bg-purple-500/30'
+                              : 'bg-white/10'
                               }`}
                           >
-                            {step === 'input'
-                              ? 'Share Your Health Concerns'
-                              : step === 'finding-illness'
-                                ? 'AI is Analyzing Your Symptoms'
-                                : 'Searching Available Products'}
-                          </p>
-                          <p className="text-purple-300 text-xs break-words">
-                            {step === 'input'
-                              ? 'Tell us about your symptoms'
-                              : step === 'finding-illness'
-                                ? 'Identifying potential conditions'
-                                : 'Finding marketplace options'}
-                          </p>
+                            {getStepIcon(step)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`font-medium text-sm ${currentStep === step
+                                ? 'text-white'
+                                : 'text-purple-200'
+                                }`}
+                            >
+                              {step === 'input'
+                                ? 'Share Your Health Concerns'
+                                : step === 'finding-illness'
+                                  ? 'AI is Analyzing Your Symptoms'
+                                  : 'Searching Available Products'}
+                            </p>
+                            <p className="text-purple-300 text-xs break-words">
+                              {step === 'input'
+                                ? 'Tell us about your symptoms'
+                                : step === 'finding-illness'
+                                  ? 'Identifying potential conditions'
+                                  : 'Finding marketplace options'}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </div>
               </div>
@@ -574,18 +620,26 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                     symptoms={symptoms}
                     description={newDescription}
                     since={newSince}
-                    onAnalysisComplete={(result, fullResponse) => {
+                    onAnalysisComplete={(result, title, fullResponse) => {
                       setIllnessResponse(result);
                       let finalMedicines = [];
                       let finalDrugsResponse = '';
-                      
+
                       if (fullResponse?.recommendation_agent_response) {
-                        const drugsAnswer = fullResponse.recommendation_agent_response.answer || '';
+                        const drugsAnswer =
+                          fullResponse.recommendation_agent_response.answer ||
+                          '';
                         setDrugsResponse(drugsAnswer);
                         finalDrugsResponse = drugsAnswer;
-                        
-                        let medicines = fullResponse.recommendation_agent_response.medicines || [];
-                        if (drugsAnswer.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine")) {
+
+                        let medicines =
+                          fullResponse.recommendation_agent_response
+                            .medicines || [];
+                        if (
+                          drugsAnswer.includes(
+                            "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine",
+                          )
+                        ) {
                           medicines = fallbackMedicines;
                         }
                         setMedicineRecommendations(medicines);
@@ -593,12 +647,17 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                       }
                       setShowAnalysis(false);
                       setAnalysisComplete(true);
-                      
+
                       try {
                         const username = 'user';
-                        
-                        const assessmentId = addToHistory(newDescription, result, username);
-                        
+
+                        const assessmentId = addToHistory(
+                          newDescription,
+                          result,
+                          title,
+                          username,
+                        );
+
                         setTimeout(async () => {
                           try {
                             if (historyService && finalMedicines.length > 0) {
@@ -610,23 +669,36 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                                   brand_name: med.brand_name || '',
                                   generic_name: med.generic_name || '',
                                   manufacturer: med.manufacturer || '',
-                                  product_ndc: med.product_ndc || med.product_ncd || ''
-                                }))
+                                  // product_ndc: med.product_ndc || med.product_ncd || ''
+                                })),
                               );
-                              addToast('Complete assessment with medicines saved to history!', { type: 'success' });
+                              addToast(
+                                'Complete assessment with medicines saved to history!',
+                                { type: 'success' },
+                              );
                               refreshData();
                             } else {
-                              addToast('Assessment saved to history!', { type: 'success' });
+                              addToast('Assessment saved to history!', {
+                                type: 'success',
+                              });
                             }
                           } catch (updateError) {
-                            console.error('Failed to update history with diagnosis:', updateError);
-                            addToast('Assessment saved but failed to update with medicines', { type: 'warning' });
+                            console.error(
+                              'Failed to update history with diagnosis:',
+                              updateError,
+                            );
+                            addToast(
+                              'Assessment saved but failed to update with medicines',
+                              { type: 'warning' },
+                            );
                           }
                         }, 1000);
-                        
                       } catch (error) {
                         console.error('Failed to save to history:', error);
-                        addToast('Analysis completed but failed to save to history', { type: 'warning' });
+                        addToast(
+                          'Analysis completed but failed to save to history',
+                          { type: 'warning' },
+                        );
                       }
                     }}
                   />
@@ -656,7 +728,10 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                       <div className="space-y-8">
                         <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
                           <div className="flex items-center gap-3 mb-4">
-                            <Stethoscope className="text-purple-400" size={20} />
+                            <Stethoscope
+                              className="text-purple-400"
+                              size={20}
+                            />
                             <h4 className="text-white font-semibold text-lg">
                               AI Diagnosis Results
                             </h4>
@@ -668,26 +743,32 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                           </div>
                         </div>
 
-                        {drugsResponse && !drugsResponse.includes("I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine") && (
-                          <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
-                            <div className="flex items-center gap-3 mb-4">
-                              <Pill className="text-blue-400" size={20} />
-                              <h4 className="text-white font-semibold text-lg">
-                                Treatment Recommendations
-                              </h4>
-                            </div>
-                            <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/50 scrollbar-track-slate-700/20">
-                              <div className="space-y-3">
-                                {renderRichText(drugsResponse, 'blue')}
+                        {drugsResponse &&
+                          !drugsResponse.includes(
+                            "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine",
+                          ) && (
+                            <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
+                              <div className="flex items-center gap-3 mb-4">
+                                <Pill className="text-blue-400" size={20} />
+                                <h4 className="text-white font-semibold text-lg">
+                                  Treatment Recommendations
+                                </h4>
+                              </div>
+                              <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/50 scrollbar-track-slate-700/20">
+                                <div className="space-y-3">
+                                  {renderRichText(drugsResponse, 'blue')}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
                         {medicineRecommendations.length > 0 && (
                           <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
                             <div className="flex items-center gap-3 mb-4">
-                              <ShoppingCart className="text-green-400" size={20} />
+                              <ShoppingCart
+                                className="text-green-400"
+                                size={20}
+                              />
                               <h4 className="text-white font-semibold text-lg">
                                 Recommended Medications
                               </h4>
@@ -697,46 +778,65 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                             </div>
                             <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-green-500/50 scrollbar-track-slate-700/20">
                               <div className="grid grid-cols-1 gap-4 pr-2">
-                                {medicineRecommendations.map((medicine, index) => (
-                                  <div key={index} className="bg-slate-800/60 border border-slate-600/50 rounded-lg p-4 hover:border-green-400/50 transition-all duration-300 group">
-                                    <div className="space-y-3">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
-                                        <h5 className="font-semibold text-white text-base group-hover:text-green-100 transition-colors">
-                                          {medicine.brand_name}
-                                        </h5>
-                                      </div>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-5">
-                                        <div className="flex items-start gap-2">
-                                          <Pill className="w-4 h-4 text-blue-300 flex-shrink-0 mt-1" />
-                                          <div className="flex-1 min-w-0">
-                                            <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
-                                              Generic Name
-                                            </span>
-                                            {medicine.generic_name.length > 40 ? (
-                                              <Tooltip content={medicine.generic_name} position="top">
-                                                <span className="text-purple-200 text-sm cursor-help hover:text-purple-100 transition-colors">
-                                                  {medicine.generic_name.substring(0, 40)}...
-                                                </span>
-                                              </Tooltip>
-                                            ) : (
-                                              <span className="text-purple-200 text-sm">{medicine.generic_name}</span>
-                                            )}
-                                          </div>
+                                {medicineRecommendations.map(
+                                  (medicine, index) => (
+                                    <div
+                                      key={index}
+                                      className="bg-slate-800/60 border border-slate-600/50 rounded-lg p-4 hover:border-green-400/50 transition-all duration-300 group"
+                                    >
+                                      <div className="space-y-3">
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                                          <h5 className="font-semibold text-white text-base group-hover:text-green-100 transition-colors">
+                                            {medicine.brand_name}
+                                          </h5>
                                         </div>
-                                        <div className="flex items-start gap-2">
-                                          <Shield className="w-4 h-4 text-blue-300 flex-shrink-0 mt-1" />
-                                          <div className="flex-1 min-w-0">
-                                            <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
-                                              Manufacturer
-                                            </span>
-                                            <span className="text-purple-200 text-sm">{medicine.manufacturer}</span>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-5">
+                                          <div className="flex items-start gap-2">
+                                            <Pill className="w-4 h-4 text-blue-300 flex-shrink-0 mt-1" />
+                                            <div className="flex-1 min-w-0">
+                                              <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
+                                                Generic Name
+                                              </span>
+                                              {medicine.generic_name.length >
+                                                40 ? (
+                                                <Tooltip
+                                                  content={
+                                                    medicine.generic_name
+                                                  }
+                                                  position="top"
+                                                >
+                                                  <span className="text-purple-200 text-sm cursor-help hover:text-purple-100 transition-colors">
+                                                    {medicine.generic_name.substring(
+                                                      0,
+                                                      40,
+                                                    )}
+                                                    ...
+                                                  </span>
+                                                </Tooltip>
+                                              ) : (
+                                                <span className="text-purple-200 text-sm">
+                                                  {medicine.generic_name}
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <Shield className="w-4 h-4 text-blue-300 flex-shrink-0 mt-1" />
+                                            <div className="flex-1 min-w-0">
+                                              <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
+                                                Manufacturer
+                                              </span>
+                                              <span className="text-purple-200 text-sm">
+                                                {medicine.manufacturer}
+                                              </span>
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ),
+                                )}
                               </div>
                             </div>
                           </div>
@@ -803,10 +903,15 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                         <div className="flex items-center justify-between mb-6">
                           <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
                             <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-500 delay-200">
-                              <Plus className="text-purple-300 animate-in rotate-in duration-300 delay-300" size={20} />
+                              <Plus
+                                className="text-purple-300 animate-in rotate-in duration-300 delay-300"
+                                size={20}
+                              />
                             </div>
                             <span className="animate-in slide-in-from-left-3 duration-500 delay-400">
-                              {editingSymptom ? 'Edit Symptom' : 'Start Health Analysis'}
+                              {editingSymptom
+                                ? 'Edit Symptom'
+                                : 'Start Health Analysis'}
                             </span>
                           </h3>
                           <button
@@ -831,14 +936,20 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                                       className="flex items-center gap-2 px-3 py-1.5 bg-purple-500-20 border border-purple-400-50 rounded-full text-sm text-purple-200 group hover-bg-purple-500-30 transition-all duration-200"
                                     >
                                       <span>{symptom.name}</span>
-                                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${symptom.severity === 'mild' ? 'bg-green-400-30 text-green-300' :
-                                        symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300' :
-                                          'bg-red-400-30 text-red-300'
-                                        }`}>
+                                      <span
+                                        className={`text-xs px-1.5 py-0.5 rounded-full ${symptom.severity === 'mild'
+                                          ? 'bg-green-400-30 text-green-300'
+                                          : symptom.severity === 'moderate'
+                                            ? 'bg-amber-400/30 text-amber-300'
+                                            : 'bg-red-400-30 text-red-300'
+                                          }`}
+                                      >
                                         {symptom.severity}
                                       </span>
                                       <button
-                                        onClick={() => removeFromSymptomList(index)}
+                                        onClick={() =>
+                                          removeFromSymptomList(index)
+                                        }
                                         className="p-0.5 rounded-full hover-bg-red-500-40 text-red-400 hover-text-red-300 transition-all duration-200 hover:scale-110"
                                         title="Remove symptom"
                                       >
@@ -860,7 +971,8 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                                   value={newSymptomName}
                                   onChange={setNewSymptomName}
                                   onAdd={(selectedValue) => {
-                                    const valueToAdd = selectedValue || newSymptomName.trim();
+                                    const valueToAdd =
+                                      selectedValue || newSymptomName.trim();
                                     if (valueToAdd) {
                                       addToSymptomList(valueToAdd);
                                     }
@@ -888,7 +1000,13 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                                 if (value.length <= 500) {
                                   setNewDescription(value);
                                 } else {
-                                  addToast('Description cannot exceed 500 characters', { type: 'warning', title: 'Character Limit' });
+                                  addToast(
+                                    'Description cannot exceed 500 characters',
+                                    {
+                                      type: 'warning',
+                                      title: 'Character Limit',
+                                    },
+                                  );
                                 }
                               }}
                               placeholder="Describe your health concerns in detail..."
@@ -941,17 +1059,26 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                             >
                               {isLoading ? (
                                 <>
-                                  <RefreshCw className="animate-spin" size={20} />
+                                  <RefreshCw
+                                    className="animate-spin"
+                                    size={20}
+                                  />
                                   <span>Starting Analysis...</span>
                                 </>
                               ) : editingSymptom ? (
                                 <>
-                                  <Edit className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                                  <Edit
+                                    className="text-white transition-transform duration-300 group-hover:rotate-90"
+                                    size={20}
+                                  />
                                   <span>Update Symptom</span>
                                 </>
                               ) : (
                                 <>
-                                  <Play className="text-white transition-transform duration-300 group-hover:rotate-90" size={20} />
+                                  <Play
+                                    className="text-white transition-transform duration-300 group-hover:rotate-90"
+                                    size={20}
+                                  />
                                   <span>Start Analysis</span>
                                 </>
                               )}
@@ -1003,6 +1130,62 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
 
             <div className="lg:col-span-3">
               <div className="sticky top-24 space-y-6 w-full">
+                {!analysisComplete && (
+                  <div className="step-card w-full">
+                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                      <History className="text-purple-300" size={20} />
+                      History
+                    </h3>
+                    <div className="space-y-3">
+                      {isLoading ? (
+                        <div className='flex flex-col items-center justify-center gap-2'>
+                        <RefreshCw
+                          className="animate-spin transition-transform duration-300 text-purple-300"
+                          size={20}
+                        />
+                        Fetching history...
+                        </div>
+                      ) : (
+                        (!history || history.length == 0)
+                          ?
+                          <div className="text-purple-200">No history found.</div>
+                          :
+                          history.map((item, idx) => (
+                            <div
+                              key={item.id || idx}
+                              className="flex flex-col gap-2 bg-slate-900/60 rounded-xl p-3 border border-slate-700/50 mb-3 cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
+                              onClick={() => handleViewDetail(item.id)}
+                            >
+                              <div className="flex flex-col items-start gap-2">
+                                <div className="flex items-center gap-2">
+                                  <Stethoscope
+                                    className="text-purple-300"
+                                    size={16}
+                                  />
+                                  <span className="text-white font-semibold text-sm">
+                                    Diagnosis:
+                                  </span>
+                                </div>
+                                <span className="text-purple-200 text-sm">{item.title.replaceAll("*", "")}</span>
+                              </div>
+                              <div className="flex flex-col items-start gap-2">
+                                <div className="flex items-center gap-2">
+                                  <User className="text-purple-300" size={16} />
+                                  <span className="text-white font-semibold text-sm">Medicine:</span>
+                                </div>
+                                <div className='grid'>
+                                  {item.medicines.map((medicine, index) => (
+                                    <span key={index} className="text-purple-200 text-sm">{medicine.brand_name}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                          ))}
+                    </div>
+                  </div>
+                )}
+
                 {(showAnalysis || analysisComplete || showProducts) && (
                   <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-600/30 rounded-xl p-4 w-full">
                     <h4 className="text-white font-medium mb-3 flex items-center gap-2">
@@ -1013,12 +1196,21 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                       <div className="w-full">
                         <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
                           {symptoms.map((symptom, index) => (
-                            <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-slate-700/30 rounded-lg border border-slate-600/20 hover:border-purple-400/30 transition-all duration-200">
-                              <span className="text-purple-200 text-sm font-medium break-words flex-1">{symptom.name}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full font-medium text-center flex-shrink-0 ${symptom.severity === 'mild' ? 'bg-green-400/30 text-green-300 border border-green-400/50' :
-                                symptom.severity === 'moderate' ? 'bg-amber-400/30 text-amber-300 border border-amber-400/50' :
-                                  'bg-red-400/30 text-red-300 border border-red-400/50'
-                                }`}>
+                            <div
+                              key={index}
+                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-slate-700/30 rounded-lg border border-slate-600/20 hover:border-purple-400/30 transition-all duration-200"
+                            >
+                              <span className="text-purple-200 text-sm font-medium break-words flex-1">
+                                {symptom.name}
+                              </span>
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full font-medium text-center flex-shrink-0 ${symptom.severity === 'mild'
+                                  ? 'bg-green-400/30 text-green-300 border border-green-400/50'
+                                  : symptom.severity === 'moderate'
+                                    ? 'bg-amber-400/30 text-amber-300 border border-amber-400/50'
+                                    : 'bg-red-400/30 text-red-300 border border-red-400/50'
+                                  }`}
+                              >
                                 {symptom.severity}
                               </span>
                             </div>
@@ -1030,17 +1222,22 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                               <div className="flex items-center gap-2">
                                 <Clock className="w-3 h-3 text-purple-300 flex-shrink-0" />
                                 <p className="text-purple-200 text-xs">
-                                  <span className="font-medium">Since:</span> {new Date(newSince).toLocaleDateString()}
+                                  <span className="font-medium">Since:</span>{' '}
+                                  {new Date(newSince).toLocaleDateString()}
                                 </p>
                               </div>
                               <div className="flex items-start gap-2">
                                 <Edit3 className="w-3 h-3 text-purple-300 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1 min-w-0">
                                   <p className="text-purple-200 text-xs">
-                                    <span className="font-medium">Description:</span>
+                                    <span className="font-medium">
+                                      Description:
+                                    </span>
                                   </p>
                                   <p className="text-purple-300 text-xs mt-1 break-words leading-relaxed">
-                                    {newDescription.length > 100 ? `${newDescription.substring(0, 100)}...` : newDescription}
+                                    {newDescription.length > 100
+                                      ? `${newDescription.substring(0, 100)}...`
+                                      : newDescription}
                                   </p>
                                 </div>
                               </div>
@@ -1050,7 +1247,9 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                       </div>
                     ) : (
                       <div className="text-center py-4">
-                        <p className="text-purple-300 text-sm">No symptoms added yet</p>
+                        <p className="text-purple-300 text-sm">
+                          No symptoms added yet
+                        </p>
                       </div>
                     )}
                   </div>

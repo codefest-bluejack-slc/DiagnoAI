@@ -1,5 +1,5 @@
-import { createContext, useContext } from "react";
-import { IAuthContextType } from "../interfaces/IAuthContextType";
+import { createContext, useContext } from 'react';
+import { IAuthContextType } from '../interfaces/IAuthContextType';
 
 export const AuthContext = createContext<IAuthContextType | null>(null);
 

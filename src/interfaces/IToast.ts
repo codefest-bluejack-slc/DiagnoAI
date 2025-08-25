@@ -1,6 +1,12 @@
 import { ReactNode } from 'react';
 
-export type IToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
+export type IToastPosition =
+  | 'top-right'
+  | 'top-left'
+  | 'bottom-right'
+  | 'bottom-left'
+  | 'top-center'
+  | 'bottom-center';
 
 export interface IToast {
   id: string;

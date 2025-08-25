@@ -21,7 +21,7 @@ const AuthorizedRoute = () => {
   //     hasShownWelcomeToast.current = false;
   //   }
   // }, [isAuthenticated, me, addToast]);
-  
+
   // if (isAuthenticated === null) {
   //   return (
   //     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -34,7 +34,7 @@ const AuthorizedRoute = () => {
     return <Navigate to="/" replace />;
   }
 
-  return <Outlet />
+  return <Outlet />;
 };
 
 export default AuthorizedRoute;

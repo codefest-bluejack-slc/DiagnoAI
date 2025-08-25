@@ -106,7 +106,9 @@ export const useSearchFilters = () => {
     (products: IProduct[]): { min: number; max: number } => {
       const prices = products
         .map((product) => product.extracted_price)
-        .filter((price): price is number => typeof price === 'number' && price > 0);
+        .filter(
+          (price): price is number => typeof price === 'number' && price > 0,
+        );
 
       if (prices.length === 0) {
         return { min: 0, max: 10000000 };

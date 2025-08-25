@@ -59,7 +59,7 @@ export default function HomePage() {
             <HeroSection />
           </div>
         </section>
-        
+
         <ScrollMarquee />
         <InfoSection />
       </main>

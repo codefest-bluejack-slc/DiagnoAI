@@ -16,7 +16,6 @@ export default function Navbar({}: NavbarProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { login, me, isAuthenticated, getCurrentUser } = useAuth();
 
-
   const {
     isOpen: isSearchModalOpen,
     isClosing,
@@ -68,8 +67,7 @@ export default function Navbar({}: NavbarProps) {
   };
 
   const handleSettingsClick = () => {
-    navigateTo('/profile')
-
+    navigateTo('/profile');
   };
 
   const handleLoginClick = () => {
@@ -77,8 +75,6 @@ export default function Navbar({}: NavbarProps) {
       login.mutate();
     }
   };
-
-
 
   return (
     <nav className="bg-white/10 backdrop-blur-lg border-b border-white/20 shadow-lg fixed top-0 left-0 right-0 z-50 w-full">
@@ -160,13 +156,13 @@ export default function Navbar({}: NavbarProps) {
           </Tooltip>
 
           {isAuthenticated ? (
-            <Tooltip content={me?.name || "Profile"} position="bottom">
-              <div 
+            <Tooltip content={me?.name || 'Profile'} position="bottom">
+              <div
                 className="flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 ml-6"
                 onClick={handleSettingsClick}
               >
                 <span className="text-white text-sm font-medium hidden sm:block max-w-[100px] truncate">
-                  {me?.name || "User"}
+                  {me?.name || 'User'}
                 </span>
                 <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden">
                   {me?.profilePicture && me.profilePicture.length > 0 ? (

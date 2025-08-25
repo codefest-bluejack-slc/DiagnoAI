@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Heart, 
-  Activity, 
-  Stethoscope, 
-  Brain, 
-  Shield, 
-  Plus, 
-  Zap, 
+import {
+  Heart,
+  Activity,
+  Stethoscope,
+  Brain,
+  Shield,
+  Plus,
+  Zap,
   Eye,
   Pill,
   UserCheck,
@@ -17,8 +17,18 @@ import { IAnimatedHeroIcon } from '../../interfaces/IAnimatedIcon';
 import { useTransition } from '../../hooks/use-transition';
 
 const medicalIcons = [
-  Heart, Activity, Stethoscope, Brain, Shield, Plus, 
-  Zap, Eye, Pill, UserCheck, Microscope, HeartPulse
+  Heart,
+  Activity,
+  Stethoscope,
+  Brain,
+  Shield,
+  Plus,
+  Zap,
+  Eye,
+  Pill,
+  UserCheck,
+  Microscope,
+  HeartPulse,
 ];
 
 interface FlyingCharacter {
@@ -39,20 +49,20 @@ export default function HeroSection() {
   const { navigateTo } = useTransition();
 
   useEffect(() => {
-    const titleText = "DiagnoAI";
+    const titleText = 'DiagnoAI';
     const chars = titleText.split('');
-    
+
     const flyingCharacters: FlyingCharacter[] = chars.map((char, index) => {
       const side = Math.floor(Math.random() * 4);
       let startX, startY;
-      
+
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
       const safeDistance = Math.max(screenWidth, screenHeight) * 0.8 + 400;
       const extraRandomDistance = Math.random() * 600;
       const totalDistance = safeDistance + extraRandomDistance;
-      
-      switch(side) {
+
+      switch (side) {
         case 0:
           startX = Math.random() * (screenWidth + 600) - 300;
           startY = -totalDistance;
@@ -70,7 +80,7 @@ export default function HeroSection() {
           startY = Math.random() * (screenHeight + 600) - 300;
           break;
       }
-      
+
       return {
         id: `char-${index}`,
         char,
@@ -85,10 +95,12 @@ export default function HeroSection() {
 
     setFlyingChars(flyingCharacters);
 
-    const maxDelay = Math.max(...flyingCharacters.map(char => char.delay + char.duration));
+    const maxDelay = Math.max(
+      ...flyingCharacters.map((char) => char.delay + char.duration),
+    );
     const timeoutId = setTimeout(() => {
       setTitleAnimationComplete(true);
-    }, (maxDelay) * 800);
+    }, maxDelay * 800);
 
     return () => {
       clearTimeout(timeoutId);
@@ -100,18 +112,19 @@ export default function HeroSection() {
 
     let lastTime = Date.now();
     let animationFrameId: number;
-    
+
     const spawnIcons = () => {
       const currentTime = Date.now();
       const elapsed = currentTime - lastTime;
-      
+
       if (elapsed >= 800) {
         const iconsToSpawn = 1 + Math.floor(Math.random() * 3);
-        
+
         for (let i = 0; i < iconsToSpawn; i++) {
           setTimeout(() => {
-            const IconComponent = medicalIcons[Math.floor(Math.random() * medicalIcons.length)];
-            const newIcon : IAnimatedHeroIcon = {
+            const IconComponent =
+              medicalIcons[Math.floor(Math.random() * medicalIcons.length)];
+            const newIcon: IAnimatedHeroIcon = {
               id: Date.now() + Math.random() + i,
               icon: IconComponent,
               angle: Math.random() * 360,
@@ -120,20 +133,25 @@ export default function HeroSection() {
               size: 30 + Math.random() * 16,
             };
 
-            setAnimatedIcons(prev => [...prev, newIcon]);
+            setAnimatedIcons((prev) => [...prev, newIcon]);
 
-            setTimeout(() => {
-              setAnimatedIcons(prev => prev.filter(icon => icon.id !== newIcon.id));
-            }, (newIcon.duration + newIcon.delay + 0.5) * 1000);
+            setTimeout(
+              () => {
+                setAnimatedIcons((prev) =>
+                  prev.filter((icon) => icon.id !== newIcon.id),
+                );
+              },
+              (newIcon.duration + newIcon.delay + 0.5) * 1000,
+            );
           }, i * 150);
         }
-        
+
         lastTime = currentTime;
       }
-      
+
       animationFrameId = requestAnimationFrame(spawnIcons);
     };
-    
+
     animationFrameId = requestAnimationFrame(spawnIcons);
 
     return () => {
@@ -143,9 +161,9 @@ export default function HeroSection() {
     };
   }, [titleAnimationComplete]);
 
-  const handleStartDiagnosticsClick = () => { 
+  const handleStartDiagnosticsClick = () => {
     navigateTo('/diagnostic');
-  }
+  };
 
   return (
     <div className="flex flex-col justify-center items-center h-screen w-full px-6 sm:px-8 md:px-12 lg:px-16 text-center relative">
@@ -154,16 +172,18 @@ export default function HeroSection() {
           <div
             key={iconData.id}
             className="absolute animate-icon-expand"
-            style={{
-              '--angle': `${iconData.angle}deg`,
-              '--duration': `${iconData.duration}s`,
-              '--delay': `${iconData.delay}s`,
-              animationDuration: `${iconData.duration}s`,
-              animationDelay: `${iconData.delay}s`,
-            } as React.CSSProperties}
+            style={
+              {
+                '--angle': `${iconData.angle}deg`,
+                '--duration': `${iconData.duration}s`,
+                '--delay': `${iconData.delay}s`,
+                animationDuration: `${iconData.duration}s`,
+                animationDelay: `${iconData.delay}s`,
+              } as React.CSSProperties
+            }
           >
-            <iconData.icon 
-              size={iconData.size} 
+            <iconData.icon
+              size={iconData.size}
               className="text-purple-300/80"
             />
           </div>
@@ -180,26 +200,28 @@ export default function HeroSection() {
                 <span
                   key={charData.id}
                   className={`flying-char inline-block text-10xl sm:text-9xl md:text-10xl lg:text-11xl xl:text-12xl 2xl:text-13xl font-black leading-none tracking-tight ${
-                    isDiagno 
-                      ? 'color-text-primary font-title-elegant' 
-                      : isAI 
-                        ? 'color-primary font-title-modern' 
+                    isDiagno
+                      ? 'color-text-primary font-title-elegant'
+                      : isAI
+                        ? 'color-primary font-title-modern'
                         : ''
                   }`}
-                  style={{
-                    '--start-x': `${charData.startX}px`,
-                    '--start-y': `${charData.startY}px`,
-                    '--final-x': '0px',
-                    '--final-y': '0px',
-                    '--delay': `${charData.delay}s`,
-                    '--duration': `${charData.duration}s`,
-                    animationDelay: `${charData.delay}s`,
-                    animationDuration: `${charData.duration}s`,
-                    animationFillMode: 'both',
-                    textShadow: isDiagno 
-                      ? '0 0 30px rgba(255, 255, 255, 0.3), 0 0 60px rgba(255, 255, 255, 0.2)' 
-                      : '0 0 30px rgba(168, 85, 247, 0.8), 0 0 60px rgba(168, 85, 247, 0.6), 0 0 90px rgba(168, 85, 247, 0.4)',
-                  } as React.CSSProperties}
+                  style={
+                    {
+                      '--start-x': `${charData.startX}px`,
+                      '--start-y': `${charData.startY}px`,
+                      '--final-x': '0px',
+                      '--final-y': '0px',
+                      '--delay': `${charData.delay}s`,
+                      '--duration': `${charData.duration}s`,
+                      animationDelay: `${charData.delay}s`,
+                      animationDuration: `${charData.duration}s`,
+                      animationFillMode: 'both',
+                      textShadow: isDiagno
+                        ? '0 0 30px rgba(255, 255, 255, 0.3), 0 0 60px rgba(255, 255, 255, 0.2)'
+                        : '0 0 30px rgba(168, 85, 247, 0.8), 0 0 60px rgba(168, 85, 247, 0.6), 0 0 90px rgba(168, 85, 247, 0.4)',
+                    } as React.CSSProperties
+                  }
                 >
                   {charData.char}
                 </span>
@@ -207,23 +229,28 @@ export default function HeroSection() {
             })}
           </div>
         </div>
-        
-        <div className={`transition-all duration-800 delay-200 ${titleAnimationComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+
+        <div
+          className={`transition-all duration-800 delay-200 ${titleAnimationComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <p className="text-xl sm:text-2xl lg:text-4xl xl:text-5xl color-text-secondary mb-12 leading-relaxed max-w-4xl mx-auto font-medium">
-            Advanced AI-powered diagnostic assistance for healthcare professionals. 
-            Precision medicine meets intelligent technology.
+            Advanced AI-powered diagnostic assistance for healthcare
+            professionals. Precision medicine meets intelligent technology.
           </p>
-          
-          <div className={`flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 transition-all duration-800 delay-300 ${titleAnimationComplete ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'}`}>
-            <button onClick={handleStartDiagnosticsClick} 
-            className="bg-primary hover:bg-primary-dark transition-all duration-300 
+
+          <div
+            className={`flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 transition-all duration-800 delay-300 ${titleAnimationComplete ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'}`}
+          >
+            <button
+              onClick={handleStartDiagnosticsClick}
+              className="bg-primary hover:bg-primary-dark transition-all duration-300 
                              px-10 sm:px-12 py-5 sm:py-6 rounded-xl text-white font-semibold text-xl sm:text-2xl
                              shadow-lg hover:shadow-glow transform hover:-translate-y-2 hover:scale-105
-                             flex items-center gap-4">
+                             flex items-center gap-4"
+            >
               <Activity size={28} />
               Start Diagnostic
             </button>
-            
           </div>
         </div>
       </div>

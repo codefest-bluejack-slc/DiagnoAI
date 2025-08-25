@@ -2,9 +2,15 @@ import React from 'react';
 import { Star, ExternalLink } from 'lucide-react';
 import { IProduct } from '../../interfaces/IProduct';
 
-export const SkeletonCard: React.FC<{ viewMode: 'grid' | 'list' }> = ({ viewMode }) => (
-  <div className={`${viewMode === 'grid' ? 'space-y-4 p-4' : 'flex gap-4 p-4'} bg-white/5 rounded-xl border border-white/10 animate-pulse`}>
-    <div className={`${viewMode === 'grid' ? 'w-full aspect-square' : 'w-16 h-16 flex-shrink-0'} bg-white/10 rounded-lg`}></div>
+export const SkeletonCard: React.FC<{ viewMode: 'grid' | 'list' }> = ({
+  viewMode,
+}) => (
+  <div
+    className={`${viewMode === 'grid' ? 'space-y-4 p-4' : 'flex gap-4 p-4'} bg-white/5 rounded-xl border border-white/10 animate-pulse`}
+  >
+    <div
+      className={`${viewMode === 'grid' ? 'w-full aspect-square' : 'w-16 h-16 flex-shrink-0'} bg-white/10 rounded-lg`}
+    ></div>
     <div className="flex-1 space-y-3">
       <div className="h-4 bg-white/10 rounded w-3/4"></div>
       <div className="h-3 bg-white/10 rounded w-1/2"></div>
@@ -16,28 +22,31 @@ export const SkeletonCard: React.FC<{ viewMode: 'grid' | 'list' }> = ({ viewMode
   </div>
 );
 
-export const ProductCard: React.FC<{ 
-  product: IProduct; 
-  index: number; 
+export const ProductCard: React.FC<{
+  product: IProduct;
+  index: number;
   viewMode: 'grid' | 'list';
   onNavigate: (productId: string) => void;
 }> = React.memo(({ product, index, viewMode, onNavigate }) => (
-  <div 
+  <div
     className={`${viewMode === 'grid' ? 'space-y-4' : 'flex gap-4'} p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group cursor-pointer`}
     onClick={() => onNavigate(product.product_id)}
   >
-    <div className={`${viewMode === 'grid' ? 'w-full aspect-square' : 'w-16 h-16 flex-shrink-0'} bg-white/5 rounded-lg overflow-hidden`}>
+    <div
+      className={`${viewMode === 'grid' ? 'w-full aspect-square' : 'w-16 h-16 flex-shrink-0'} bg-white/5 rounded-lg overflow-hidden`}
+    >
       <img
         src={product.thumbnail}
         alt={product.title}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
         onError={(e) => {
           const target = e.target as HTMLImageElement;
-          target.src = 'https://placehold.co/300x300/374151/9ca3af?text=No+Image';
+          target.src =
+            'https://placehold.co/300x300/374151/9ca3af?text=No+Image';
         }}
       />
     </div>
-    
+
     <div className="flex-1 flex flex-col justify-between min-h-0">
       <div>
         <h3 className="text-white font-medium text-sm mb-2 line-clamp-2 leading-relaxed">
@@ -55,10 +64,13 @@ export const ProductCard: React.FC<{
           )}
         </div>
       </div>
-      
+
       <div className="flex items-center justify-between pt-2">
         <span className="text-lg font-bold text-purple-400">
-          {product.extracted_price ? product.extracted_price.toLocaleString('id-ID') : product.price}$
+          {product.extracted_price
+            ? product.extracted_price.toLocaleString('id-ID')
+            : product.price}
+          $
         </span>
         <a
           href={product.link}

@@ -8,85 +8,89 @@ interface FuzzysortResult {
   obj: any;
 }
 
-const fuzzysort = (function() {
-  'use strict'
+const fuzzysort = (function () {
+  'use strict';
 
   const fuzzysort = {
-    go: (search: string, targets: any[], options?: FuzzysortOptions): FuzzysortResult[] => {
-      if (!search) return targets ? targets.map(t => ({obj: t, score: 0})) : []
-      
-      const searchLower = search.toLowerCase()
-      const searchLen = search.length
+    go: (
+      search: string,
+      targets: any[],
+      options?: FuzzysortOptions,
+    ): FuzzysortResult[] => {
+      if (!search)
+        return targets ? targets.map((t) => ({ obj: t, score: 0 })) : [];
 
-      const searchResults = []
+      const searchLower = search.toLowerCase();
+      const searchLen = search.length;
 
-      const keys = options && options.keys
-      const threshold = (options && options.threshold) || -10000
+      const searchResults = [];
+
+      const keys = options && options.keys;
+      const threshold = (options && options.threshold) || -10000;
 
       for (let i = 0; i < targets.length; i++) {
-        const obj = targets[i]
-        let targetStrs = []
-        if(keys) {
-          for(let j = 0; j < keys.length; j++) {
-            const key = keys[j]
-            const value = obj[key]
-            if(value != null) targetStrs.push(String(value))
+        const obj = targets[i];
+        let targetStrs = [];
+        if (keys) {
+          for (let j = 0; j < keys.length; j++) {
+            const key = keys[j];
+            const value = obj[key];
+            if (value != null) targetStrs.push(String(value));
           }
         } else {
-          targetStrs.push(String(obj))
+          targetStrs.push(String(obj));
         }
 
-        if(targetStrs.length === 0) continue
+        if (targetStrs.length === 0) continue;
 
-        let bestScore = -Infinity
+        let bestScore = -Infinity;
 
-        for(let j = 0; j < targetStrs.length; j++) {
-          const target = targetStrs[j]
-          const targetLower = target.toLowerCase()
-          const targetLen = target.length
-          
-          let score = 0
-          let searchI = 0
-          let targetI = 0
-          let consecutiveMatch = 0
+        for (let j = 0; j < targetStrs.length; j++) {
+          const target = targetStrs[j];
+          const targetLower = target.toLowerCase();
+          const targetLen = target.length;
+
+          let score = 0;
+          let searchI = 0;
+          let targetI = 0;
+          let consecutiveMatch = 0;
 
           while (searchI < searchLen && targetI < targetLen) {
             if (searchLower[searchI] === targetLower[targetI]) {
-              score += 100 + consecutiveMatch * 20
-              consecutiveMatch++
-              searchI++
+              score += 100 + consecutiveMatch * 20;
+              consecutiveMatch++;
+              searchI++;
             } else {
-              score -= 10
-              consecutiveMatch = 0
+              score -= 10;
+              consecutiveMatch = 0;
             }
-            targetI++
+            targetI++;
           }
 
           if (searchI === searchLen) {
-            score -= (targetLen - targetI) * 5
+            score -= (targetLen - targetI) * 5;
             if (score > bestScore) {
-              bestScore = score
+              bestScore = score;
             }
           }
         }
-        
+
         if (bestScore > threshold) {
-          searchResults.push({score: bestScore, obj: obj})
+          searchResults.push({ score: bestScore, obj: obj });
         }
       }
 
-      searchResults.sort((a, b) => b.score - a.score)
-      return searchResults
-    }
-  }
+      searchResults.sort((a, b) => b.score - a.score);
+      return searchResults;
+    },
+  };
 
-  return fuzzysort
+  return fuzzysort;
 })();
-
 
 const symptoms = [
   'Abdominal or back pain',
-  'Abdominal or flank pain', 
+  'Abdominal or flank pain',
   'Abdominal pain',
   'Abdominal pain (often in the upper right quadrant)',
   'Abdominal pain or discomfort',
@@ -385,7 +389,7 @@ const symptoms = [
   'White patches or plaques in the mouth',
   'Widespread musculoskeletal pain',
   'Yellowing of the skin and eyes',
-  "Yellowish or white growth on the conjunctiva (eye's surface)"
+  "Yellowish or white growth on the conjunctiva (eye's surface)",
 ];
 
 export const useTemplateSymptoms = () => {
@@ -394,7 +398,7 @@ export const useTemplateSymptoms = () => {
       return symptoms;
     }
     const results = fuzzysort.go(query, symptoms);
-    return results.map(result => result.obj);
+    return results.map((result) => result.obj);
   };
 
   const findBestMatch = (query: string): string | null => {
@@ -411,7 +415,7 @@ export const useTemplateSymptoms = () => {
   const findBestMatches = (queries: string[]): string[] => {
     const matches: string[] = [];
     const usedMatches = new Set<string>();
-    
+
     for (const query of queries) {
       const bestMatch = findBestMatch(query);
       if (bestMatch && !usedMatches.has(bestMatch)) {
@@ -419,7 +423,7 @@ export const useTemplateSymptoms = () => {
         usedMatches.add(bestMatch);
       }
     }
-    
+
     return matches;
   };
 
@@ -427,6 +431,6 @@ export const useTemplateSymptoms = () => {
     symptoms,
     searchSymptoms,
     findBestMatch,
-    findBestMatches
+    findBestMatches,
   };
 };

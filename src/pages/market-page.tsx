@@ -85,19 +85,30 @@ export default function MarketPage() {
     totalItems,
   } = usePagination(filteredProducts, 20);
 
-    const handleNavigateToProduct = useCallback((productId: string) => {
-    const stateToSave = {
+  const handleNavigateToProduct = useCallback(
+    (productId: string) => {
+      const stateToSave = {
+        searchState,
+        filters,
+        sortBy,
+        viewMode,
+        showFilters,
+        currentPage,
+        timestamp: Date.now(),
+      };
+      sessionStorage.setItem('marketPageState', JSON.stringify(stateToSave));
+      navigate(`/product/${encodeURIComponent(productId)}`);
+    },
+    [
+      navigate,
       searchState,
       filters,
       sortBy,
       viewMode,
       showFilters,
       currentPage,
-      timestamp: Date.now(),
-    };
-    sessionStorage.setItem('marketPageState', JSON.stringify(stateToSave));
-    navigate(`/product/${encodeURIComponent(productId)}`);
-  }, [navigate, searchState, filters, sortBy, viewMode, showFilters, currentPage]);
+    ],
+  );
 
   const handleSearch = async () => {
     if (!searchState.query.trim()) {
@@ -152,10 +163,11 @@ export default function MarketPage() {
       }
     } catch (error) {
       let errorMessage = 'Search failed: ';
-      
+
       if (error instanceof Error) {
         if (error.message.includes('All CORS proxies failed')) {
-          errorMessage += 'Unable to connect to search service. Please try again later.';
+          errorMessage +=
+            'Unable to connect to search service. Please try again later.';
         } else if (error.message.includes('HTTP error')) {
           errorMessage += 'Server temporarily unavailable. Please try again.';
         } else {
@@ -182,31 +194,34 @@ export default function MarketPage() {
     if (savedState) {
       try {
         const parsedState = JSON.parse(savedState);
-        
-        const isRecent = parsedState.timestamp && (Date.now() - parsedState.timestamp) < 5 * 60 * 1000;
-        
+
+        const isRecent =
+          parsedState.timestamp &&
+          Date.now() - parsedState.timestamp < 5 * 60 * 1000;
+
         if (isRecent) {
           if (parsedState.searchState) {
             setSearchState(parsedState.searchState);
           }
-          
+
           if (parsedState.sortBy) setSortBy(parsedState.sortBy);
           if (parsedState.viewMode) setViewMode(parsedState.viewMode);
-          if (typeof parsedState.showFilters === 'boolean') setShowFilters(parsedState.showFilters);
-          
+          if (typeof parsedState.showFilters === 'boolean')
+            setShowFilters(parsedState.showFilters);
+
           if (parsedState.filters) {
-            Object.keys(parsedState.filters).forEach(key => {
+            Object.keys(parsedState.filters).forEach((key) => {
               updateFilter(key as any, parsedState.filters[key]);
             });
           }
-          
+
           if (parsedState.currentPage && parsedState.currentPage > 1) {
             setTimeout(() => {
               goToPage(parsedState.currentPage);
             }, 300);
           }
         }
-        
+
         sessionStorage.removeItem('marketPageState');
       } catch (error) {
         console.error('Failed to restore market page state:', error);
@@ -693,40 +708,45 @@ export default function MarketPage() {
                       </button>
 
                       <div className="flex items-center gap-2">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          let pageNumber;
-                          if (totalPages <= 5) {
-                            pageNumber = i + 1;
-                          } else if (currentPage <= 3) {
-                            pageNumber = i + 1;
-                          } else if (currentPage >= totalPages - 2) {
-                            pageNumber = totalPages - 4 + i;
-                          } else {
-                            pageNumber = currentPage - 2 + i;
-                          }
+                        {Array.from(
+                          { length: Math.min(5, totalPages) },
+                          (_, i) => {
+                            let pageNumber;
+                            if (totalPages <= 5) {
+                              pageNumber = i + 1;
+                            } else if (currentPage <= 3) {
+                              pageNumber = i + 1;
+                            } else if (currentPage >= totalPages - 2) {
+                              pageNumber = totalPages - 4 + i;
+                            } else {
+                              pageNumber = currentPage - 2 + i;
+                            }
 
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => goToPage(pageNumber)}
-                              className={`w-10 h-10 rounded-lg border transition-all duration-200 hover:scale-105 text-sm font-medium ${
-                                currentPage === pageNumber
-                                  ? 'text-white'
-                                  : 'text-purple-300'
-                              }`}
-                              style={{
-                                background: currentPage === pageNumber 
-                                  ? 'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))' 
-                                  : 'var(--background-glass)',
-                                borderColor: currentPage === pageNumber 
-                                  ? 'var(--border-primary)' 
-                                  : 'var(--border-default)',
-                              }}
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        })}
+                            return (
+                              <button
+                                key={pageNumber}
+                                onClick={() => goToPage(pageNumber)}
+                                className={`w-10 h-10 rounded-lg border transition-all duration-200 hover:scale-105 text-sm font-medium ${
+                                  currentPage === pageNumber
+                                    ? 'text-white'
+                                    : 'text-purple-300'
+                                }`}
+                                style={{
+                                  background:
+                                    currentPage === pageNumber
+                                      ? 'linear-gradient(to right, var(--primary-purple), var(--secondary-pink))'
+                                      : 'var(--background-glass)',
+                                  borderColor:
+                                    currentPage === pageNumber
+                                      ? 'var(--border-primary)'
+                                      : 'var(--border-default)',
+                                }}
+                              >
+                                {pageNumber}
+                              </button>
+                            );
+                          },
+                        )}
                       </div>
 
                       <button
@@ -747,7 +767,10 @@ export default function MarketPage() {
                   {totalItems > 0 && (
                     <div className="text-center mt-4">
                       <p className="text-purple-300/70 text-sm">
-                        Showing {Math.min((currentPage - 1) * 20 + 1, totalItems)} - {Math.min(currentPage * 20, totalItems)} of {totalItems} products
+                        Showing{' '}
+                        {Math.min((currentPage - 1) * 20 + 1, totalItems)} -{' '}
+                        {Math.min(currentPage * 20, totalItems)} of {totalItems}{' '}
+                        products
                       </p>
                     </div>
                   )}

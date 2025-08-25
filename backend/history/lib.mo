@@ -7,11 +7,12 @@ module {
         brand_name: Text;
         generic_name: Text;
         manufacturer: Text;
-        product_ndc: Text;
+        // product_ndc: Text;
     };
 
     public type History = {
         id: Text;
+        title: Text;
         userId: Principal;
         username: Text;
         diagnosis: Text;
@@ -21,6 +22,7 @@ module {
 
     public type HistoryResponse = {
         id: Text;
+        title: Text;
         userId: Principal;
         username: Text;
         diagnosis: Text;

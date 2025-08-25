@@ -1,5 +1,5 @@
-import { createContext, useContext } from "react";
-import { IServiceContextType } from "../interfaces/IServiceContextType";
+import { createContext, useContext } from 'react';
+import { IServiceContextType } from '../interfaces/IServiceContextType';
 
 export const ServiceContext = createContext<IServiceContextType | null>(null);
 

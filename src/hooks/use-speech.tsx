@@ -31,84 +31,90 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
   // }
 
   const TEST_SPEECH_DATA = {
-    description: "Symptoms experienced after eating a large amount of seafood.",
+    description: 'Symptoms experienced after eating a large amount of seafood.',
     symptoms: [
       {
-        name: "Headache",
-        severity: "Mild"
+        name: 'Headache',
+        severity: 'Mild',
       },
       {
-        name: "Fever",
-        severity: "High"
+        name: 'Fever',
+        severity: 'High',
       },
       {
-        name: "Diarrhea",
-        severity: "High"
-      }
+        name: 'Diarrhea',
+        severity: 'High',
+      },
     ],
-    since: "2024-08-10"
+    since: '2024-08-10',
   };
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const sendAudioToEndoint = useCallback(async (blob: Blob) => {
-    setIsProcessing(true);
-    setError(null);
-    setTranscript(null);
-    setStructuredData(null);
+  const sendAudioToEndoint = useCallback(
+    async (blob: Blob) => {
+      setIsProcessing(true);
+      setError(null);
+      setTranscript(null);
+      setStructuredData(null);
 
-    if (USE_TEST_MODE) {
-      setTimeout(() => {
-        setTranscript(TEST_SPEECH_DATA.description);
-        setStructuredData(TEST_SPEECH_DATA);
-        // console.log("Using test data for speech processing", TEST_SPEECH_DATA);
-        setIsProcessing(false);
-      }, 2000);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', blob, 'recording.webm');
-
-    try {
-      // const response = await axios.post(endpoint, formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //   }
-      // });
-
-      // const result = response.data;
-      const result = {"text": "I have been sick for around 3 days after eating a lot of seafood, the symptoms include a mild headache, high fever, and high diarrhea. The symptoms started on august 10"}
-      console.log("hasil transcribe", result);
-      setTranscript(result.text);
-
-      if (result.text) {
-        try {
-          const diagnosisResponse = await DiagnosisService.getUnstructuredDiagnosis({
-            text: result.text
-          });
-
-          console.log("diagnosisResponse", diagnosisResponse);
-
-          const structuredData = {
-            description: diagnosisResponse.description,
-            symptoms: diagnosisResponse.symptoms || [],
-            since: diagnosisResponse.since || new Date().toISOString().split('T')[0],
-          };
-          
-          setStructuredData(structuredData);
-          console.log("structured data from diagnosis", structuredData);
-        } catch (diagnosisError) {
-          console.warn("Failed to get structured diagnosis:", diagnosisError);
-        }
+      if (USE_TEST_MODE) {
+        setTimeout(() => {
+          setTranscript(TEST_SPEECH_DATA.description);
+          setStructuredData(TEST_SPEECH_DATA);
+          // console.log("Using test data for speech processing", TEST_SPEECH_DATA);
+          setIsProcessing(false);
+        }, 2000);
+        return;
       }
-    } catch (err: any) {
-      setError(`Failed to send audio: ${err.message || err}`);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [endpoint, USE_TEST_MODE]);
+
+      const formData = new FormData();
+      formData.append('file', blob, 'recording.webm');
+
+      try {
+        const response = await axios.post(endpoint, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        const result = response.data;
+        // const result = {"text": "I have been sick for around 3 days after eating a lot of seafood, the symptoms include a mild headache, high fever, and high diarrhea. The symptoms started on august 10"}
+        // console.log("hasil transcribe", result);
+        setTranscript(result.text);
+
+        if (result.text) {
+          try {
+            const diagnosisResponse =
+              await DiagnosisService.getUnstructuredDiagnosis({
+                text: result.text,
+              });
+
+            console.log('diagnosisResponse', diagnosisResponse);
+
+            const structuredData = {
+              description: diagnosisResponse.description,
+              symptoms: diagnosisResponse.symptoms || [],
+              since:
+                diagnosisResponse.since ||
+                new Date().toISOString().split('T')[0],
+            };
+
+            setStructuredData(structuredData);
+            console.log('structured data from diagnosis', structuredData);
+          } catch (diagnosisError) {
+            console.warn('Failed to get structured diagnosis:', diagnosisError);
+          }
+        }
+      } catch (err: any) {
+        setError(`Failed to send audio: ${err.message || err}`);
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [endpoint, USE_TEST_MODE],
+  );
 
   const initializeMediaRecorder = useCallback(async () => {
     if (USE_TEST_MODE) {
@@ -121,11 +127,11 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
           echoCancellation: true,
           noiseSuppression: true,
           sampleRate: 44100,
-        }
+        },
       });
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm;codecs=opus',
       });
 
       mediaRecorder.ondataavailable = (event) => {
@@ -136,7 +142,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
 
       mediaRecorder.onstop = async () => {
         const currentAudioBlob = new Blob(audioChunksRef.current, {
-          type: 'audio/webm;codecs=opus'
+          type: 'audio/webm;codecs=opus',
         });
 
         const url = URL.createObjectURL(currentAudioBlob);
@@ -146,7 +152,7 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
 
         await sendAudioToEndoint(currentAudioBlob);
 
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorderRef.current = mediaRecorder;
@@ -170,7 +176,10 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       return;
     }
 
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'inactive') {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === 'inactive'
+    ) {
       mediaRecorderRef.current.start(100);
       setIsRecording(true);
     }
@@ -186,7 +195,10 @@ export const useSpeech = (endpoint: string): UseSpeechReturn => {
       return;
     }
 
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === 'recording'
+    ) {
       mediaRecorderRef.current.stop();
     }
   }, [sendAudioToEndoint, USE_TEST_MODE]);

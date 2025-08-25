@@ -8,14 +8,18 @@ interface AnalyzeSymptomsProps {
   symptoms: ISymptom[];
   description: string;
   since: string;
-  onAnalysisComplete: (result: string, fullResponse?: any) => void;
+  onAnalysisComplete: (
+    result: string,
+    title: string,
+    fullResponse?: any,
+  ) => void;
 }
 
 export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
   symptoms,
   description,
   since,
-  onAnalysisComplete
+  onAnalysisComplete,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -44,41 +48,46 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
     const performAnalysis = async () => {
       setIsLoading(true);
       setIsRetrying(false);
-      
+
       try {
         const diagnosisRequest = {
           description: description.trim(),
-          symptoms: symptoms.map(symptom => ({
+          symptoms: symptoms.map((symptom) => ({
             name: symptom.name,
-            severity: symptom.severity
+            severity: symptom.severity,
           })),
-          since: since
+          since: since,
         };
 
-        const diagnosisResponse = await DiagnosisService.getStructuredDiagnosis(diagnosisRequest);
-        
+        const diagnosisResponse =
+          await DiagnosisService.getStructuredDiagnosis(diagnosisRequest);
+
         setFullResponse(diagnosisResponse);
-        
+
         if (diagnosisResponse.diagnosis) {
           setAnalysisText(diagnosisResponse.diagnosis);
         } else {
-          setAnalysisText('Analysis complete. Please consult with a healthcare professional for detailed medical advice.');
+          setAnalysisText(
+            'Analysis complete. Please consult with a healthcare professional for detailed medical advice.',
+          );
         }
-        
+
         setRetryCount(0);
       } catch (error) {
         console.error('Analysis error:', error);
-        
+
         if (retryCount < 2) {
           setIsRetrying(true);
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
           setTimeout(() => {
             setIsRetrying(false);
           }, 2000);
           return;
         }
-        
-        setAnalysisText('Our AI analysis is currently processing your symptoms. Please wait a moment while we generate your health insights. If this takes longer than expected, our system is working to provide you the most accurate analysis possible.');
+
+        setAnalysisText(
+          'Our AI analysis is currently processing your symptoms. Please wait a moment while we generate your health insights. If this takes longer than expected, our system is working to provide you the most accurate analysis possible.',
+        );
         setRetryCount(0);
       } finally {
         if (!isRetrying) {
@@ -98,22 +107,31 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
   useEffect(() => {
     if (!isLoading && !isRetrying && analysisText && !animationComplete) {
       const words = analysisText.split(' ');
-      
+
       if (currentWordIndex < words.length) {
-        const timer = setTimeout(() => {
-          const currentText = words.slice(0, currentWordIndex + 1).join(' ');
-          setDisplayedText(currentText);
-          setCurrentWordIndex(prev => prev + 1);
-        }, USE_TEST_MODE ? 25 : 45);
+        const timer = setTimeout(
+          () => {
+            const currentText = words.slice(0, currentWordIndex + 1).join(' ');
+            setDisplayedText(currentText);
+            setCurrentWordIndex((prev) => prev + 1);
+          },
+          USE_TEST_MODE ? 25 : 45,
+        );
         return () => clearTimeout(timer);
       } else if (currentWordIndex >= words.length && !animationComplete) {
         setAnimationComplete(true);
         setTimeout(() => {
-          onAnalysisComplete(analysisText, fullResponse);
+          onAnalysisComplete(analysisText, fullResponse?.title, fullResponse);
         }, 1000);
       }
     }
-  }, [currentWordIndex, analysisText, isLoading, isRetrying, animationComplete]);
+  }, [
+    currentWordIndex,
+    analysisText,
+    isLoading,
+    isRetrying,
+    animationComplete,
+  ]);
 
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -152,7 +170,10 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
                       className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 group"
                       title="Expand to full view"
                     >
-                      <Maximize2 className="text-purple-300 group-hover:text-purple-200" size={16} />
+                      <Maximize2
+                        className="text-purple-300 group-hover:text-purple-200"
+                        size={16}
+                      />
                     </button>
                   </div>
                 </div>
@@ -162,10 +183,15 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
                     {isLoading || isRetrying ? (
                       <div className="flex items-center justify-center py-12">
                         <div className="flex items-center gap-3">
-                          <Loader2 className="animate-spin text-purple-400" size={24} />
+                          <Loader2
+                            className="animate-spin text-purple-400"
+                            size={24}
+                          />
                           <div className="flex flex-col items-start">
                             <span className="text-purple-200 text-sm">
-                              {isRetrying ? `Retrying analysis (attempt ${retryCount + 1}/3)...` : 'Analyzing your symptoms...'}
+                              {isRetrying
+                                ? `Retrying analysis (attempt ${retryCount + 1}/3)...`
+                                : 'Analyzing your symptoms...'}
                             </span>
                             {isRetrying && (
                               <span className="text-purple-300 text-xs mt-1">
@@ -178,10 +204,9 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
                     ) : (
                       <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
                         <div className="space-y-3 break-words w-full">
-                          {animationComplete ? 
-                            renderRichText(analysisText, 'purple') : 
-                            renderRichText(displayedText, 'purple')
-                          }
+                          {animationComplete
+                            ? renderRichText(analysisText, 'purple')
+                            : renderRichText(displayedText, 'purple')}
                         </div>
                       </div>
                     )}
@@ -200,9 +225,13 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
               <div className="flex items-center gap-3">
                 <Brain className="text-purple-300" size={24} />
                 <div>
-                  <h2 className="text-2xl font-bold text-white">AI Analysis Results</h2>
+                  <h2 className="text-2xl font-bold text-white">
+                    AI Analysis Results
+                  </h2>
                   <div className="flex items-center gap-2">
-                    <p className="text-purple-300 text-sm">Complete diagnostic analysis</p>
+                    <p className="text-purple-300 text-sm">
+                      Complete diagnostic analysis
+                    </p>
                     {USE_TEST_MODE && (
                       <span className="px-2 py-1 text-xs bg-orange-500/20 border border-orange-400/40 rounded-full text-orange-300">
                         TEST MODE
@@ -224,10 +253,15 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
               {isLoading || isRetrying ? (
                 <div className="flex items-center justify-center py-16">
                   <div className="flex items-center gap-3">
-                    <Loader2 className="animate-spin text-purple-400" size={32} />
+                    <Loader2
+                      className="animate-spin text-purple-400"
+                      size={32}
+                    />
                     <div className="flex flex-col items-start">
                       <span className="text-purple-200">
-                        {isRetrying ? `Retrying analysis (attempt ${retryCount + 1}/3)...` : 'Analyzing your symptoms...'}
+                        {isRetrying
+                          ? `Retrying analysis (attempt ${retryCount + 1}/3)...`
+                          : 'Analyzing your symptoms...'}
                       </span>
                       {isRetrying && (
                         <span className="text-purple-300 text-sm mt-1">

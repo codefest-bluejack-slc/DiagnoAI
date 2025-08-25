@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import useMouseTracking from "../hooks/use-mouse-tracking";
-import Navbar from "../components/common/navbar";
-import { Camera, Plus, Save, User as UserIcon, X, LogOut } from "lucide-react";
-import { User } from "../declarations/user/user.did";
-import { useAuth } from "../hooks/use-auth";
-import { deserializeImage, serializeImage } from "../utils/image-utils";
-import { useService } from "../hooks/use-service";
-import { useMutation } from "../hooks/use-mutation";
-import { Principal } from "@dfinity/principal";
-import { useToastContext } from "../contexts/toast-context";
+import { useEffect, useState } from 'react';
+import useMouseTracking from '../hooks/use-mouse-tracking';
+import Navbar from '../components/common/navbar';
+import { Camera, Plus, Save, User as UserIcon, X, LogOut } from 'lucide-react';
+import { User } from '../declarations/user/user.did';
+import { useAuth } from '../hooks/use-auth';
+import { deserializeImage, serializeImage } from '../utils/image-utils';
+import { useService } from '../hooks/use-service';
+import { useMutation } from '../hooks/use-mutation';
+import { Principal } from '@dfinity/principal';
+import { useToastContext } from '../contexts/toast-context';
 
 export default function ProfilePage() {
   const mousePosition = useMouseTracking();
@@ -16,45 +16,48 @@ export default function ProfilePage() {
   const { userService } = useService();
   const { addToast } = useToastContext();
   const [particles] = useState(() =>
-      Array.from({ length: 50 }, (_, i) => ({
-          id: i,
-          left: Math.random() * 100,
-          top: Math.random() * 100,
-          delay: Math.random() * 3,
-          duration: 3 + Math.random() * 4,
-          size: 0.2 + Math.random() * 0.3,
-      })),
+    Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 3,
+      duration: 3 + Math.random() * 4,
+      size: 0.2 + Math.random() * 0.3,
+    })),
   );
-  
-  const [profileData, setProfileData] = useState<User>(me || {
-    id: Principal.anonymous(),
-    bio: "",
-    email: "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    name: "womp womp",
-    profilePicture: []
-  } as User);
+
+  const [profileData, setProfileData] = useState<User>(
+    me ||
+      ({
+        id: Principal.anonymous(),
+        bio: '',
+        email: 'aaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        name: 'womp womp',
+        profilePicture: [],
+      } as User),
+  );
 
   const profileMutation = useMutation({
     mutationFn: () => userService.updateUser(profileData),
     onSuccess: (data) => {
       setUser(profileData);
-      addToast("Profile updated successfully!", {
-        type: "success",
-        title: "Success",
-        duration: 4000
+      addToast('Profile updated successfully!', {
+        type: 'success',
+        title: 'Success',
+        duration: 4000,
       });
     },
     onError: (error) => {
       addToast(`Failed to update profile: ${error}`, {
-        type: "error",
-        title: "Error",
-        duration: 5000
+        type: 'error',
+        title: 'Error',
+        duration: 5000,
       });
-    }
+    },
   });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
       const image = await serializeImage(file);
       setProfileData((prev) => ({
@@ -62,57 +65,59 @@ export default function ProfilePage() {
         profilePicture: image,
       }));
     }
-  }
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
     setProfileData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   useEffect(() => {
     if (me) {
       setProfileData(me);
     }
   }, [me]);
-  
+
   return (
-      <div className="diagnostic-container">
-        <div className="background-orbs">
-          <div className="background-orb-1"></div>
-          <div className="background-orb-2"></div>
-          <div className="background-orb-3"></div>
-        </div>
-      
-        <div
-          className="mouse-glow"
-          style={{
-            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, var(--primary-purple-200) 0%, transparent 50%)`,
-          }}
-        ></div>
-      
-        <div className="floating-particles">
-          {particles.map((particle) => (
-            <div
-              key={particle.id}
-              className="particle"
-              style={{
-                left: `${particle.left}%`,
-                top: `${particle.top}%`,
-                animationDelay: `${particle.delay}s`,
-                animationDuration: `${particle.duration}s`,
-                width: `${particle.size}rem`,
-                height: `${particle.size}rem`,
-              }}
-            />
-          ))}
-        </div>
-    
-        <Navbar />
-      
-        <main className="main-content">
+    <div className="diagnostic-container">
+      <div className="background-orbs">
+        <div className="background-orb-1"></div>
+        <div className="background-orb-2"></div>
+        <div className="background-orb-3"></div>
+      </div>
+
+      <div
+        className="mouse-glow"
+        style={{
+          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, var(--primary-purple-200) 0%, transparent 50%)`,
+        }}
+      ></div>
+
+      <div className="floating-particles">
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className="particle"
+            style={{
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              animationDelay: `${particle.delay}s`,
+              animationDuration: `${particle.duration}s`,
+              width: `${particle.size}rem`,
+              height: `${particle.size}rem`,
+            }}
+          />
+        ))}
+      </div>
+
+      <Navbar />
+
+      <main className="main-content">
         <div className="max-w-7xl mx-auto px-6">
           <div className="symptom-form-card animate-in slide-in-from-top-5 fade-in duration-500">
             <div className="flex items-center justify-between mb-6">
@@ -120,7 +125,9 @@ export default function ProfilePage() {
                 <div className="p-2 bg-purple-500/20 rounded-full animate-in zoom-in duration-300 delay-150">
                   <UserIcon className="text-purple-300" size={20} />
                 </div>
-                <span className="animate-in slide-in-from-left-3 duration-300 delay-200">Edit Profile</span>
+                <span className="animate-in slide-in-from-left-3 duration-300 delay-200">
+                  Edit Profile
+                </span>
               </h3>
             </div>
 
@@ -130,7 +137,10 @@ export default function ProfilePage() {
                   <div className="w-32 h-32 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center overflow-hidden backdrop-blur-sm">
                     {profileData.profilePicture?.length > 0 ? (
                       <img
-                        src={deserializeImage(profileData.profilePicture) || "/placeholder.svg"}
+                        src={
+                          deserializeImage(profileData.profilePicture) ||
+                          '/placeholder.svg'
+                        }
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
@@ -140,14 +150,23 @@ export default function ProfilePage() {
                   </div>
                   <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
                     <Camera className="text-white" size={24} />
-                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
                   </label>
                 </div>
-                <p className="text-purple-200 text-sm mt-2">Click to upload profile picture</p>
+                <p className="text-purple-200 text-sm mt-2">
+                  Click to upload profile picture
+                </p>
               </div>
 
               <div>
-                <label className="block text-purple-200 text-sm font-medium mb-3">Full Name</label>
+                <label className="block text-purple-200 text-sm font-medium mb-3">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -159,7 +178,9 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-purple-200 text-sm font-medium mb-3">Email Address</label>
+                <label className="block text-purple-200 text-sm font-medium mb-3">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -171,7 +192,9 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-purple-200 text-sm font-medium mb-3">Bio</label>
+                <label className="block text-purple-200 text-sm font-medium mb-3">
+                  Bio
+                </label>
                 <textarea
                   name="bio"
                   value={profileData.bio}
@@ -189,7 +212,10 @@ export default function ProfilePage() {
                   }}
                   className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-lg hover:shadow-purple-500/25"
                 >
-                  <Save className="text-white transition-transform duration-300" size={20} />
+                  <Save
+                    className="text-white transition-transform duration-300"
+                    size={20}
+                  />
                   <span>Save Profile</span>
                 </button>
                 <button
@@ -198,7 +224,10 @@ export default function ProfilePage() {
                   }}
                   className="py-4 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-400/50 shadow-lg hover:shadow-red-500/25"
                 >
-                  <LogOut className="text-white transition-transform duration-300" size={20} />
+                  <LogOut
+                    className="text-white transition-transform duration-300"
+                    size={20}
+                  />
                   <span>Logout</span>
                 </button>
               </div>
@@ -206,7 +235,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
-      </div>
+    </div>
   );
 }
-  

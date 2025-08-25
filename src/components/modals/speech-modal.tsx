@@ -4,12 +4,12 @@ import { X, Mic, MicOff, Volume2, Check, Loader2 } from 'lucide-react';
 import { ISpeechModalProps } from '../../interfaces/ISpeechRecognition';
 import { useSpeech } from '../../hooks/use-speech';
 
-export const SpeechModal: React.FC<ISpeechModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onRecordingComplete 
+export const SpeechModal: React.FC<ISpeechModalProps> = ({
+  isOpen,
+  onClose,
+  onRecordingComplete,
 }) => {
-  const { 
+  const {
     isRecording,
     isProcessing,
     error,
@@ -17,8 +17,8 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
     audioUrl,
     audioBlob,
     structuredData,
-    startListening, 
-    stopListening, 
+    startListening,
+    stopListening,
     resetRecording,
   } = useSpeech('http://localhost:8002/transcribe');
 
@@ -120,7 +120,9 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                   )}
                 </div>
                 <p className="text-sm text-purple-300">
-                  {isTestMode ? 'Using test data for demonstration' : 'Record your voice to generate text'}
+                  {isTestMode
+                    ? 'Using test data for demonstration'
+                    : 'Record your voice to generate text'}
                 </p>
               </div>
             </div>
@@ -134,24 +136,22 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
 
           <div className="p-6 space-y-6">
             <div className="text-center">
-              <div 
+              <div
                 className={`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
                   isRecording
-                    ? 'bg-red-500/20 border-red-400 shadow-lg shadow-red-500/30 animate-pulse' 
+                    ? 'bg-red-500/20 border-red-400 shadow-lg shadow-red-500/30 animate-pulse'
                     : isProcessing
-                    ? 'bg-purple-500/20 border-purple-400'
-                    : transcript
-                    ? 'bg-green-500/20 border-green-400'
-                    : 'bg-purple-500/20 border-purple-400 shadow-lg shadow-purple-500/30'
+                      ? 'bg-purple-500/20 border-purple-400'
+                      : transcript
+                        ? 'bg-green-500/20 border-green-400'
+                        : 'bg-purple-500/20 border-purple-400 shadow-lg shadow-purple-500/30'
                 }`}
               >
                 {statusIcon}
               </div>
-              
+
               <div className="space-y-2">
-                <p className="font-medium text-purple-100">
-                  {statusText}
-                </p>
+                <p className="font-medium text-purple-100">{statusText}</p>
               </div>
             </div>
 
@@ -174,7 +174,7 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                     "{transcript}"
                   </blockquote>
                 </div>
-                
+
                 {structuredData && (
                   <div className="p-4 rounded-lg bg-green-500/10 border border-green-400/30">
                     <div className="flex items-center gap-2 mb-3">
@@ -183,35 +183,43 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                         Structured Analysis:
                       </span>
                     </div>
-                    
+
                     {structuredData.description && (
                       <div className="mb-3">
-                        <span className="text-xs font-medium text-green-400">Description:</span>
+                        <span className="text-xs font-medium text-green-400">
+                          Description:
+                        </span>
                         <div className="text-sm text-green-200 mt-1 p-2 bg-green-500/5 rounded border border-green-400/20">
                           {structuredData.description}
                         </div>
                       </div>
                     )}
-                    
-                    {structuredData.symptoms && structuredData.symptoms.length > 0 && (
-                      <div className="mb-3">
-                        <span className="text-xs font-medium text-green-400">Detected Symptoms:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {structuredData.symptoms.map((symptom: any, index: number) => (
-                            <span 
-                              key={index}
-                              className="px-2 py-1 text-xs bg-green-500/20 border border-green-400/40 rounded-full text-green-300"
-                            >
-                              {symptom.name} ({symptom.severity})
-                            </span>
-                          ))}
+
+                    {structuredData.symptoms &&
+                      structuredData.symptoms.length > 0 && (
+                        <div className="mb-3">
+                          <span className="text-xs font-medium text-green-400">
+                            Detected Symptoms:
+                          </span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {structuredData.symptoms.map(
+                              (symptom: any, index: number) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 text-xs bg-green-500/20 border border-green-400/40 rounded-full text-green-300"
+                                >
+                                  {symptom.name} ({symptom.severity})
+                                </span>
+                              ),
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    
+                      )}
+
                     {structuredData.since && (
                       <div className="text-xs text-green-400">
-                        <span className="font-medium">Since:</span> {structuredData.since}
+                        <span className="font-medium">Since:</span>{' '}
+                        {structuredData.since}
                       </div>
                     )}
                   </div>
@@ -227,13 +235,13 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                     Playback Recording:
                   </span>
                 </div>
-                <audio 
-                  controls 
-                  src={audioUrl} 
+                <audio
+                  controls
+                  src={audioUrl}
                   className="w-full rounded-lg"
                   style={{
                     filter: 'sepia(1) hue-rotate(240deg) saturate(2)',
-                    background: 'rgba(147, 51, 234, 0.1)'
+                    background: 'rgba(147, 51, 234, 0.1)',
                   }}
                 />
               </div>
@@ -266,23 +274,22 @@ export const SpeechModal: React.FC<ISpeechModalProps> = ({
                     {audioBlob ? 'New Recording' : 'Start Recording'}
                   </button>
                   {transcript && (
-                     <button
-                        onClick={handleApprove}
-                        className="py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400"
-                     >
-                        <Check size={16} />
-                        Use Transcription
-                     </button>
+                    <button
+                      onClick={handleApprove}
+                      className="py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400"
+                    >
+                      <Check size={16} />
+                      Use Transcription
+                    </button>
                   )}
                 </>
               )}
             </div>
-            
+
             <div className="text-center text-xs text-purple-400">
-              {isTestMode 
+              {isTestMode
                 ? 'Test mode active - using mock data for demonstration purposes.'
-                : 'Your voice will be sent to our servers for transcription.'
-              }
+                : 'Your voice will be sent to our servers for transcription.'}
             </div>
           </div>
         </div>

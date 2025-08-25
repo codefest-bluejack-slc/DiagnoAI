@@ -1,4 +1,4 @@
-import { LucideProps } from "lucide-react";
+import { LucideProps } from 'lucide-react';
 
 export interface AnimatedIconProps {
   delay?: number;
@@ -8,7 +8,9 @@ export interface AnimatedIconProps {
 
 export interface IAnimatedHeroIcon {
   id: number | string;
-  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+  icon: React.ForwardRefExoticComponent<
+    Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
+  >;
   angle: number;
   duration: number;
   delay: number;

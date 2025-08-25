@@ -9,7 +9,7 @@ describe('App', () => {
     render(
       <StrictMode>
         <AgentProvider withProcessEnv disableAuthenticateOnMount>
-            <App />
+          <App />
         </AgentProvider>
       </StrictMode>,
     );

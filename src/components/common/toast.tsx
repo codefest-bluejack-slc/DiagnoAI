@@ -47,9 +47,12 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
       const startTime = Date.now();
       const updateProgress = () => {
         const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, 100 - (elapsed / (toast.duration || 3000)) * 100);
+        const remaining = Math.max(
+          0,
+          100 - (elapsed / (toast.duration || 3000)) * 100,
+        );
         setProgress(remaining);
-        
+
         if (remaining > 0 && !isExiting) {
           requestAnimationFrame(updateProgress);
         }
@@ -71,7 +74,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   };
 
   return (
-    <div 
+    <div
       className={`
         relative flex items-start gap-3 p-4 rounded-xl border backdrop-blur-sm
         shadow-lg transition-all duration-300 ease-out
@@ -81,19 +84,18 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
         ${isExiting ? 'translate-x-full opacity-0 scale-95' : ''}
       `}
       style={{
-        transform: isVisible && !isExiting ? 'translateX(0) scale(1)' : 'translateX(100%) scale(0.95)',
+        transform:
+          isVisible && !isExiting
+            ? 'translateX(0) scale(1)'
+            : 'translateX(100%) scale(0.95)',
         opacity: isVisible && !isExiting ? 1 : 0,
       }}
     >
-      <div className="relative">
-        {getToastIcon(toast.type)}
-      </div>
-      
+      <div className="relative">{getToastIcon(toast.type)}</div>
+
       <div className="flex-1 min-w-0">
         {toast.title && (
-          <div className="font-semibold text-sm mb-1">
-            {toast.title}
-          </div>
+          <div className="font-semibold text-sm mb-1">{toast.title}</div>
         )}
         <div className="text-sm">
           {typeof toast.message === 'string' ? toast.message : toast.message}
@@ -136,15 +138,21 @@ interface ToastContainerProps {
   onClose: (id: string) => void;
 }
 
-export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onClose }) => {
-  const groupedToasts = toasts.reduce((acc, toast) => {
-    const position = toast.position || 'top-right';
-    if (!acc[position]) {
-      acc[position] = [];
-    }
-    acc[position].push(toast);
-    return acc;
-  }, {} as Record<IToastPosition, IToast[]>);
+export const ToastContainer: React.FC<ToastContainerProps> = ({
+  toasts,
+  onClose,
+}) => {
+  const groupedToasts = toasts.reduce(
+    (acc, toast) => {
+      const position = toast.position || 'top-right';
+      if (!acc[position]) {
+        acc[position] = [];
+      }
+      acc[position].push(toast);
+      return acc;
+    },
+    {} as Record<IToastPosition, IToast[]>,
+  );
 
   return (
     <>

@@ -22,6 +22,7 @@ persistent actor Symptoms {
             case (#err _) {
                 ignore await historyActor.addHistory({
                     id = value.historyId;
+                    title = "";
                     userId = userId;
                     username = username;
                     diagnosis = "";

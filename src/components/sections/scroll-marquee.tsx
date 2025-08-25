@@ -4,7 +4,8 @@ export default function ScrollMarquee() {
   const [scrollOffset, setScrollOffset] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const text = "WELCOME TO THE FUTURE OF DIAGNOSTICS • REVOLUTIONIZING HEALTHCARE WITH AI TECHNOLOGY • DIAGNOAI LEADS THE WAY";
+  const text =
+    'WELCOME TO THE FUTURE OF DIAGNOSTICS • REVOLUTIONIZING HEALTHCARE WITH AI TECHNOLOGY • DIAGNOAI LEADS THE WAY';
 
   const renderFloatingText = (text: string, index: number) => {
     return text.split('').map((char, charIndex) => (
@@ -13,7 +14,7 @@ export default function ScrollMarquee() {
         className="inline-block gradient-text-glow"
         style={{
           animation: `floatChar 3s ease-in-out infinite`,
-          animationDelay: `${(charIndex * 0.1 + index * 0.5)}s`,
+          animationDelay: `${charIndex * 0.1 + index * 0.5}s`,
         }}
       >
         {char === ' ' ? '\u00A0' : char}
@@ -24,26 +25,29 @@ export default function ScrollMarquee() {
   useEffect(() => {
     const handleScroll = () => {
       if (!sectionRef.current) return;
-      
+
       const rect = sectionRef.current.getBoundingClientRect();
       const sectionTop = rect.top;
       const sectionHeight = rect.height;
       const windowHeight = window.innerHeight;
-      
+
       const startPoint = windowHeight;
       const endPoint = -sectionHeight;
       const totalDistance = startPoint - endPoint;
       const currentPosition = sectionTop - endPoint;
-      
-      const progress = Math.max(0, Math.min(1, 1 - (currentPosition / totalDistance)));
+
+      const progress = Math.max(
+        0,
+        Math.min(1, 1 - currentPosition / totalDistance),
+      );
       const movement = progress * window.innerWidth * 1.5;
-      
+
       setScrollOffset(window.innerWidth - movement);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -56,26 +60,26 @@ export default function ScrollMarquee() {
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       document.head.removeChild(style);
     };
   }, []);
 
   return (
-    <section 
+    <section
       ref={sectionRef}
       className="relative flex items-center justify-center py-8 bg-gradient-to-b from-purple-900/5 to-transparent overflow-hidden"
     >
       <div className="w-full flex items-center justify-center">
-        <div 
+        <div
           className="flex whitespace-nowrap transition-transform duration-100 ease-out"
           style={{
             transform: `translateX(${scrollOffset}px)`,
             willChange: 'transform',
           }}
         >
-          <h1 
+          <h1
             className="font-bold text-center relative mx-8"
             style={{
               fontSize: 'clamp(2.5rem, 8vw, 6rem)',
@@ -86,8 +90,8 @@ export default function ScrollMarquee() {
           >
             {renderFloatingText(text, 0)}
           </h1>
-          
-          <h1 
+
+          <h1
             className="font-bold text-center relative mx-8"
             style={{
               fontSize: 'clamp(2.5rem, 8vw, 6rem)',
@@ -98,8 +102,8 @@ export default function ScrollMarquee() {
           >
             {renderFloatingText(text, 1)}
           </h1>
-          
-          <h1 
+
+          <h1
             className="font-bold text-center relative mx-8"
             style={{
               fontSize: 'clamp(2.5rem, 8vw, 6rem)',

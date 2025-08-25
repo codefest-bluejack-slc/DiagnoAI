@@ -21,10 +21,11 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const { toasts, addToast, removeToast, clearAllToasts } = useToast();
 
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast, clearAllToasts }}>
+    <ToastContext.Provider
+      value={{ toasts, addToast, removeToast, clearAllToasts }}
+    >
       {children}
       <ToastContainer toasts={toasts} onClose={removeToast} />
     </ToastContext.Provider>
   );
 };
-  

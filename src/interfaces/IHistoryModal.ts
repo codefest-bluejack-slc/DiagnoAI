@@ -2,7 +2,7 @@ export interface IMedicine {
   brand_name: string;
   generic_name: string;
   manufacturer: string;
-  product_ndc: string;
+  // product_ndc: string;
 }
 
 export interface ISymptom {
@@ -15,6 +15,7 @@ export interface ISymptom {
 export interface IHistory {
   id: string;
   userId: string;
+  title: string;
   username: string;
   diagnosis: string;
   medicine_response: string;
@@ -23,6 +24,7 @@ export interface IHistory {
 
 export interface IHistoryResponse {
   id: string;
+  title: string;
   userId: string;
   username: string;
   diagnosis: string;

@@ -18,11 +18,11 @@ export const SymptomAutocomplete: React.FC<SymptomAutocompleteProps> = ({
   value,
   onChange,
   onAdd,
-  placeholder = "Type a symptom...",
-  className = "",
+  placeholder = 'Type a symptom...',
+  className = '',
   disabled = false,
   severity,
-  onSeverityChange
+  onSeverityChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -77,9 +77,9 @@ export const SymptomAutocomplete: React.FC<SymptomAutocompleteProps> = ({
     if (bestSuggestion) {
       handleSelectSuggestion(bestSuggestion);
     } else if (suggestions.length === 0 && value.trim()) {
-      addToast('Please select a symptom from the available options', { 
-        type: 'warning', 
-        title: 'Invalid Selection' 
+      addToast('Please select a symptom from the available options', {
+        type: 'warning',
+        title: 'Invalid Selection',
       });
     }
   };
@@ -88,9 +88,9 @@ export const SymptomAutocomplete: React.FC<SymptomAutocompleteProps> = ({
     if (!isOpen || suggestions.length === 0) {
       if (e.key === 'Enter' && value.trim()) {
         e.preventDefault();
-        addToast('Please select a symptom from the available options', { 
-          type: 'warning', 
-          title: 'Invalid Selection' 
+        addToast('Please select a symptom from the available options', {
+          type: 'warning',
+          title: 'Invalid Selection',
         });
       }
       return;
@@ -99,14 +99,14 @@ export const SymptomAutocomplete: React.FC<SymptomAutocompleteProps> = ({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : 0
+        setSelectedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : 0,
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : suggestions.length - 1
+        setSelectedIndex((prev) =>
+          prev > 0 ? prev - 1 : suggestions.length - 1,
         );
         break;
       case 'Enter':
@@ -158,7 +158,7 @@ export const SymptomAutocomplete: React.FC<SymptomAutocompleteProps> = ({
           maxLength={50}
           className={`w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 focus:scale-[1.01] ${className}`}
         />
-        
+
         {isOpen && suggestions.length > 0 && (
           <div
             ref={dropdownRef}
@@ -179,32 +179,42 @@ export const SymptomAutocomplete: React.FC<SymptomAutocompleteProps> = ({
                 </button>
               ))}
             </div>
-            
+
             <div className="absolute top-full left-6 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-purple-400/30"></div>
           </div>
         )}
-        
+
         {value.length >= 2 && suggestions.length === 0 && (
           <div className="absolute bottom-full left-0 right-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-red-400/30 rounded-xl shadow-xl z-50">
             <div className="p-3 text-center">
-              <span className="text-red-300 text-sm">No matching symptoms found. Please try a different term.</span>
+              <span className="text-red-300 text-sm">
+                No matching symptoms found. Please try a different term.
+              </span>
             </div>
             <div className="absolute top-full left-6 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-red-400/30"></div>
           </div>
         )}
       </div>
-      
+
       <select
         value={severity}
-        onChange={(e) => onSeverityChange(e.target.value as 'mild' | 'moderate' | 'severe')}
+        onChange={(e) =>
+          onSeverityChange(e.target.value as 'mild' | 'moderate' | 'severe')
+        }
         disabled={disabled}
         className="p-4 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 backdrop-blur-sm transition-all duration-300 appearance-none cursor-pointer"
       >
-        <option value="mild" className="bg-gray-800 text-white">Mild</option>
-        <option value="moderate" className="bg-gray-800 text-white">Moderate</option>
-        <option value="severe" className="bg-gray-800 text-white">Severe</option>
+        <option value="mild" className="bg-gray-800 text-white">
+          Mild
+        </option>
+        <option value="moderate" className="bg-gray-800 text-white">
+          Moderate
+        </option>
+        <option value="severe" className="bg-gray-800 text-white">
+          Severe
+        </option>
       </select>
-      
+
       <button
         onClick={handleAddWithSuggestion}
         disabled={!value.trim() || disabled || suggestions.length === 0}
