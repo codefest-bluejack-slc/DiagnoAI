@@ -56,11 +56,25 @@ tools = [
 async def call_backend_endpoint(func_name: str, args: dict):
     if func_name == "get_history":
         url = f"{BASE_URL}/get-history"
-        response = requests.post(url, headers=HEADERS, json={"username": args["username"], "user_canister_id": USER_CANISTER_ID})
+        response = requests.post(
+            url,
+            headers=HEADERS,
+            json={
+                "username": args["username"],
+                "user_canister_id": USER_CANISTER_ID
+            }
+        )
+        print("Raw response:", response.text)
+
+        try:
+            return response.json()
+        except ValueError:
+            import re, json
+            clean_text = re.sub(r'[\x00-\x1f\x7f]', '', response.text)
+            return json.loads(clean_text)
+
     else:
         raise ValueError(f"Unsupported function call: {func_name}")
-    response.raise_for_status()
-    return response.json()
 
 async def process_query(query: str, ctx: Context) -> str:
     try:
@@ -102,13 +116,17 @@ async def process_query(query: str, ctx: Context) -> str:
 
             try:
                 result = await call_backend_endpoint(func_name, arguments)
-                content_to_send = json.dumps(result)
+                print("halo")
+                print(result)
+                content_to_send = json.dumps(result, ensure_ascii=False)
             except Exception as e:
                 error_content = {
                     "error": f"Tool execution failed: {str(e)}",
                     "status": "failed"
                 }
-                content_to_send = json.dumps(error_content)
+                print("error woe anjengk")
+                print(e)
+                content_to_send = json.dumps(error_content, ensure_ascii=False)
 
             tool_result_message = {
                 "role": "tool",

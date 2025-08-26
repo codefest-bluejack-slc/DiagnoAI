@@ -115,7 +115,8 @@ persistent actor History{
     };
 
     let WelcomeResponseKeys = ["message"];
-    let HistoryResponseKeys = ["id", "userId", "username", "diagnosis", "medicine_response", "medicines"];
+    // let HistoryResponseKeys = ["id", "userId", "username", "diagnosis", "medicine_response", "medicines"];
+    let HistoryResponseKeys = [ "diagnosis"];
     private func extractUsername(body : Blob) : Result.Result<Type.HistoryRequest, Text> {
         // Convert Blob to Text
         let jsonText = switch (Text.decodeUtf8(body)) {
@@ -150,7 +151,7 @@ persistent actor History{
     // Constructs a standardized error response for serialization failures
     private func makeSerializationErrorResponse() : Type.HttpResponse {
         {
-        status_code = 500;
+        status_code = 200;
         headers = [("content-type", "application/json")];
         body = Text.encodeUtf8("{\"error\": \"Failed to serialize response\"}");
         streaming_strategy = null;
@@ -215,13 +216,21 @@ persistent actor History{
                     };
                     case (#ok(name)) { name };
                 };
+                Debug.print("[INFO]: Extracted username: " # username.username # " with user_canister_id: " # username.user_canister_id);
 
                 let response : Result.Result<Type.History, Text> = await getHistoryByUsername(username);
 
                 switch (response) {
                     case (#ok(history)) {
                         // Now `history` is your Type.History value
-                        let blob = to_candid(history); // convert just the History
+                        type ResultTotal = {
+                            diagnosis : Text
+                        };
+                        let diag : ResultTotal = {
+                            diagnosis = history.diagnosis;
+                        };
+                        Debug.print("[INFO]: Get History diagnosis: " # debug_show(diag.diagnosis));
+                        let blob = to_candid(diag); // convert just the History
                         let #ok(jsonText) = JSON.toText(blob, HistoryResponseKeys, null)
                         else return makeSerializationErrorResponse();
                         Debug.print("[INFO]: Get History response: " # debug_show(jsonText));
@@ -230,7 +239,8 @@ persistent actor History{
                     case (#err(msg)) {
                         // handle error
                         Debug.print("[ERROR]: " # msg);
-                        makeJsonResponse(404, "{\"error\": \"" # msg # "\"}");
+                        Debug.print("Testing");
+                        makeJsonResponse(200, "{\"error\": \"" # msg # "\"}");
                     };
                 };
             };
