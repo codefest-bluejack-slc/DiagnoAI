@@ -1,3 +1,5 @@
+![tag:innovationlab](https://img.shields.io/badge/innovationlab-3D8BD3)
+
 # DiagnoAI 🏥🤖
 
 ## Introduction  
@@ -111,6 +113,6 @@ Together, we can **bridge the gap between diagnosis, treatment, and medicine ava
 
 ## 🔗 Important Links
 
-* [Demo Video](https://youtu.be/hjOji8diK1A)
+* [Pitch Deck](https://youtu.be/Aa4DqCwWE6E)
 * [Website Documentation](https://nielxfb.notion.site/DiagnoAI-2574c303a60580919e92f1c6ddcb2705)
-* [Pitch Deck](#)
+* [Demo Video](https://youtu.be/hjOji8diK1A)
