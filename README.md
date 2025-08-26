@@ -17,6 +17,10 @@ The system is powered by **Fetch.ai** library and **Internet Computer Protocol (
    - Suggests **relevant medicines** based on the diagnosis.  
    - Provides **guidelines on safe usage** for each medicine.  
 
+3. **History Agent** 📜
+   - Provides previous **health assessments** based on a given username.
+   - Gives a brief summary on the user's **health condition**
+
 ### Medicine Marketplace 
    - Users can **find, compare, and purchase** medicines from trusted pharmacies.  
    - Offers a **seamless pipeline**: diagnosis → treatment guidance → medicine purchase.  
@@ -107,11 +111,6 @@ Together, we can **bridge the gap between diagnosis, treatment, and medicine ava
 
 ## 🔗 Important Links
 
-#### Pitch Deck Video Link
-    https://dummylink
-
-#### Website Documentation
-    https://dummylink
-
-#### Demo Video
-    https://dummylink
+* [Demo Video](https://youtu.be/hjOji8diK1A)
+* [Website Documentation](https://nielxfb.notion.site/DiagnoAI-2574c303a60580919e92f1c6ddcb2705)
+* [Pitch Deck](#)
