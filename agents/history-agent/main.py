@@ -140,7 +140,8 @@ agent = Agent(
     name="DiagnoAI Agent",
     port=8004,
     mailbox=True,
-    publish_agent_details=True
+    publish_agent_details=True,
+    readme_path='./README.md'
 )
 chat_proto = Protocol(spec=chat_protocol_spec)
 
