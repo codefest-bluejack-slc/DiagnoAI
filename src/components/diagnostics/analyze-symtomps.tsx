@@ -3,6 +3,7 @@ import { Brain, Maximize2, X, Loader2 } from 'lucide-react';
 import { ISymptom } from '../../interfaces/IDiagnostic';
 import { DiagnosisService } from '../../services/diagnosis.service';
 import { renderRichText } from '../../utils/rich-text-renderer';
+import Markdown from 'react-markdown';
 
 interface AnalyzeSymptomsProps {
   symptoms: ISymptom[];
@@ -205,8 +206,8 @@ export const AnalyzeSymptoms: React.FC<AnalyzeSymptomsProps> = ({
                       <div className="text-purple-200 text-sm leading-relaxed max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20 w-full">
                         <div className="space-y-3 break-words w-full">
                           {animationComplete
-                            ? renderRichText(analysisText, 'purple')
-                            : renderRichText(displayedText, 'purple')}
+                            ? <Markdown>{analysisText}</Markdown>
+                            : <Markdown>{displayedText}</Markdown>}
                         </div>
                       </div>
                     )}

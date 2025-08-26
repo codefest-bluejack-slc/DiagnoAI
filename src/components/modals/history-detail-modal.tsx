@@ -196,15 +196,8 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
                                 </div>
                                 <div className="bg-orange-500/10 border border-orange-400/30 rounded-lg p-3">
                                     <p className="text-sm text-orange-200 leading-relaxed">
-                                        {item.medicine_response.length > 300
-                                            ? `${item.medicine_response.slice(0, 300)}...`
-                                            : item.medicine_response}
+                                        <Markdown>{item.medicine_response}</Markdown>
                                     </p>
-                                    {item.medicine_response.length > 300 && (
-                                        <button className="text-xs text-orange-300 hover:text-orange-200 mt-2 underline">
-                                            Show full response
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         ) : (
