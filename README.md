@@ -1,6 +1,7 @@
 ![tag:innovationlab](https://img.shields.io/badge/innovationlab-3D8BD3)
 
 # DiagnoAI 🏥🤖
+<img width="1920" height="1080" alt="logo" src="https://github.com/user-attachments/assets/a17fe96b-5e25-4bb6-9e6e-4087482c7772" />
 
 ## Introduction  
 **DiagnoAI** is an AI-powered healthcare assistant designed to provide end-to-end support for users seeking medical guidance. The application integrates intelligent agents with a medicine marketplace to deliver:  
