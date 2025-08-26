@@ -116,8 +116,6 @@ async def process_query(query: str, ctx: Context) -> str:
 
             try:
                 result = await call_backend_endpoint(func_name, arguments)
-                print("halo")
-                print(result)
                 content_to_send = json.dumps(result, ensure_ascii=False)
             except Exception as e:
                 error_content = {
