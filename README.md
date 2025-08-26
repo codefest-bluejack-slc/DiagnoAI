@@ -57,7 +57,7 @@ docker compose up --build
 ```
 This will:
 
-- Launch all AI agents (Diagnosis Agent & Recommendation Agent).
+- Launch all AI agents.
 - Start the Elasticsearch server used for medicine search functionality.
 ---
 
@@ -89,8 +89,8 @@ In DiagnoAI, the Internet Computer Protocol (ICP) is used as the backbone for de
   - Enables building AI-driven agents with communication capabilities.  
   - Used for the Diagnosis Agent and Recommendation Agent.  
 
-- **ASI:One Deployment** 🌐  
-  - Used to **serve AI models on the internet**, making them accessible to the internet without directly using them from the application **DiagnoAI**
+- **Chat with Agent** 🌐  
+  - Used to **serve AI models on the internet**, making them accessible to the internet without directly using them from the **DiagnoAI** application.
 
 
 ---
