@@ -138,7 +138,7 @@ async def process_query(query: str, ctx: Context) -> str:
         return f"An error occurred while processing your request: {str(e)}"
 
 agent = Agent(
-    name="DiagnoAI Agent",
+    name="History Agent",
     port=8004,
     mailbox=True,
     publish_agent_details=True,
