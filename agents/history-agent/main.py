@@ -138,7 +138,7 @@ async def process_query(query: str, ctx: Context) -> str:
 
 agent = Agent(
     name="DiagnoAI Agent",
-    port=8001,
+    port=8004,
     mailbox=True,
     publish_agent_details=True
 )
