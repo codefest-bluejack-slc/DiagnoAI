@@ -10,10 +10,20 @@
 
 The system is powered by **Fetch.ai** library and **Internet Computer Protocol (ICP)** for decentralized application using **Internet Identity**.  
 
+## Pitch Deck
+[![Pitch Deck](https://img.youtube.com/vi/Aa4DqCwWE6E/0.jpg)](https://youtu.be/Aa4DqCwWE6E)
+
+## Demo Video
+[![Demo Video](https://img.youtube.com/vi/hjOji8diK1A/0.jpg)](https://youtu.be/hjOji8diK1A)
+
+## Website Documentation
+The whole application is documented through 
+[Notion](https://nielxfb.notion.site/DiagnoAI-2574c303a60580919e92f1c6ddcb2705)
+
 ### AI Agents  
 1. **Diagnosis Agent** 🧠  
    - Accepts user symptom descriptions.  
-   - Provides a probable **diagnosis** with struct**u**red output.  
+   - Provides a probable **diagnosis** with structured output.  
 
 2. **Recommendation Agent** 💊  
    - Suggests **relevant medicines** based on the diagnosis.  
@@ -108,11 +118,3 @@ In DiagnoAI, the Internet Computer Protocol (ICP) is used as the backbone for de
 ## 🚀 Closing
 **DiagnoAI** is more than just an app—it’s a **healthcare ecosystem** that empowers people with knowledge, guidance, and access.  
 Together, we can **bridge the gap between diagnosis, treatment, and medicine availability**.  
-
----
-
-## 🔗 Important Links
-
-* [Pitch Deck](https://youtu.be/Aa4DqCwWE6E)
-* [Website Documentation](https://nielxfb.notion.site/DiagnoAI-2574c303a60580919e92f1c6ddcb2705)
-* [Demo Video](https://youtu.be/hjOji8diK1A)
