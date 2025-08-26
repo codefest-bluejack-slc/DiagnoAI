@@ -49,6 +49,7 @@ import {
   getSeverityIcon,
 } from '../utils/diagnostic-utils';
 import '../styles/diagnostic-page.css';
+import Markdown from 'react-markdown';
 
 export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const USE_DEFAULT_DATA = true;
@@ -112,6 +113,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const [isSpeechModalOpen, setIsSpeechModalOpen] = useState(false);
   const [isHistoryDetailOpen, setIsHistoryDetailOpen] = useState(false);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<IHistoryResponse | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -478,6 +480,12 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
     }
   };
 
+  useEffect(() => {
+    if (history.length > 0) { 
+      setIsLoadingHistory(false);
+    }
+  }, [history])
+
   return (
     <div className="diagnostic-container">
       <div className="background-orbs">
@@ -721,14 +729,14 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                           </div>
                           <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-slate-700/20">
                             <div className="space-y-3">
-                              {renderRichText(illnessResponse, 'purple')}
+                              <Markdown>{illnessResponse}</Markdown>
                             </div>
                           </div>
                         </div>
 
                         {drugsResponse &&
                           !drugsResponse.includes(
-                            "I'm sorry, but based on the provided documents, I cannot recommend a suitable medicine",
+                            "I'm sorry",
                           ) && (
                             <div className="bg-slate-900/60 rounded-xl p-6 border border-slate-700/50">
                               <div className="flex items-center gap-3 mb-4">
@@ -739,7 +747,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                               </div>
                               <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/50 scrollbar-track-slate-700/20">
                                 <div className="space-y-3">
-                                  {renderRichText(drugsResponse, 'blue')}
+                                  <Markdown>{drugsResponse}</Markdown>
                                 </div>
                               </div>
                             </div>
@@ -1113,14 +1121,14 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
 
             <div className="lg:col-span-3">
               <div className="sticky top-24 space-y-6 w-full">
-                {!analysisComplete && (
+                {currentStep == 'input' && (
                   <div className="step-card w-full">
                     <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                       <History className="text-purple-300" size={20} />
                       History
                     </h3>
                     <div className="space-y-3">
-                      {isLoading ? (
+                      {isLoadingHistory ? (
                         <div className='flex flex-col items-center justify-center gap-2'>
                         <RefreshCw
                           className="animate-spin transition-transform duration-300 text-purple-300"
