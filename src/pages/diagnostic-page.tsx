@@ -50,6 +50,7 @@ import {
 } from '../utils/diagnostic-utils';
 import '../styles/diagnostic-page.css';
 import Markdown from 'react-markdown';
+import { useAuth } from '../hooks/use-auth';
 
 export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const USE_DEFAULT_DATA = true;
@@ -107,6 +108,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
   const mousePosition = useMouseTracking();
   const { addToast } = useToast();
   const { historyService } = useService();
+  const { me } = useAuth();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [editingSymptom, setEditingSymptom] = useState<string | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -640,8 +642,7 @@ export default function DiagnosticPage({ }: IDiagnosticPageProps) {
                       setAnalysisComplete(true);
 
                       try {
-                        const username = 'user';
-
+                        const username = me?.name || 'Guest';
                         const assessmentId = addToHistory(
                           newDescription,
                           result,

@@ -20,6 +20,11 @@ module {
         medicines: [Medicine];
     };
 
+    public type HistoryRequest = {
+        username: Text;
+        user_canister_id: Text;
+    };
+
     public type HistoryResponse = {
         id: Text;
         title: Text;

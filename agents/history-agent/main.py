@@ -23,6 +23,7 @@ ASI1_HEADERS = {
 }
 
 HISTORY_CANISTER_ID = ConfigLoader.get_str("HISTORY_CANISTER_ID")
+USER_CANISTER_ID = ConfigLoader.get_str("USER_CANISTER_ID")
 BASE_URL = ConfigLoader.get_str("BASE_URL")
 
 HEADERS = {
@@ -55,7 +56,7 @@ tools = [
 async def call_backend_endpoint(func_name: str, args: dict):
     if func_name == "get_history":
         url = f"{BASE_URL}/get-history"
-        response = requests.post(url, headers=HEADERS, json={"username": args["username"]})
+        response = requests.post(url, headers=HEADERS, json={"username": args["username"], "user_canister_id": USER_CANISTER_ID})
     else:
         raise ValueError(f"Unsupported function call: {func_name}")
     response.raise_for_status()

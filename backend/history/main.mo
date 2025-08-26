@@ -5,7 +5,9 @@ import Result "mo:base/Result";
 import Principal "mo:base/Principal";
 import Array "mo:base/Array";
 import Type "lib";
+import UserType "../user/lib";
 import SymptomModule "../symptom/interface";
+import UserModule "../user/interface";
 import { JSON } "mo:serde";
 import Debug "mo:base/Debug";
 
@@ -39,7 +41,7 @@ persistent actor History{
                     symptoms = symptomList;
                 };
                 #ok(response)
-             };
+            };
             case null { #err("History not found") };
         };
     };
@@ -54,18 +56,29 @@ persistent actor History{
         }));
     };
 
-    public query func getHistoryByUsername(username: Text) : async Result.Result<Type.History, Text> {
-        let histories = Iter.toArray(Map.entries<Text, Type.History>(map));
-        let userHistories = Array.filter(histories, func ((_, history) : (Text, Type.History)) : Bool {
-            history.username == username
+    public func getHistoryByUsername(request: Type.HistoryRequest) : async Result.Result<Type.History, Text> {
+        let userActor = actor (request.user_canister_id) : UserModule.UserActor;
+        let users = await userActor.getAllUsers();
+        let user = Array.find(users, func ((_, user) : (Principal, UserType.User)) : Bool {
+            user.name == request.username
         });
-
-        if (userHistories.size() > 0) {
-            #ok(userHistories[0].1); // `.1` because it’s a (key, value) tuple
-        } else {
-            #err("No history found for " # username);
-        }
-};
+        switch (user) {
+            case (?user) {
+                let histories = Iter.toArray(Map.entries<Text, Type.History>(map));
+                let userHistories = Array.filter(histories, func ((_, history) : (Text, Type.History)) : Bool {
+                    history.userId == user.0
+                });
+                if (userHistories.size() > 0) {
+                    #ok(userHistories[0].1); // `.1` because it’s a (key, value) tuple
+                } else {
+                    #err("No history found for " # request.username);
+                }
+            };
+            case null {
+                #err("User not found");
+            };
+        };
+    };
 
     public func addHistory(value: Type.History) : async ?Type.History {
         ignore Map.put<Text, Type.History>(map, Map.thash, value.id, value);
@@ -103,7 +116,7 @@ persistent actor History{
 
     let WelcomeResponseKeys = ["message"];
     let HistoryResponseKeys = ["id", "userId", "username", "diagnosis", "medicine_response", "medicines"];
-    private func extractUsername(body : Blob) : Result.Result<Text, Text> {
+    private func extractUsername(body : Blob) : Result.Result<Type.HistoryRequest, Text> {
         // Convert Blob to Text
         let jsonText = switch (Text.decodeUtf8(body)) {
             case null { return #err("Invalid UTF-8 encoding in request body") };
@@ -115,14 +128,11 @@ persistent actor History{
             return #err("Invalid JSON format in request body");
         };
 
-        type Username = {
-            username : Text;
-        };
-        let usernameField : ?Username = from_candid (blob);
+        let usernameField : ?Type.HistoryRequest = from_candid (blob);
 
         switch (usernameField) {
             case null return #err("Username field not found in JSON");
-            case (?username) #ok(username.username);
+            case (?username) #ok(username);
         };
     };
 
@@ -200,10 +210,10 @@ persistent actor History{
                 Debug.print("[INFO]: Started Get History");
                 let usernameResult = extractUsername(body);
                 let username = switch (usernameResult) {
-                case (#err(errorMessage)) {
-                    return makeJsonResponse(400, "{\"error\": \"" # errorMessage # "\"}");
-                };
-                case (#ok(name)) { name };
+                    case (#err(errorMessage)) {
+                        return makeJsonResponse(400, "{\"error\": \"" # errorMessage # "\"}");
+                    };
+                    case (#ok(name)) { name };
                 };
 
                 let response : Result.Result<Type.History, Text> = await getHistoryByUsername(username);
